@@ -1,0 +1,24 @@
+{
+    "cSpell.words": [
+        "ROOTT",
+        "Topo",
+        "asts",
+        "asyncio",
+        "gwatts",
+        "localds",
+        "noqa",
+        "numpy",
+        "posix",
+        "pytest",
+        "xaod",
+        "xrootd"
+    ],
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--exclude=tests/*",
+        "--ignore=E501"
+    ],
+    "python.linting.pylintEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.autoTestDiscoverOnSaveEnabled": false
+}
