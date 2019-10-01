@@ -1,6 +1,8 @@
 # Tests to make sure we get at the functionality in the remote executor.
-import sys
-sys.path += ['.']
+# WARNING: It isn't possible to split this split package because of how python does its
+# discovery. To get it to discover the xAOD sub-package, an __init__.py must exist in the func_adl directory. But if that is there
+# then you can't get at the stuff in the installed func_adl package.
+# TODO: Move testing to happening in an venv.
 from func_adl import EventDataset
 from func_adl.xAOD import use_exe_func_adl_server, FuncADLServerException
 from unittest.mock import Mock
