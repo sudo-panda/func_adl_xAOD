@@ -4,6 +4,7 @@
         "Topo",
         "asts",
         "asyncio",
+        "codecov",
         "gwatts",
         "localds",
         "noqa",
