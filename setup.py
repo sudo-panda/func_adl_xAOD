@@ -20,7 +20,7 @@ setup(name="func_adl.xAOD",
       url="https://github.com/iris-hep/func_adl.xAOD",
       license="TBD",
       test_suite="tests",
-      install_requires=["requests>=2.0.0", "pandas>=0.24.0", "uproot>=3.7.0", "retry>=0.9.2", "func_adl==1.0.0-a2"],
+      install_requires=["requests>=2.0.0", "pandas>=0.24.0", "uproot>=3.7.0", "retry>=0.9.2", "func_adl==1.0.0a2"],
       setup_requires=["pytest-runner"],
       tests_require=["pytest>=3.9"],
       classifiers=[
