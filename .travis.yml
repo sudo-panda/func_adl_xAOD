@@ -4,6 +4,7 @@ python:
 install:
 - pip install .
 - pip install pytest coverage codecov flake8
+- pip list
 script:
 - flake8 --exclude=tests/* --ignore=E501
 - coverage run -m pytest -s
