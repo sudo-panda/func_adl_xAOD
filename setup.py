@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 xaod_template_files = []
 setup(name="func_adl.xAOD",
-      version='1.0.0-alpha.1',
+      version='1.0.0-alpha.2',
       packages=find_namespace_packages(exclude=['tests']),
       scripts=[],
       description="Functional Analysis Description Language for xAOD C++ files",
