@@ -3,6 +3,8 @@
 # discovery. To get it to discover the xAOD sub-package, an __init__.py must exist in the func_adl directory. But if that is there
 # then you can't get at the stuff in the installed func_adl package.
 # TODO: Move testing to happening in an venv.
+import sys
+sys.path += ['.']
 from func_adl import EventDataset
 from func_adl.xAOD import use_exe_func_adl_server, FuncADLServerException
 from unittest.mock import Mock
@@ -10,6 +12,12 @@ import pandas as pd
 import pytest
 import os
 import asyncio
+import ast
+
+async def dummy_executor_coroutine(a: ast.AST) -> asyncio.Future:
+    'Called to evaluate a guy - but it will take a long time'
+    await asyncio.sleep(0.01)
+    return a
 
 @pytest.yield_fixture()
 def event_loop():
@@ -155,7 +163,7 @@ def simple_query_ast_ROOT():
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
         .Select('lambda j: j.pt()/1000.0') \
         .AsROOTTTree('output.root', 'trees', 'JetPt') \
-        .value(executor=lambda a: a)
+        .value(executor=dummy_executor_coroutine)
 
 @pytest.fixture()
 def simple_query_ast_Pandas():
@@ -165,7 +173,7 @@ def simple_query_ast_Pandas():
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
         .Select('lambda j: j.pt()/1000.0') \
         .AsPandasDF('JetPt') \
-        .value(executor=lambda a: a)
+        .value(executor=dummy_executor_coroutine)
 
 @pytest.fixture()
 def simple_query_ast_awkward():
@@ -175,7 +183,7 @@ def simple_query_ast_awkward():
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
         .Select('lambda j: j.pt()/1000.0') \
         .AsAwkwardArray('JetPt') \
-        .value(executor=lambda a: a)
+        .value(executor=dummy_executor_coroutine)
 
 @pytest.mark.asyncio
 async def test_simple_root_query(one_file_remote_query_return, simple_query_ast_ROOT, running_on_posix):
@@ -187,9 +195,10 @@ async def test_simple_root_query(one_file_remote_query_return, simple_query_ast_
     assert r['files'][0][0] == 'root://localhost/file.root'
     assert r['files'][0][1] == 'dudetree3'
 
-def test_print_files(one_file_remote_query_return, simple_query_ast_ROOT):
+@pytest.mark.asyncio
+async def test_print_files(one_file_remote_query_return, simple_query_ast_ROOT, running_on_posix):
     'Simple query, print out things'
-    _ = use_exe_func_adl_server(simple_query_ast_ROOT, quiet=False)
+    _ = await use_exe_func_adl_server(simple_query_ast_ROOT, quiet=False)
 
 @pytest.mark.asyncio
 async def test_simple_root_query_not_read_at_first(one_file_remote_query_return_two, simple_query_ast_ROOT, running_on_posix):
@@ -200,9 +209,10 @@ async def test_simple_root_query_not_read_at_first(one_file_remote_query_return_
     assert len(r['files']) == 1
     assert r['files'][0][0] == 'root://localhost/file.root'
 
-def test_dump_phases(one_file_remote_query_return_two, simple_query_ast_ROOT):
+@pytest.mark.asyncio
+async def test_dump_phases(one_file_remote_query_return_two, simple_query_ast_ROOT, running_on_posix):
     'Most simple implementation'
-    _ = use_exe_func_adl_server(simple_query_ast_ROOT, sleep_interval=0, quiet=False)
+    _ = await use_exe_func_adl_server(simple_query_ast_ROOT, sleep_interval=0, quiet=False)
 
 @pytest.mark.asyncio
 async def test_first_file_good_enough(ds_returns_bit_by_bit, simple_query_ast_ROOT, running_on_posix):

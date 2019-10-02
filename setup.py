@@ -1,22 +1,26 @@
 from setuptools import find_namespace_packages
 from distutils.core import setup
 
+# Use the readme as the long description.
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 xaod_template_files = []
 setup(name="func_adl.xAOD",
       version='1.0.0-alpha.1',
       packages=find_namespace_packages(exclude=['tests']),
       scripts=[],
-      description="Functional Analysis Description Language for xAOD backends",
-      long_description='Implement backend and front end analysis languages',
-      author="G. Watts (IRIS-HEP)",
+      description="Functional Analysis Description Language for xAOD C++ files",
+      long_description=long_description,
+      long_description_content_type="text/markdown",
+      author="G. Watts (IRIS-HEP/UW Seattle)",
       author_email="gwatts@uw.edu",
-      maintainer="Gordon Watts (IRIS-HEP)",
+      maintainer="Gordon Watts (IRIS-HEP/UW Seattle)",
       maintainer_email="gwatts@uw.edu",
-      url="http://iris-hep.org",
-      download_url="http://iris-hep.org",
+      url="https://github.com/iris-hep/func_adl.xAOD",
       license="TBD",
       test_suite="tests",
-      install_requires=["requests>=2.0.0", "pandas>=0.24.0", "uproot>=3.7.0", "retry>=0.9.2"],
+      install_requires=["requests>=2.0.0", "pandas>=0.24.0", "uproot>=3.7.0", "retry>=0.9.2", "func_adl==1.0.0-alpha.1"],
       setup_requires=["pytest-runner"],
       tests_require=["pytest>=3.9"],
       classifiers=[
@@ -29,9 +33,7 @@ setup(name="func_adl.xAOD",
                    "Intended Audience :: Developers",
                    "Intended Audience :: Information Technology",
                    "Programming Language :: Python",
-                   "Programming Language :: Python  :: 3.7",
                    "Topic :: Software Development",
-                   "Topic :: Data Analysis",
                    "Topic :: Utilities",
       ],
       data_files=[],
