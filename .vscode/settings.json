@@ -11,6 +11,7 @@
         "numpy",
         "posix",
         "pytest",
+        "venv",
         "xaod",
         "xrootd"
     ],
