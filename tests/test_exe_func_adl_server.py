@@ -118,6 +118,22 @@ def one_file_remote_query_return_two(monkeypatch):
     return None
 
 @pytest.fixture()
+def run_four_queries_with_two_done(monkeypatch):
+    'Setup mocks for a remote call that returns a single valid file to read from'
+    push_mock = Mock()
+    status_mock1 = Mock()
+    status_mock2 = Mock()
+    status_mock3 = Mock()
+    status_mock4 = Mock()
+    push_mock.side_effect = [status_mock1, status_mock2, status_mock3, status_mock4]
+    monkeypatch.setattr('requests.post', push_mock)
+    status_mock1.json.return_value={'files': [], 'phase': 'running', 'done': False, 'jobs': 1}
+    status_mock2.json.return_value={'files': [], 'phase': 'running', 'done': False, 'jobs': 1}
+    status_mock3.json.return_value={'files': [['root://localhost/file.root', 'dudetree3']], 'phase': 'done', 'done': True, 'jobs': 1}
+    status_mock4.json.return_value={'files': [['root://localhost/file.root', 'dudetree3']], 'phase': 'done', 'done': True, 'jobs': 1}
+    return None
+
+@pytest.fixture()
 def ds_returns_bit_by_bit(monkeypatch):
     'Setup mocks for a remote call that returns a single valid file to read from'
     push_mock = Mock()
@@ -208,6 +224,13 @@ async def test_simple_root_query_not_read_at_first(one_file_remote_query_return_
     assert 'files' in r
     assert len(r['files']) == 1
     assert r['files'][0][0] == 'root://localhost/file.root'
+
+@pytest.mark.asyncio
+async def test_run_two_queries(run_four_queries_with_two_done, simple_query_ast_ROOT, running_on_posix):
+    'Most simple implementation'
+    r1 = use_exe_func_adl_server(simple_query_ast_ROOT, sleep_interval=5)
+    r2 = use_exe_func_adl_server(simple_query_ast_ROOT, sleep_interval=5)
+    await asyncio.gather(r1, r2)
 
 @pytest.mark.asyncio
 async def test_dump_phases(one_file_remote_query_return_two, simple_query_ast_ROOT, running_on_posix):

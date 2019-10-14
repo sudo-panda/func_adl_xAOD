@@ -13,6 +13,7 @@ import urllib
 from retry import retry
 import logging
 from io import StringIO
+import asyncio
 
 
 class FuncADLServerException (BaseException):
@@ -259,7 +260,9 @@ async def use_exe_func_adl_server(a: ast.AST,
     # in another thread to make this async (there is no way to fix this since the NodeVisitor
     # class is totally synchronous).
     async def run_task(wlk, run_ast):
-        return wlk.visit(run_ast)
+        # Todo: We shouldn't have to run in a separate thread. Most of the time we are spending
+        # sleeping!
+        return await asyncio.get_event_loop().run_in_executor(None, wlk.visit, run_ast)
 
     walker = WalkFuncADLAST(node, sleep_interval, partial_ds_ok=not wait_for_finished, quiet=quiet)
     return await run_task(walker, a)
