@@ -3,10 +3,8 @@
 # discovery. To get it to discover the xAOD sub-package, an __init__.py must exist in the func_adl directory. But if that is there
 # then you can't get at the stuff in the installed func_adl package.
 # TODO: Move testing to happening in an venv.
-import sys
-sys.path += ['.']
-from func_adl import EventDataset
 from func_adl.xAOD import use_exe_func_adl_server, FuncADLServerException
+from func_adl import EventDataset
 from unittest.mock import Mock
 import pandas as pd
 import pytest

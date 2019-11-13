@@ -14,6 +14,7 @@ from retry import retry
 import logging
 from io import StringIO
 import asyncio
+from ast_language import python_ast_to_text_ast
 
 
 class FuncADLServerException (BaseException):
@@ -93,8 +94,8 @@ class WalkFuncADLAST(ast.NodeTransformer):
     def visit_ResultTTree(self, node: ResultTTree):
         'Send a query to the remote node. Then hang out until something we can work with shows up.'
 
-        # Pickle up the ast and send in the request.
-        ast_data = pickle.dumps(node)
+        # Convert the python AST into the natural language for the backend.
+        ast_data = python_ast_to_text_ast(node)
 
         # Repeat until we get a good-enough answer.
         phases = {}
