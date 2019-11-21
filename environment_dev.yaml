@@ -5,7 +5,7 @@ channels:
 
 dependencies:
   - flake8
-  - python>=3.7
+  - python>=3.7.0
   - pip
   - pytest
   - pip:
