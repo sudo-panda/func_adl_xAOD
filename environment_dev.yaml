@@ -8,5 +8,6 @@ dependencies:
   - python>=3.7.0
   - pip
   - pytest
+  - pytest-asyncio
   - pip:
-    - git+https://github.com/iris-hep/ast-language.git@4c16669eb3bb8830349a947a199f617a4b491240
+    - git+https://github.com/iris-hep/ast-language.git@e6470deb68529e1885a4bc46f781e2fe43a6f4c8
