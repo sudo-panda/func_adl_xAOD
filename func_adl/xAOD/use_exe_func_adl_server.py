@@ -1,20 +1,20 @@
 # Code to support running an ast at a remote func-adl server.
 import ast
+from typing import Any
 import requests
-import pickle
 import os
 import importlib.util
 import time
 import uproot
 import pandas as pd
 import numpy as np
-from func_adl import ResultPandasDF, ResultTTree, ResultAwkwardArray
 import urllib
 from retry import retry
 import logging
 from io import StringIO
 import asyncio
 from ast_language import python_ast_to_text_ast
+from func_adl.util_ast import function_call, as_ast
 
 
 class FuncADLServerException (BaseException):
@@ -66,8 +66,9 @@ def _best_access(files):
 
 class WalkFuncADLAST(ast.NodeTransformer):
     'Walk the AST, replace the ROOT lookup node by something we know how to deal with.'
-    def __init__(self, node: ast.AST, sleep_interval_seconds: int, partial_ds_ok: bool, quiet: bool):
+    def __init__(self, node: str, sleep_interval_seconds: int, partial_ds_ok: bool, quiet: bool):
         'Set the node were we can go pick up the data'
+        ast.NodeTransformer.__init__(self)
         self._node = node
         self._sleep_time = sleep_interval_seconds
         self._partial_ds_ok = partial_ds_ok
@@ -91,11 +92,15 @@ class WalkFuncADLAST(ast.NodeTransformer):
         r = [_best_access(fr) for fr in pairs]
         return r
 
-    def visit_ResultTTree(self, node: ResultTTree):
-        'Send a query to the remote node. Then hang out until something we can work with shows up.'
+    def process_ResultTTree(self, result_ast: ast.AST):
+        '''Send a query to the remote node. Then hang out until something we can work with shows up.
+
+
+        TODO: Convert this to be async
+        '''
 
         # Convert the python AST into the natural language for the backend.
-        ast_data = python_ast_to_text_ast(node)
+        ast_data = python_ast_to_text_ast(result_ast)
 
         # Repeat until we get a good-enough answer.
         phases = {}
@@ -172,23 +177,21 @@ class WalkFuncADLAST(ast.NodeTransformer):
         data_file._context.source.close()
         return df_new
 
-    def visit_ResultPandasDF(self, node: ResultPandasDF):
+    def process_ResultPandasDF(self, source_node: ast.AST, column_names: ast.AST) -> pd.DataFrame:
         r'''
         Our backend only does root-tuples. So we will open them and load them into a DF. By whatever
         method they are fetched, we don't care. As long as they show up here in the same form as ResultTTree above.False
 
         Arguments:
-            node:               The AST node represending the request for the pandas dataframe
+            source_node:                The AST node represending the source sequence for the pandas df
+            column_names:               An AST that is a list of column names.
 
         Returns:
             df:                 The data frame, ready to go, with all events loaded.
         '''
-        # Build the root TTree result so we can get a list of files, and
-        # render it.
-        a_root = ResultTTree(node.source,
-                             node.column_names,
-                             'pandas_tree',
-                             'output.root')
+        # Build the root TTree result so we can get a list of files back. We will then
+        # import those into a pandas dataframe.
+        a_root = function_call("ResultTTree", [source_node, column_names, as_ast('pandas_tree'), as_ast('output.root')])
 
         files = self.visit(a_root)
         if not isinstance(files, dict) or "files" not in files:
@@ -201,23 +204,21 @@ class WalkFuncADLAST(ast.NodeTransformer):
         else:
             return pd.concat(frames)
 
-    def visit_ResultAwkwardArray(self, node: ResultAwkwardArray):
+    def process_ResultAwkwardArray(self, source_node: ast.AST, column_names: ast.AST):
         r'''
         Our backend only does root-tuples. So we will open them and load them into a awkward array. By whatever
         method they are fetched, we don't care. As long as they show up here in the same form as ResultTTree above.False
 
         Arguments:
-            node:               The AST node represending the request for the pandas dataframe
+            source_node:                The AST node represending the source sequence for the awkward array
+            column_names:               An AST that is a list of column names.
 
         Returns:
-            df:                 The data frame, ready to go, with all events loaded.
+            df:                         The awkward array, ready to go, with all events loaded.
         '''
         # Build the root TTree result so we can get a list of files, and
         # render it.
-        a_root = ResultTTree(node.source,
-                             node.column_names,
-                             'pandas_tree',
-                             'output.root')
+        a_root = function_call("ResultTTree", [source_node, column_names, as_ast('pandas_tree'), as_ast('output.root')])
 
         files = self.visit(a_root)
         if not isinstance(files, dict) or "files" not in files:
@@ -230,6 +231,25 @@ class WalkFuncADLAST(ast.NodeTransformer):
         else:
             col_names = frames[0].keys()
             return {c: np.concatenate([ar[c] for ar in frames]) for c in col_names}
+
+    def visit_Call(self, call_node: ast.Call) -> Any:
+        '''
+        Look for one of our special call functions: Select, SelectMany, etc.
+        Unpack the arguments and dispatch the calls.
+        '''
+        if not isinstance(call_node.func, ast.Name):
+            return call_node
+
+        func_name = call_node.func.id
+        args = call_node.args
+        if func_name == 'ResultTTree':
+            return self.process_ResultTTree(call_node)
+        elif func_name == 'ResultPandasDF':
+            return self.process_ResultPandasDF(args[0], args[1])
+        elif func_name == 'ResultAwkwardArray':
+            return self.process_ResultAwkwardArray(args[0], args[1])
+        else:
+            return call_node
 
 
 async def use_exe_func_adl_server(a: ast.AST,
