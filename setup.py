@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 xaod_template_files = []
 setup(name="func_adl.xAOD",
-      version='1.0.0-alpha.5',
+      version='1.0.0-alpha.6',
       packages=['func_adl.xAOD'],
       scripts=[],
       description="Functional Analysis Description Language for xAOD C++ files",
@@ -24,7 +24,7 @@ setup(name="func_adl.xAOD",
           "pandas~=0.24",
           "uproot~=3.7",
           "retry~=0.9",
-          "func_adl==1.0.0a2",
+          "func_adl==1.0.0a6",
       ],
       setup_requires=["pytest-runner"],
       tests_require=["pytest>=3.9"],

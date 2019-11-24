@@ -12,7 +12,7 @@ import os
 import asyncio
 import ast
 
-async def dummy_executor_coroutine(a: ast.AST) -> asyncio.Future:
+async def dummy_executor_coroutine(a: ast.AST) -> ast.AST:
     'Called to evaluate a guy - but it will take a long time'
     await asyncio.sleep(0.01)
     return a
