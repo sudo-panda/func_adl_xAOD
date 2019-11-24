@@ -1,3 +1,4 @@
+from setuptools import find_packages
 from distutils.core import setup
 
 # Use the readme as the long description.
