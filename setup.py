@@ -1,4 +1,5 @@
-from setuptools import find_packages
+# setuptools loads some plugins necessary for use here.
+from setuptools import find_packages  # noqa: F401
 from distutils.core import setup
 
 # Use the readme as the long description.

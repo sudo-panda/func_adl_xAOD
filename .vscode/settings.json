@@ -23,5 +23,7 @@
     "python.linting.pylintEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.autoTestDiscoverOnSaveEnabled": false,
-    "python.pythonPath": "I:\\Anaconda3\\envs\\func-adl.xAOD-dev\\python.exe"
+    "python.pythonPath": "C:\\Users\\gordo\\Anaconda3\\envs\\func-adl.xAOD-dev\\python.exe",
+    "pyright.openFilesOnly": false,
+    "python.analysis.openFilesOnly": false
 }
