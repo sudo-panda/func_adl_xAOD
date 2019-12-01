@@ -17,3 +17,4 @@ dependencies:
     - requests~=2.0
     - retry~=0.9
     - func-adl.ast==1.0.0a8
+    - jinja2
