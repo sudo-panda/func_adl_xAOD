@@ -10,5 +10,10 @@ dependencies:
   - pytest
   - pytest-asyncio
   - pytest-cov
+  - pandas~=0.24
+  - uproot~=3.7
   - pip:
     - git+https://github.com/iris-hep/ast-language.git@e6470deb68529e1885a4bc46f781e2fe43a6f4c8
+    - requests~=2.0
+    - retry~=0.9
+    - func-adl.ast==1.0.0a8
