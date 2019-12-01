@@ -9,5 +9,6 @@ dependencies:
   - pip
   - pytest
   - pytest-asyncio
+  - pytest-cov
   - pip:
     - git+https://github.com/iris-hep/ast-language.git@e6470deb68529e1885a4bc46f781e2fe43a6f4c8
