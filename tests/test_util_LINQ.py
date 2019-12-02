@@ -1,4 +1,4 @@
-# A few tests on the LINQ ast funcitonality
+# A few tests on the LINQ ast functionality
 from func_adl import EventDataset
 from func_adl_xAOD.backend.util_LINQ import find_dataset
 import ast
