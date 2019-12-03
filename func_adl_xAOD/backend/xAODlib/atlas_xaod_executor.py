@@ -8,7 +8,9 @@ from collections import namedtuple
 
 from func_adl.ast.function_simplifier import simplify_chained_calls
 from func_adl.ast.aggregate_shortcuts import aggregate_node_transformer
+from func_adl.ast.func_adl_ast_utils import change_extension_functions_to_calls
 from func_adl_xAOD.backend.cpplib.cpp_functions import find_known_functions
+from func_adl_xAOD.backend.util_LINQ import extract_dataset_info
 import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
 from func_adl_xAOD.backend.xAODlib.ast_to_cpp_translator import query_ast_visitor
 import func_adl_xAOD.backend.cpplib.cpp_representation as crep
@@ -63,22 +65,23 @@ class atlas_xaod_executor:
         'Copy a file to a final directory'
         j2_env.get_template(template_file).stream(info).dump(final_dir + '/' + template_file)
 
-    def apply_ast_transformations(self, ast):
+    def apply_ast_transformations(self, a: ast.AST):
         r'''
         Run through all the transformations that we have on tap to be run on the client side.
         Return a (possibly) modified ast.
         '''
 
         # Do tuple resolutions. This might eliminate a whole bunch fo code!
-        ast = aggregate_node_transformer().visit(ast)
-        ast = simplify_chained_calls().visit(ast)
-        ast = find_known_functions().visit(ast)
+        a = change_extension_functions_to_calls(a)
+        a = aggregate_node_transformer().visit(a)
+        a = simplify_chained_calls().visit(a)
+        a = find_known_functions().visit(a)
 
         # Any C++ custom code needs to be threaded into the ast
-        ast = cpp_ast.cpp_ast_finder().visit(ast)
+        a = cpp_ast.cpp_ast_finder().visit(a)
 
         # And return the modified ast
-        return ast
+        return a
 
     def write_cpp_files(self, ast: ast.AST, output_path: str) -> xAODExecutionInfo:
         r"""
@@ -113,7 +116,7 @@ class atlas_xaod_executor:
         info['include_files'] = includes
 
         # We use jinja2 templates. Write out everything.
-        template_dir = find_dir("func_adl/xAOD/backend/R21Code")
+        template_dir = find_dir("func_adl_xAOD/backend/R21Code")
         j2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(template_dir))
         self.copy_template_file(
@@ -127,4 +130,5 @@ class atlas_xaod_executor:
         os.chmod(os.path.join(str(output_path), 'runner.sh'), 0o755)
 
         # Build the return object.
-        return xAODExecutionInfo(file.url, result_rep, output_path, 'runner.sh', ['ATestRun_eljob.py', 'package_CMakeLists.txt', 'query.cxx', 'query.h', 'runner.sh'])
+        file_info = extract_dataset_info(file)
+        return xAODExecutionInfo(file_info, result_rep, output_path, 'runner.sh', ['ATestRun_eljob.py', 'package_CMakeLists.txt', 'query.cxx', 'query.h', 'runner.sh'])

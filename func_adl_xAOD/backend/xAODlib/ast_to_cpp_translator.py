@@ -21,7 +21,7 @@ import func_adl_xAOD.backend.xAODlib.EventCollections
 import func_adl_xAOD.backend.cpplib.math_utils  # noqa: F401
 
 import ast
-from typing import Union, List
+from typing import Union, List, Any
 
 # Convert between Python comparisons and C++.
 compare_operations = {
@@ -522,9 +522,10 @@ class query_ast_visitor(FuncADLNodeVisitor):
         else:
             # Perhaps a method call we can normalize?
             r = FuncADLNodeVisitor.visit_Call(self, call_node)
-            if r is None:
+            if r is None and not hasattr(call_node, 'rep'):
                 raise BaseException("Do not know how to call '{0}'".format(ast.dump(call_node.func, annotate_fields=False)))
-            self._result = r
+            if r is not None:
+                self._result = r
         call_node.rep = self._result
 
     def visit_Name(self, name_node: ast.Name):
@@ -798,20 +799,25 @@ class query_ast_visitor(FuncADLNodeVisitor):
         self._result = rep
         return rep
 
-    def visit_SelectMany(self, node):
+    def call_SelectMany(self, node: ast.AST, args: List[ast.AST]):
         r'''
         Apply the selection function to the base to generate a collection, and then
         loop over that collection.
         '''
+        assert len(args) == 2
+        source = args[0]
+        selection = args[1]
+        assert isinstance(selection, ast.Lambda)
+
         # Make sure the source is around. We have to do this because code generation in this
         # framework is lazy. And if the `selection` function does not use the source, and
         # looking at that source might generate a loop, that loop won't be generated! Ops!
-        _ = self.as_sequence(node.source)
+        _ = self.as_sequence(source)
 
         # We need to "call" the source with the function. So build up a new
         # call, and then visit it.
 
-        c = ast.Call(func=lambda_unwrap(node.selection), args=[node.source])
+        c = ast.Call(func=lambda_unwrap(selection), args=[source])
 
         # Get the collection, and then generate the loop over it.
         # It could be that this comes back from something that is already iterating (like a Select statement),
@@ -820,6 +826,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         node.rep = seq
         self._result = seq
+        return seq
 
     def visit_Where(self, node):
         'Apply a filtering to the current loop.'
@@ -845,11 +852,15 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         self._result = node.rep
 
-    def visit_First(self, node):
+    def call_First(self, node: ast.AST, args: List[ast.AST]) -> Any:
         'We are in a sequence. Take the first element of the sequence and use that for future things.'
 
+        # Unpack the source here
+        assert len(args) == 1
+        source = args[0]
+
         # Make sure we are in a loop.
-        seq = self.as_sequence(node.source)
+        seq = self.as_sequence(source)
 
         # The First terminal works by protecting the code with a if (first_time) {} block.
         # We need to declare the first_time variable outside the block where the thing we are
@@ -858,7 +869,10 @@ class query_ast_visitor(FuncADLNodeVisitor):
         outside_block_scope = loop_scope[-1]
 
         # Define the variable to track this outside that block.
-        is_first = crep.cpp_variable(unique_name('is_first'), outside_block_scope, cpp_type=ctyp.terminal('bool'), initial_value=crep.cpp_value('true', self._gc.current_scope(), ctyp.terminal('bool')))
+        is_first = crep.cpp_variable(unique_name('is_first'),
+                                     outside_block_scope,
+                                     cpp_type=ctyp.terminal('bool'),
+                                     initial_value=crep.cpp_value('true', self._gc.current_scope(), ctyp.terminal('bool')))
         outside_block_scope.declare_variable(is_first)
 
         # Now, as long as is_first is true, we can execute things inside this statement.

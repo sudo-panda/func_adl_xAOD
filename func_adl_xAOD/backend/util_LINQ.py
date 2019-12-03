@@ -1,6 +1,6 @@
 # Helpers for LINQ operators and LINQ expressions in AST form.
 # Utility routines to manipulate LINQ expressions.
-from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor
+from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, unpack_Call
 import ast
 from typing import Optional, List
 
@@ -37,3 +37,20 @@ def find_dataset(a: ast.AST) -> ast.Call:
         raise BaseException("AST Query has no root EventDataset")
 
     return ds_f.ds
+
+
+def extract_dataset_info(ds_call: ast.Call) -> List[str]:
+    '''
+    Convert a call to the EventDataset to a list of URL's that the
+    dataset refers to.
+    '''
+    func_name, args = unpack_Call(ds_call)
+    assert func_name == 'EventDataset'
+
+    # List should be strings
+    assert len(args) == 1
+    urls = ast.literal_eval(args[0])
+
+    if isinstance(urls, str):
+        return [urls]
+    return urls
