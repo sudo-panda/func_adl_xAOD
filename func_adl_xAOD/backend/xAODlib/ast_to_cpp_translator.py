@@ -5,7 +5,7 @@ from func_adl_xAOD.backend.xAODlib.generated_code import generated_code
 from func_adl_xAOD.backend.xAODlib.util_scope import deepest_scope, top_level_scope
 import func_adl_xAOD.backend.xAODlib.statement as statement
 from func_adl.util_ast import lambda_unwrap
-from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor
+from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
 from func_adl_xAOD.backend.cpplib.cpp_vars import unique_name
 import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
 import func_adl_xAOD.backend.cpplib.cpp_representation as crep
@@ -506,7 +506,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         self._result = node.rep
         return node.rep
 
-    def visit_Call(self, call_node):
+    def visit_Call(self, call_node: ast.Call):
         r'''
         Very limited call forwarding.
         '''
@@ -764,12 +764,16 @@ class query_ast_visitor(FuncADLNodeVisitor):
         node.rep = rh.cpp_awkward_rep(r.filename, r.treename, self._gc.current_scope())
         self._result = node.rep
 
-    def visit_ResultPandasDF(self, node: ast.Call):
+    def call_ResultPandasDF(self, node: ast.Call, args: List[ast.AST]):
         '''
         The result of this guy is an pandas dataframe. We generate a token here, and invoke the resultTTree in order to get the
         actual ROOT file written. Later on, when dealing with the result stuff, we extract it into an awkward array.
         '''
-        ttree = ResultTTree(node.source, node.column_names, 'pandatree', 'output.root')
+        assert len(args) == 2
+        source = args[0]
+        column_names = args[1]
+
+        ttree = function_call('ResultTTree', [source, column_names, ast.parse('"pandatree"').body[0].value, ast.parse('"output.root"').body[0].value])
         r = self.get_rep(ttree)
         if not isinstance(r, rh.cpp_ttree_rep):
             raise BaseException("Can't deal with different return type from tree!")
@@ -828,14 +832,19 @@ class query_ast_visitor(FuncADLNodeVisitor):
         self._result = seq
         return seq
 
-    def visit_Where(self, node):
+    def call_Where(self, node: ast.AST, args: List[ast.AST]):
         'Apply a filtering to the current loop.'
 
+        assert len(args) == 2
+        source = args[0]
+        filter = args[1]
+        assert isinstance(filter, ast.Lambda)
+
         # Make sure we are in a loop
-        seq = self.as_sequence(node.source)
+        seq = self.as_sequence(source)
 
         # Simulate the filtering call - we want the resulting value to test.
-        filter = lambda_unwrap(node.filter)
+        filter = lambda_unwrap(filter)
         c = ast.Call(func=filter, args=[seq.sequence_value().as_ast()])
         rep = self.get_rep(c)
 
