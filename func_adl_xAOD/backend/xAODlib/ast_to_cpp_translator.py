@@ -5,6 +5,7 @@ from func_adl_xAOD.backend.xAODlib.generated_code import generated_code
 from func_adl_xAOD.backend.xAODlib.util_scope import deepest_scope, top_level_scope
 import func_adl_xAOD.backend.xAODlib.statement as statement
 from func_adl.util_ast import lambda_unwrap
+from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor
 from func_adl_xAOD.backend.cpplib.cpp_vars import unique_name
 import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
 import func_adl_xAOD.backend.cpplib.cpp_representation as crep
@@ -20,7 +21,7 @@ import func_adl_xAOD.backend.xAODlib.EventCollections
 import func_adl_xAOD.backend.cpplib.math_utils  # noqa: F401
 
 import ast
-from typing import Union
+from typing import Union, List
 
 # Convert between Python comparisons and C++.
 compare_operations = {
@@ -96,7 +97,16 @@ def determine_type_mf(parent_type, function_name):
     return ctyp.terminal('double')
 
 
-class query_ast_visitor(ast.NodeVisitor):
+def _extract_column_names(names_ast: ast.AST) -> List[str]:
+    'Extract a list of strings from an ast using literal evaluation. A single name is returned as a list.'
+    names = ast.literal_eval(names_ast)
+    if isinstance(names, str):
+        return [names]
+    assert isinstance(names, List[str])
+    return names
+
+
+class query_ast_visitor(FuncADLNodeVisitor):
     r"""
     Drive the conversion to C++ from the top level query
     """
@@ -131,18 +141,10 @@ class query_ast_visitor(ast.NodeVisitor):
         node - if the node has a rep, just return
 
         '''
-        r = ast.NodeVisitor.visit(self, node)
+        r = FuncADLNodeVisitor.visit(self, node)
         if hasattr(node, 'rep'):
             self._result = node.rep
         return r
-
-    def generic_visit(self, node):
-        '''Visit a generic node. If the node already has a rep, then it has been
-        visited once and we do not need to visit it again.
-
-        node - If the node has a rep, do not visit it.
-    '''
-        return ast.NodeVisitor.generic_visit(self, node)
 
     def get_rep(self, node, use_generic_visit=False, reset_result=None, retain_scope=False) -> Union[crep.cpp_value, crep.cpp_sequence]:
         r'''Return the rep for the node. If it isn't set yet, then run our visit on it.
@@ -498,6 +500,12 @@ class query_ast_visitor(ast.NodeVisitor):
         call_node.rep = r
         return r
 
+    def call_EventDataset(self, node: ast.Call, args: List[ast.AST]):
+        'This has already been resolved, so return it.'
+        assert hasattr(node, 'rep')
+        self._result = node.rep
+        return node.rep
+
     def visit_Call(self, call_node):
         r'''
         Very limited call forwarding.
@@ -512,13 +520,18 @@ class query_ast_visitor(ast.NodeVisitor):
         elif isinstance(call_node.func, FunctionAST):
             self._result = self.visit_function_ast(call_node)
         else:
-            raise BaseException("Do not know how to call '{0}'".format(ast.dump(call_node.func, annotate_fields=False)))
+            # Perhaps a method call we can normalize?
+            r = FuncADLNodeVisitor.visit_Call(self, call_node)
+            if r is None:
+                raise BaseException("Do not know how to call '{0}'".format(ast.dump(call_node.func, annotate_fields=False)))
+            self._result = r
         call_node.rep = self._result
 
     def visit_Name(self, name_node: ast.Name):
         'Visiting a name - which should represent something'
         id = self.resolve_id(name_node.id)
-        name_node.rep = self.get_rep(id)
+        if isinstance(id, ast.AST):
+            name_node.rep = self.get_rep(id)
 
     def visit_Subscript(self, node):
         'Index into an array. Check types, as tuple indexing can be very bad for us'
@@ -649,13 +662,21 @@ class query_ast_visitor(ast.NodeVisitor):
         node.rep = crep.cpp_value('"{0}"'.format(node.s), self._gc.current_scope(), ctyp.terminal("string"))
         self._result = node.rep
 
-    def visit_ResultTTree(self, node):
+    def call_ResultTTree(self, node: ast.Call, args: List[ast.AST]):
         '''This AST means we are taking an iterable and converting it to a ROOT file.
         '''
+        # Unpack the variables.
+        assert len(args) == 4
+        source = args[0]
+        column_names = _extract_column_names(args[1])
+        tree_name = ast.literal_eval(args[2])
+        assert isinstance(tree_name, str)
+        # root_filename = args[3]
+
         # Get the representations for each variable. We expect some sort of structure
         # for the variables - or perhaps a single variable.
         self.generic_visit(node)
-        v_rep_not_norm = self.as_sequence(node.source)
+        v_rep_not_norm = self.as_sequence(source)
 
         # What we have is a sequence of the data values we want to fill. The iterator at play
         # here is the scope we want to use to run our Fill() calls to the TTree.
@@ -668,20 +689,20 @@ class query_ast_visitor(ast.NodeVisitor):
             seq_values = crep.cpp_tuple((v_rep_not_norm.sequence_value(),), scope_fill)
 
         # Make sure the number of items is the same as the number of columns specified.
-        if len(seq_values.values()) != len(node.column_names):
-            raise BaseException("Number of columns ({0}) is not the same as labels ({1}) in TTree creation".format(len(seq_values.values()), len(node.column_names)))
+        if len(seq_values.values()) != len(column_names):
+            raise BaseException("Number of columns ({0}) is not the same as labels ({1}) in TTree creation".format(len(seq_values.values()), len(column_names)))
 
         # Next, look at each on in turn to decide if it is a vector or a simple variable.
         # Create a variable that we will fill for each one.
         var_names = [(name, crep.cpp_variable(unique_name(name, is_class_var=True), self._gc.current_scope(), cpp_type=get_ttree_type(rep)))
-                     for name, rep in zip(node.column_names, seq_values.values())]
+                     for name, rep in zip(column_names, seq_values.values())]
 
         # For each incoming variable, we need to declare something we are going to write.
         for cv in var_names:
             self._gc.declare_class_variable(cv[1])
 
         # Next, emit the booking code
-        tree_name = unique_name(node.tree_name)
+        tree_name = unique_name(tree_name)
         self._gc.add_book_statement(statement.book_ttree(tree_name, var_names))
 
         # Note that the output file and tree are what we are going to return.
@@ -728,6 +749,7 @@ class query_ast_visitor(ast.NodeVisitor):
         # And we are a terminal, so pop off the block.
         self._gc.set_scope(s_orig)
         self._gc.pop_scope()
+        return node.rep
 
     def visit_ResultAwkwardArray(self, node: ast.Call):
         '''
@@ -753,22 +775,28 @@ class query_ast_visitor(ast.NodeVisitor):
         node.rep = rh.cpp_pandas_rep(r.filename, r.treename, self._gc.current_scope())
         self._result = node.rep
 
-    def visit_Select(self, select_ast):
+    def call_Select(self, node: ast.Call, args: List[ast.arg]):
         'Transform the iterable from one form to another'
 
+        assert len(args) == 2
+        source = args[0]
+        selection = args[1]
+        assert isinstance(selection, ast.Lambda)
+
         # Make sure we are in a loop
-        seq = self.as_sequence(select_ast.source)
+        seq = self.as_sequence(source)
 
         # Simulate this as a "call"
-        selection = lambda_unwrap(select_ast.selection)
+        selection = lambda_unwrap(selection)
         c = ast.Call(func=selection, args=[seq.sequence_value().as_ast()])
         new_sequence_value = self.get_rep(c)
 
         # We need to build a new sequence.
         rep = crep.cpp_sequence(new_sequence_value, seq.iterator_value())
 
-        select_ast.rep = rep
+        node.rep = rep
         self._result = rep
+        return rep
 
     def visit_SelectMany(self, node):
         r'''

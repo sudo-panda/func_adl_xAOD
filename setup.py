@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 xaod_template_files = []
 setup(name="func_adl_xAOD",
-      version='1.0.0-alpha.7',
+      version='1.0.0-alpha.10',
       packages=['func_adl_xAOD'],
       scripts=[],
       description="Functional Analysis Description Language for accessing ATLAS xAOD files.",
