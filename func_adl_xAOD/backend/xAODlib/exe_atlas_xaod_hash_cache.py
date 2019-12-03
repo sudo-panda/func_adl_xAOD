@@ -7,7 +7,7 @@ from typing import Iterable
 from func_adl.ast import ast_hash
 from func_adl.ast.func_adl_ast_utils import is_call_of
 from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import atlas_xaod_executor
-from func_adl_xAOD.backend.util_LINQ import find_dataset
+from func_adl_xAOD.backend.util_LINQ import find_dataset, extract_dataset_info
 
 
 class CacheExeException(BaseException):
@@ -49,7 +49,7 @@ def use_executor_xaod_hash_cache(a: ast.AST, cache_path: str) -> HashXAODExecuto
         file = find_dataset(a)
         with open(cache_file, 'rb') as f:
             result_cache = pickle.load(f)
-            return _build_result(result_cache, file.url)
+            return _build_result(result_cache, extract_dataset_info(file))
 
     # Create the files to run in that location.
     if not os.path.exists(query_file_path):
