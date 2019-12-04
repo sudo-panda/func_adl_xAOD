@@ -1,6 +1,6 @@
 # A few tests on the LINQ ast functionality
 from func_adl import EventDataset
-from func_adl_xAOD.backend.util_LINQ import find_dataset
+from func_adl_xAOD.backend.util_LINQ import find_dataset, extract_dataset_info
 import ast
 
 async def do_exe(a):
@@ -10,7 +10,9 @@ def test_find_EventDataSet_good():
     a = EventDataset("file://junk.root") \
         .value(executor=do_exe)
 
-    assert ["file:///junk.root"] == find_dataset(a).url
+    assert isinstance(a, ast.Call)
+    d = extract_dataset_info(a)
+    assert ["file:///junk.root"] == d
 
 def test_find_EventDataSet_none():
     a = ast.parse("a+b*2")
@@ -26,14 +28,14 @@ def test_find_EventDataset_Select():
         .Select("lambda x: x") \
         .value(executor=do_exe)
 
-    assert ["file:///dude.root"] == find_dataset(a).url
+    assert ["file:///dude.root"] == extract_dataset_info(find_dataset(a))
 
 def test_find_EventDataset_SelectMany():
     a = EventDataset("file://dude.root") \
         .SelectMany("lambda x: x") \
         .value(executor=do_exe)
 
-    assert ["file:///dude.root"] == find_dataset(a).url
+    assert ["file:///dude.root"] == extract_dataset_info(find_dataset(a))
 
 def test_find_EventDataset_Select_and_Many():
     a = EventDataset("file://dude.root") \
@@ -41,4 +43,4 @@ def test_find_EventDataset_Select_and_Many():
         .SelectMany("lambda x: x") \
         .value(executor=do_exe)
 
-    assert ["file:///dude.root"] == find_dataset(a).url
+    assert ["file:///dude.root"] == extract_dataset_info(find_dataset(a))

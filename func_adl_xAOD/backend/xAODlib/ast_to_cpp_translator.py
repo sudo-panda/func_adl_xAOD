@@ -102,7 +102,6 @@ def _extract_column_names(names_ast: ast.AST) -> List[str]:
     names = ast.literal_eval(names_ast)
     if isinstance(names, str):
         return [names]
-    assert isinstance(names, List[str])
     return names
 
 
