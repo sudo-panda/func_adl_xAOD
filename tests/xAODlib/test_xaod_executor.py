@@ -45,6 +45,7 @@ def test_per_jet_item_with_where():
     l_jetpt = find_line_with("_JetPts", lines)
     assert "Fill()" in lines[l_jetpt+1]
 
+
 def test_per_jet_item_with_event_level():
     r = EventDataset("file://root.root") \
         .Select('lambda e: (e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()), e.EventInfo("EventInfo").runNumber())') \

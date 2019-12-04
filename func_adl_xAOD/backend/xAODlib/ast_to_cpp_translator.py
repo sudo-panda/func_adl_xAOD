@@ -251,7 +251,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
             return r
 
         # If it isn't a sequence or a collection, then something has gone wrong.
-        raise BaseException("Unable to generate a sequence from the given AST. Either there is an internal error, or you are trying to manipulate a '{0}' as a sequence (ast is: {1})".format(type(rep).__name__, ast.dump(generation_ast)))
+        raise BaseException(f"Unable to generate a sequence from the given AST. Either there is an internal error, or you are trying to manipulate a '{type(rep).__name__}' as a sequence (ast is: {ast.dump(generation_ast)})")
 
     def visit_Call_Lambda(self, call_node):
         'Call to a lambda function. We propagate the arguments through the function'
@@ -671,7 +671,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         # Get the representations for each variable. We expect some sort of structure
         # for the variables - or perhaps a single variable.
-        self.generic_visit(node)
+        self.generic_visit(source)
         v_rep_not_norm = self.as_sequence(source)
 
         # What we have is a sequence of the data values we want to fill. The iterator at play
