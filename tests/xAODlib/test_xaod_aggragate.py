@@ -11,7 +11,7 @@ def test_Aggregate_not_initial_const_SUM():
     lines = get_lines_of_code(r)
     print_lines(lines)
     l_sets = find_line_numbers_with("/1000", lines)
-    assert 2 == len(l_sets)
+    assert 1 == len(l_sets)
 
 def test_count_after_single_sequence():
     r = EventDataset("file://root.root") \
