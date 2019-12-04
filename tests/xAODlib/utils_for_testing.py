@@ -38,7 +38,7 @@ async def exe_for_test(a: ast.AST):
     # Use the dummy executor to process this, and return it.
     exe = dummy_executor()
     rnr = atlas_xaod_executor()
-    exe.evaluate(rnr.apply_ast_transformations(a))
+    exe.evaluate(a)
     return exe
 
 class dummy_emitter:
