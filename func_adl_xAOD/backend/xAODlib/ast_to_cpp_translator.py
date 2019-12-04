@@ -291,11 +291,12 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         return accumulator, accumulator_scope
 
-    def visit_Call_Aggregate_only(self, node: ast.Call):
+    def visit_Call_Aggregate_only(self, node: ast.Call, args: List[ast.AST]):
         '''
         - (acc lambda): the accumulator is set to the first element, and the lambda is called to
                         update it after that. This is called `agg_only`.
         '''
+        raise BaseException('not converted yet')
         agg_lambda = node.args[0]
 
         # Get the sequence we are calling against and the accumulator
@@ -338,18 +339,18 @@ class query_ast_visitor(FuncADLNodeVisitor):
         node.rep = accumulator
         self._result = accumulator
 
-    def visit_call_Aggregate_initial(self, node: ast.Call):
+    def visit_call_Aggregate_initial(self, node: ast.Call, args: List[ast.AST]):
         '''
         - (const, acc lambda): the accumulator is set to the value, and then the lambda is called to
                         update it on every single element. This is called `agg_initial`
         '''
-        agg_lambda = node.args[1]
-        init_val = self.get_rep(node.args[0])
+        raw_seq = node.args[0]
+        init_val = self.get_rep(node.args[1])
+        agg_lambda = node.args[2]
+        assert isinstance(agg_lambda, ast.Lambda)
 
         # Get the sequence we are calling against and the accumulator
-        if not isinstance(node.func, ast.Attribute):
-            raise BaseException("Wrong type of function")
-        seq = self.as_sequence(node.func.value)
+        seq = self.as_sequence(raw_seq)
         accumulator, accumulator_scope = self.create_accumulator(seq, initial_value=init_val, acc_type=init_val.cpp_type())
 
         # Now do the accumulation. This happens at the current iterator scope.
@@ -368,7 +369,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         node.rep = accumulator
         self._result = accumulator
 
-    def visit_call_Aggregate_initial_func(self, node: ast.Call):
+    def visit_call_Aggregate_initial_func(self, node: ast.Call, args: List[ast.AST]):
         '''
         - (start lambda, acc lambda): the accumulator is set to the start lambda call on the first
                         element in the sequence, and then acc is called to update it after that.
@@ -426,7 +427,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # node.rep = result
         # self._result = result
 
-    def visit_Call_Aggregate(self, node: ast.Call):
+    def call_Aggregate(self, node: ast.Call, args: List[ast.AST]):
         r'''Implement the aggregate algorithm in C++
 
         Our source we loop over, and we count out everything. The final result is whatever it is
@@ -445,24 +446,19 @@ class query_ast_visitor(FuncADLNodeVisitor):
         Limitations: only floats for now!
         '''
         # figure out which version of Aggregate we have here.
-        if len(node.args) == 1:
-            return self.visit_Call_Aggregate_only(node)
-        elif len(node.args) == 2:
+        if len(node.args) == 2:
+            return self.visit_Call_Aggregate_only(node, args)
+        elif len(node.args) == 3:
             if isinstance(node.args[0], ast.Lambda):
-                return self.visit_call_Aggregate_initial_func(node)
+                return self.visit_call_Aggregate_initial_func(node, args)
             else:
-                return self.visit_call_Aggregate_initial(node)
+                return self.visit_call_Aggregate_initial(node, args)
 
         # This isn't good!
         raise BaseException("Unknown call to Aggregate. Must be Aggregate(func), Aggregate(const, func), or Aggregate(func, func)")
 
     def visit_Call_Member(self, call_node):
         'Method call on an object'
-
-        # If this is a special type of Function call that we need to work with, split out here
-        # before any processing is done.
-        if (call_node.func.attr == "Aggregate"):
-            return self.visit_Call_Aggregate(call_node)
 
         # Visit everything down a level.
         # TODO: Support arguments to functions like this.
