@@ -1,10 +1,13 @@
 # Test out the grid dataset resolver code
-from func_adl_xAOD.backend.dataset_resolvers.gridds import resolve_local_ds_url, GridDsException, dataset_finder
+from func_adl_xAOD.backend.dataset_resolvers.gridds import resolve_local_ds_url, GridDsException, resolve_dataset
 from func_adl import EventDataset
+from func_adl_xAOD.backend.util_LINQ import extract_dataset_info
 from tempfile import NamedTemporaryFile
 import pytest
 from unittest.mock import Mock
 import tempfile
+from typing import cast
+import ast
 
 # Local files
 def test_local_ds_good():
@@ -99,19 +102,25 @@ def test_ds_no_exist(no_exist_present_ds):
 def test_event_dataset_not_ready(downloading_present_ds):
     url = 'localds://bogus2'
     eds = EventDataset(url)
-    resolver = dataset_finder()
-    r = resolver.visit(eds)
-    assert r is eds
-    assert resolver.DatasetsLocallyResolves is False
-    
+    r = resolve_dataset(eds._ast)
+    assert r is None
+
+def test_event_dataset_not_in_ast(already_present_ds):
+    url = 'localds://bogus2'
+    eds = EventDataset(url)
+    try:
+        resolve_dataset(eds)
+        assert False
+    except GridDsException:
+        pass
+
 def test_event_dataset_ready(already_present_ds):
     url = 'localds://bogus2'
     eds = EventDataset(url)
-    resolver = dataset_finder()
-    r = resolver.visit(eds)
+    r = resolve_dataset(eds._ast)
+    assert r is not None
     assert r is not eds
-    assert resolver.DatasetsLocallyResolves is True
-    assert len(r.url) == 7
+    assert len(extract_dataset_info(cast(ast.Call, r))) == 7
 
 # Weird schemes
 def test_weird_url_scheme():
@@ -125,5 +134,6 @@ def test_weird_url_scheme():
 def test_root_url_scheme():
         url = 'root://eosuser.cern.ch/gwatts/user'
         r = resolve_local_ds_url(url)
+        assert r is not None
         assert len(r) == 1
         assert r[0] == url

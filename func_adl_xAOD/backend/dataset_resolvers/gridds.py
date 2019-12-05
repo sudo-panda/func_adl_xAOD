@@ -1,13 +1,15 @@
 # Python code to help with working with a grid dataset
 # that should be downloaded locally to be run on.False
-import ast
-from func_adl import EventDataset
+from func_adl.ast.func_adl_ast_utils import FuncADLNodeTransformer, function_call
+from func_adl.util_ast import as_ast
+from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_docker import use_executor_xaod_docker
+from ..util_LINQ import extract_dataset_info
 from urllib import parse
 import os
+import ast
 import errno
 from typing import List, Optional
 import requests
-from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_docker import use_executor_xaod_docker
 import asyncio
 
 
@@ -81,42 +83,67 @@ def resolve_local_ds_url(url: str) -> Optional[List[str]]:
     raise GridDsException(f'Do not know how to resolve dataset of type {parsed.scheme} from url {url}.')
 
 
-class dataset_finder (ast.NodeTransformer):
-    'Any event datasets are resolved to be local.'
-    def __init__(self):
-        'Dataset Locally Resolved becomes true only if all datasets are local.'
-        self.DatasetsLocallyResolves = False
+def resolve_dataset(ast_request: ast.AST) -> Optional[ast.AST]:
+    '''Find the datasets in a request and work to make them local so we can
+    run on them.
 
-    def visit_EventDataset(self, node: EventDataset):
-        '''
-        Look at the URL's for the event dataset. Try to replace them with
-        files that have been downloaded locally, if we can.
-        '''
-        # Resolve all the url's
-        resolved_urls = [resolve_local_ds_url(u) for u in node.url]
+    Arguments:
+        ast_request         The full AST of the request. Must contains a EventDataset call.
 
-        # If any None's, then we aren't ready to go.
-        if any(u is None for u in resolved_urls):
-            return node
+    Returns:
+        updated_ast         The AST gets altered with local versions of the dataset after they
+                            have been downloaded.
+                            If the data hasn't been downloaded yet, then None is returned in stead.
 
-        u_list = [u for ulist in resolved_urls for u in ulist]
-        if len(u_list) == 0:
-            raise GridDsException(f'Resolving the dataset urls {node.url} gave the empty list of files')
+    Exceptions:
+        No EventDataset     If no call to EventDataset is made, this will blow up.
+        Error Downloading   If some error occurs during downloading an exception will be thrown.
+    '''
 
-        # All good! Create a new event dataset!
-        self.DatasetsLocallyResolves = True
-        return EventDataset(u_list)
+    class dataset_finder (FuncADLNodeTransformer):
+        'Any event datasets are resolved to be local.'
+        def __init__(self):
+            'Dataset Locally Resolved becomes true only if all datasets are local.'
+            self.DatasetsLocallyResolves = False
+
+        def call_EventDataset(self, node: ast.Call, args: List[ast.AST]):
+            '''
+            Look at the URL's for the event dataset. Try to replace them with
+            files that have been downloaded locally, if we can.
+            '''
+            # Resolve all the url's
+            urls = extract_dataset_info(node)
+            resolved_urls = [resolve_local_ds_url(u) for u in urls]
+
+            # If any None's, then we aren't ready to go.
+            if any(u is None for u in resolved_urls):
+                return node
+
+            u_list = [u for ulist in resolved_urls for u in ulist]
+            if len(u_list) == 0:
+                raise GridDsException(f'Resolving the dataset urls {urls} gave the empty list of files')
+
+            # All good! Create a new event dataset!
+            self.DatasetsLocallyResolves = True
+            return function_call('EventDataset', [as_ast(u_list), ])
+
+    if not isinstance(ast_request, ast.AST):
+        raise GridDsException(f'Expecting an ast.AST, but got something else: {ast_request}')
+
+    df = dataset_finder()
+    updated_request = df.visit(ast_request)
+    if not df.DatasetsLocallyResolves:
+        return None
+    return updated_request
 
 
 async def use_executor_dataset_resolver(a: ast.AST, chained_executor=use_executor_xaod_docker):
     'Run - keep re-doing query until we crash or we can run'
-    finder = dataset_finder()
     am = None
-    while not finder.DatasetsLocallyResolves:
-        am = finder.visit(a)
-        if finder.DatasetsLocallyResolves:
-            break
-        await asyncio.sleep(5 * 60)
+    while am is None:
+        am = resolve_dataset(a)
+        if am is None:
+            await asyncio.sleep(5 * 60)
 
     # Ok, we have a modified AST and we can now get it processed.
     if am is None:

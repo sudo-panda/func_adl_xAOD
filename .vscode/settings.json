@@ -1,18 +1,26 @@
 {
     "cSpell.words": [
+        "DAOD",
         "Dlib",
+        "ENOENT",
+        "EXOT",
         "LINQ",
         "LLPs",
         "Mult",
+        "NNPDF",
         "ROOTT",
         "Topo",
+        "URL's",
         "asts",
         "asyncio",
+        "cern",
         "codecov",
         "cpplib",
         "crep",
         "ctyp",
+        "eljob",
         "elts",
+        "errno",
         "forkme",
         "gridds",
         "gwatts",
@@ -21,6 +29,7 @@
         "jall",
         "jetpt",
         "localds",
+        "ltlow",
         "nllp",
         "noqa",
         "numpy",
@@ -28,8 +37,10 @@
         "posix",
         "pytest",
         "pytestmark",
+        "rucio",
         "skipif",
         "ttree",
+        "ulist",
         "venv",
         "xaod",
         "xrootd"
@@ -44,5 +55,6 @@
     "python.testing.autoTestDiscoverOnSaveEnabled": false,
     "python.pythonPath": "C:\\Users\\gordo\\Anaconda3\\envs\\func-adl.xAOD-dev\\python.exe",
     "pyright.openFilesOnly": false,
-    "python.analysis.openFilesOnly": false
+    "python.analysis.openFilesOnly": false,
+    "python.dataScience.debugJustMyCode": false
 }
