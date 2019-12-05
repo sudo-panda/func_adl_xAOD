@@ -46,6 +46,20 @@ def test_per_jet_item_with_where():
     assert "Fill()" in lines[l_jetpt+1]
 
 
+def test_result_awkward():
+    # The following statement should be a straight sequence, not an array.
+    r = EventDataset("file://root.root") \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
+        .Select("lambda j: j.pt()") \
+        .AsAwkwardArray('JetPts') \
+        .value(executor=exe_for_test)
+    # Make sure that the tree Fill is at the same level as the _JetPts2 getting set.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_jetpt = find_line_with("_JetPts", lines)
+    assert "Fill()" in lines[l_jetpt+1]
+
+
 def test_per_jet_item_with_event_level():
     r = EventDataset("file://root.root") \
         .Select('lambda e: (e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()), e.EventInfo("EventInfo").runNumber())') \

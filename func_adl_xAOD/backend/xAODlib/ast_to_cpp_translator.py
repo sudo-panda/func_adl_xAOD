@@ -21,7 +21,7 @@ import func_adl_xAOD.backend.xAODlib.EventCollections
 import func_adl_xAOD.backend.cpplib.math_utils  # noqa: F401
 
 import ast
-from typing import Union, List, Any
+from typing import Union, List, Any, cast
 
 # Convert between Python comparisons and C++.
 compare_operations = {
@@ -747,12 +747,16 @@ class query_ast_visitor(FuncADLNodeVisitor):
         self._gc.pop_scope()
         return node.rep
 
-    def visit_ResultAwkwardArray(self, node: ast.Call):
+    def call_ResultAwkwardArray(self, node: ast.Call, args: List[ast.AST]):
         '''
         The result of this guy is an awkward array. We generate a token here, and invoke the resultTTree in order to get the
         actual ROOT file written. Later on, when dealing with the result stuff, we extract it into an awkward array.
         '''
-        ttree = ResultTTree(node.source, node.column_names, 'pandatree', 'output.root')
+        assert len(args) == 2
+        source = args[0]
+        column_names = args[1]
+
+        ttree = function_call('ResultTTree', [source, column_names, cast(ast.Expr, ast.parse('"awkwardtree"').body[0]).value, cast(ast.Expr, ast.parse('"output.root"').body[0]).value])
         r = self.get_rep(ttree)
         if not isinstance(r, rh.cpp_ttree_rep):
             raise BaseException("Can't deal with different return type from tree!")
