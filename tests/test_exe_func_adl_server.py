@@ -3,10 +3,8 @@
 # discovery. To get it to discover the xAOD sub-package, an __init__.py must exist in the func_adl directory. But if that is there
 # then you can't get at the stuff in the installed func_adl package.
 # TODO: Move testing to happening in an venv.
-import sys
-sys.path += ['.']
+from func_adl_xAOD import use_exe_func_adl_server, FuncADLServerException
 from func_adl import EventDataset
-from func_adl.xAOD import use_exe_func_adl_server, FuncADLServerException
 from unittest.mock import Mock
 import pandas as pd
 import pytest
@@ -14,7 +12,7 @@ import os
 import asyncio
 import ast
 
-async def dummy_executor_coroutine(a: ast.AST) -> asyncio.Future:
+async def dummy_executor_coroutine(a: ast.AST) -> ast.AST:
     'Called to evaluate a guy - but it will take a long time'
     await asyncio.sleep(0.01)
     return a
@@ -23,7 +21,8 @@ async def dummy_executor_coroutine(a: ast.AST) -> asyncio.Future:
 def event_loop():
     'Get the loop done right on windows'
     if os.name == 'nt':
-        loop = asyncio.ProactorEventLoop()
+        loop = asyncio.ProactorEventLoop()  # type: ignore
+        # TODO: See https://github.com/microsoft/pyright/issues/381 for possible bug
     else:
         loop = asyncio.SelectorEventLoop()
     yield loop
