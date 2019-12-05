@@ -52,11 +52,12 @@ def guess_type_from_number(n):
     return ctyp.terminal("double")
 
 
-def rep_is_collection(rep):
+def rep_is_collection(rep) -> bool:
     if isinstance(rep, crep.cpp_sequence):
         return True
     if isinstance(rep, crep.cpp_collection):
         return True
+    return False
 
 
 def get_ttree_type(rep):
