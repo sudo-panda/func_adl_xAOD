@@ -6,7 +6,6 @@ from distutils.core import setup
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-xaod_template_files = listdir('func_adl/xAOD/backend/R21Code')
 setup(name="func_adl_xAOD",
       version='0.0.0-alpha.10',
       packages=['func_adl_xAOD'],
@@ -41,6 +40,6 @@ setup(name="func_adl_xAOD",
           "Topic :: Software Development",
           "Topic :: Utilities",
       ],
-      data_files=[('func_adl/xAOD/backend/R21Code', [f'func_adl/xAOD/backend/R21Code/{f}' for f in xaod_template_files])],
+      data_files=[],
       platforms="Any",
       )
