@@ -1,0 +1,1 @@
+Scripts as utilities. Not intended for distribution, but should work fine with the distributed package installed.
