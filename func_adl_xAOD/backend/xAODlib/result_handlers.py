@@ -5,8 +5,6 @@ from func_adl_xAOD.backend.cpplib.cpp_representation import cpp_value
 import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
 from func_adl_xAOD.backend.cpplib.cpp_vars import unique_name
 import uproot
-import os
-import shutil
 
 
 ##################
@@ -31,17 +29,18 @@ def extract_result_TTree(rep, run_dir):
     path_to_root_file: Full path to the file, copied into the local directory
     tree_name: the name of the tree.
     '''
-    # This would be trivial other than the directory is about to be deleted. So in this case we are going to
-    # need to copy the file over somewhere else!
-    df_name = os.path.join(os.getcwd(), unique_name("datafile") + ".root")
-    df_current = os.path.join(run_dir, 'data.root')
+    raise BaseException("extract_result_TTree is not yet implemented.")
+    # # This would be trivial other than the directory is about to be deleted. So in this case we are going to
+    # # need to copy the file over somewhere else!
+    # df_name = os.path.join(os.getcwd(), unique_name("datafile") + ".root")
+    # df_current = os.path.join(run_dir, 'data.root')
 
-    if not os.path.exists(df_current):
-        raise BaseException("Unable to find ROOT file '{0}' which contains the data we need!".format(df_current))
+    # if not os.path.exists(df_current):
+    #     raise BaseException("Unable to find ROOT file '{0}' which contains the data we need!".format(df_current))
 
-    shutil.copyfile(df_current, df_name)
+    # shutil.copyfile(df_current, df_name)
 
-    return ROOTTreeResult(True, [ROOTTreeFileInfo(df_name, rep.treename)])
+    # return ROOTTreeResult(True, [ROOTTreeFileInfo(df_name, rep.treename)])
 
 
 #############
