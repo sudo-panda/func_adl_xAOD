@@ -32,7 +32,7 @@ def test_select_first_of_array():
 def event_loop():
     'Get the loop done right on windows'
     if os.name == 'nt':
-        loop = asyncio.ProactorEventLoop()
+        loop = asyncio.ProactorEventLoop()  # type: ignore
     else:
         loop = asyncio.SelectorEventLoop()
     yield loop
