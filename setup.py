@@ -34,7 +34,8 @@ setup(name="func_adl_xAOD",
               'coverage',
               'pytest-mock',
               'flake8',
-              'pytest-cov'
+              'pytest-cov',
+              'codecov'
           ],
       },
       classifiers=[
