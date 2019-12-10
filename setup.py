@@ -33,7 +33,8 @@ setup(name="func_adl_xAOD",
               'pytest-flask',
               'coverage',
               'pytest-mock',
-              'flake8'
+              'flake8',
+              'pytest-cov'
           ],
       },
       classifiers=[
