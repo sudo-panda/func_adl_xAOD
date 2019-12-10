@@ -27,8 +27,15 @@ setup(name="func_adl_xAOD",
           "retry~=0.9",
           "func_adl==1.0.0a17",
       ],
-      setup_requires=["pytest-runner"],
-      tests_require=["pytest>=3.9", "pytest-cov"],
+      extras_require={
+          'test': [
+              'pytest>=3.9',
+              'pytest-flask',
+              'coverage',
+              'pytest-mock',
+              'flake8'
+          ],
+      },
       classifiers=[
           "Development Status :: 3 - Alpha",
           # "Development Status :: 4 - Beta",

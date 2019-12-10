@@ -38,6 +38,7 @@
         "pytest",
         "pytestmark",
         "rucio",
+        "setuptools",
         "skipif",
         "ttree",
         "ulist",
