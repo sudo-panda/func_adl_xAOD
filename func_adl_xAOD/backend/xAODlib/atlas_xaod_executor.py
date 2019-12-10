@@ -44,12 +44,13 @@ class cpp_source_emitter:
 
 
 # The following was copied from: https://www.oreilly.com/library/view/python-cookbook/0596001673/ch04s22.html
-def _find(pathname, matchFunc=os.path.isfile):
+def _find(pathname: str, matchFunc=os.path.isfile):
+    assert len(pathname) > 0
     for dirname in (sys.path + ['/usr/local']):
         candidate = os.path.join(dirname, pathname)
         if matchFunc(candidate):
             return candidate
-    raise BaseException("Can't find file %s" % pathname)
+    raise BaseException("Can't find file '%s'." % pathname)
 
 
 def find_file(pathname):
