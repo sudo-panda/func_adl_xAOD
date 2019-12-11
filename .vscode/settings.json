@@ -37,6 +37,7 @@
         "posix",
         "pytest",
         "pytestmark",
+        "qastle",
         "rucio",
         "setuptools",
         "skipif",
