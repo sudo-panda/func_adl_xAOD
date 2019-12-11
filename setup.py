@@ -27,17 +27,20 @@ setup(name="func_adl_xAOD",
           "pandas~=0.24",
           "uproot~=3.7",
           "retry~=0.9",
+          "jinja2",
           "func_adl==1.0.0a17",
+          "qastle"
       ],
       extras_require={
           'test': [
               'pytest>=3.9',
-              'pytest-flask',
-              'coverage',
+              'pytest-asyncio',
               'pytest-mock',
-              'flake8',
               'pytest-cov',
-              'codecov'
+              'coverage',
+              'flake8',
+              'codecov',
+              'autopep8'
           ],
       },
       classifiers=[
@@ -51,6 +54,8 @@ setup(name="func_adl_xAOD",
           "Topic :: Software Development",
           "Topic :: Utilities",
       ],
-      data_files=[('func_adl_xAOD/backend/R21Code', [f'func_adl_xAOD/backend/R21Code/{f}' for f in xaod_template_files])],
+      package_data={
+          'func_adl_xAOD/backend': [f'R21Code/*'],
+      },
       platforms="Any",
       )

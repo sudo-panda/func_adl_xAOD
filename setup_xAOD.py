@@ -7,7 +7,6 @@ from version_info import version_func_adl_xaod
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-xaod_template_files = []
 setup(name="func_adl_xAOD",
       version=version_func_adl_xaod,
       packages=['func_adl_xAOD'],
@@ -28,9 +27,8 @@ setup(name="func_adl_xAOD",
           "uproot~=3.7",
           "retry~=0.9",
           "func_adl==1.0.0a17",
+          "qastle"
       ],
-      setup_requires=["pytest-runner"],
-      tests_require=["pytest>=3.9", "pytest-cov"],
       classifiers=[
           "Development Status :: 3 - Alpha",
           # "Development Status :: 4 - Beta",
@@ -42,6 +40,5 @@ setup(name="func_adl_xAOD",
           "Topic :: Software Development",
           "Topic :: Utilities",
       ],
-      data_files=[],
       platforms="Any",
       )
