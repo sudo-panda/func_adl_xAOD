@@ -7,6 +7,21 @@ set -e
 # Meant to be invokved in an ATLAS R21 analysis container.
 # This follows the tutorial from https://atlassoftwaredocs.web.cern.ch/ABtutorial/release_setup/
 
+# Parse the command line arguments. Our defaults
+output_method="cp"
+output_dir="/results"
+input_method="filelist"
+input_file=""
+
+while getopts "d:" opt; do
+    case "$opt" in
+    d)
+        input_method="cmd"
+        input_file=$OPTARG
+        ;;
+    esac
+done
+
 # Setup and config
 source /home/atlas/release_setup.sh
 
@@ -126,19 +141,27 @@ cmake ../source
 make
 source x86_64-slc6-gcc62-opt/setup.sh
 
-# Do the run.
+# Sort out the input file location
 #ATestRun_eljob.py --submission-dir=bogus
-if [ -e $DIR/filelist.txt ]; then
-   cp $DIR/filelist.txt .
-else
-   cp $local/filelist.txt .
+if [ "$input_method" == "filelist" ]; then
+   if [ -e $DIR/filelist.txt ]; then
+      cp $DIR/filelist.txt .
+   else
+      cp $local/filelist.txt .
+   fi
+elif [ "$input_method" == "cmd" ]; then
+   echo $input_file > filelist.txt
 fi
+
+# Do the run
 python ../source/analysis/share/ATestRun_eljob.py --submission-dir=bogus
 
 # Place the output file where it belongs
-if [ -z "$1" ]; then
+if [ $output_method == "cp" ]; then
+  echo $output_method
+  echo $output_dir
   cmd="cp"
-  destination="/results"
+  destination=$output_dir
 else
   destination=$1
   cmd="cp"
@@ -146,4 +169,6 @@ else
     cmd="xrdcp"
   fi
 fi
+echo $output_method
+echo $cmd ./bogus/data-ANALYSIS/ANALYSIS.root $destination
 $cmd ./bogus/data-ANALYSIS/ANALYSIS.root $destination

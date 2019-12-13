@@ -6,7 +6,7 @@ from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_hash_cache import use_executor
 import pytest
 import tempfile
 import os
-from typing import cast
+from typing import cast, Optional
 import sys
 from urllib import parse
 
@@ -30,10 +30,10 @@ def generate_test_jet_fetch(cache_dir: str):
         .value(executor=lambda a: use_executor_xaod_hash_cache(a, cache_path=cache_dir, no_hash_subdir=True))
 
 
-def run_docker(info, code_dir: str) -> TemporaryDirectory:
+def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False) -> TemporaryDirectory:
     'Run the docker command'
 
-    # Unravel the file path
+    # Unravel the file path. How we do this depends on how we are doing this work.
     filepaths = info.filelist
     assert len(filepaths) == 1
     filepath_url = cast(str, filepaths[0])
@@ -41,12 +41,17 @@ def run_docker(info, code_dir: str) -> TemporaryDirectory:
     base_dir = os.path.dirname(filepath)
     filename = os.path.basename(filepath)
 
-    # Write the file list into a filelist in the scripts directory.
-    with open(os.path.join(code_dir, 'filelist.txt'), 'w') as f_out:
-        f_out.writelines([f'/data/{filename}'])
+    # Write the file list into a filelist in the scripts directory. If that isn't going to be what we do, then
+    # create it as a cmd line option.
+    cmd_options = ''
+    if data_file_on_cmd_line:
+        cmd_options += f'-d /data/{filename}'
+    else:
+        with open(os.path.join(code_dir, 'filelist.txt'), 'w') as f_out:
+            f_out.writelines([f'/data/{filename}'])
 
     results_dir = tempfile.TemporaryDirectory()
-    docker_cmd = f'docker run --rm -v {code_dir}:/scripts -v {str(results_dir.name)}:/results -v {base_dir}:/data atlas/analysisbase:21.2.62 /scripts/{info.main_script} /results'
+    docker_cmd = f'docker run --rm -v {code_dir}:/scripts -v {str(results_dir.name)}:/results -v {base_dir}:/data atlas/analysisbase:21.2.62 /scripts/{info.main_script} {cmd_options}'
     result = os.system(docker_cmd)
     if result != 0:
         raise BaseException(f"nope, that didn't work {result}!")
@@ -63,9 +68,8 @@ def test_good_cpp_total_run(cache_directory):
 def test_good_cpp_total_run_file_as_arg(cache_directory):
     'Good C++, and no arguments that does full run'
 
-    assert False
     info = generate_test_jet_fetch(cache_directory)
-    with run_docker(info, cache_directory) as result_dir:
+    with run_docker(info, cache_directory, data_file_on_cmd_line=True) as result_dir:
         assert os.path.exists(os.path.join(result_dir, info.output_filename))
 
 def test_bad_cpp_total_run(cache_directory):
