@@ -46,7 +46,8 @@ class docker_run_error(BaseException):
         BaseException.__init__(self, message)
 
 
-def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False, compile_only:bool = False) -> TemporaryDirectory:
+def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False,
+               compile_only:bool = False, run_only:bool = False) -> TemporaryDirectory:
     'Run the docker command'
 
     # Unravel the file path. How we do this depends on how we are doing this work.
@@ -66,9 +67,11 @@ def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False, compile_
         with open(os.path.join(code_dir, 'filelist.txt'), 'w') as f_out:
             f_out.writelines([f'/data/{filename}'])
 
-    # Compile only?
+    # Compile or run only?
     if compile_only:
         cmd_options += '-c '
+    if run_only:
+        cmd_options += '-r '
 
     results_dir = tempfile.TemporaryDirectory()
     docker_cmd = f'docker run --rm -v {code_dir}:/scripts -v {str(results_dir.name)}:/results -v {base_dir}:/data atlas/analysisbase:21.2.62 /scripts/{info.main_script} {cmd_options}'
@@ -110,20 +113,22 @@ def test_good_cpp_just_compile(cache_directory):
         assert not os.path.exists(os.path.join(result_dir, info.output_filename))
 
 def test_bad_cpp_just_compile(cache_directory):
-    'Good C++, and no arguments that does full run'
+    'Bad C++, only do the compile'
 
-    assert False
-    info = generate_test_jet_fetch(cache_directory)
-    with run_docker(info, cache_directory) as result_dir:
-        assert os.path.exists(os.path.join(result_dir, info.output_filename))
+    try:
+        info = generate_test_jet_fetch_bad(cache_directory)
+        with run_docker(info, cache_directory, compile_only=True) as result_dir:
+            assert False
+    except docker_run_error:
+        pass
 
 def test_good_cpp_compile_and_run(cache_directory):
-    'Good C++, and no arguments that does full run'
+    'Good C++, first do the compile, and then do the run'
 
-    assert False
     info = generate_test_jet_fetch(cache_directory)
-    with run_docker(info, cache_directory) as result_dir:
-        assert os.path.exists(os.path.join(result_dir, info.output_filename))
+    with run_docker(info, cache_directory, compile_only=True) as result_dir1:
+        with run_docker(info, cache_directory, run_only=True) as result_dir2:
+            assert os.path.exists(os.path.join(result_dir2, info.output_filename))
 
 def test_run_with_bad_positon_arg():
     'Pass in a bogus argument at the end with no flag'

@@ -23,6 +23,10 @@ while getopts "d:c" opt; do
         ;;
     c)
         run=0
+        ;;
+    r)
+        compile=0
+        ;;
     esac
 done
 
