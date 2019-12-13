@@ -47,7 +47,9 @@ class docker_run_error(BaseException):
 
 
 def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False,
-               compile_only:bool = False, run_only:bool = False) -> TemporaryDirectory:
+               compile_only:bool = False, run_only:bool = False,
+               add_position_argument_at_start:Optional[str] = None,
+               extra_flag:Optional[str] = None) -> TemporaryDirectory:
     'Run the docker command'
 
     # Unravel the file path. How we do this depends on how we are doing this work.
@@ -73,8 +75,18 @@ def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False,
     if run_only:
         cmd_options += '-r '
 
+    # Extra random flag
+    if extra_flag is not None:
+        cmd_options += f'{extra_flag} '
+    
+    # Add an argument at the start?
+    initial_args = ''
+    if add_position_argument_at_start is not None:
+        initial_args = f'{add_position_argument_at_start} '
+
+    # Docker command
     results_dir = tempfile.TemporaryDirectory()
-    docker_cmd = f'docker run --rm -v {code_dir}:/scripts -v {str(results_dir.name)}:/results -v {base_dir}:/data atlas/analysisbase:21.2.62 /scripts/{info.main_script} {cmd_options}'
+    docker_cmd = f'docker run --rm -v {code_dir}:/scripts -v {str(results_dir.name)}:/results -v {base_dir}:/data atlas/analysisbase:21.2.62 /scripts/{info.main_script} {initial_args} {cmd_options}'
     result = os.system(docker_cmd)
     if result != 0:
         raise docker_run_error(f"nope, that didn't work {result}!")
@@ -130,10 +142,20 @@ def test_good_cpp_compile_and_run(cache_directory):
         with run_docker(info, cache_directory, run_only=True) as result_dir2:
             assert os.path.exists(os.path.join(result_dir2, info.output_filename))
 
-def test_run_with_bad_positon_arg():
+def test_run_with_bad_position_arg(cache_directory):
     'Pass in a bogus argument at the end with no flag'
-    assert False
+    try:
+        info = generate_test_jet_fetch(cache_directory)
+        with run_docker(info, cache_directory, add_position_argument_at_start="/results") as result_dir:
+            assert False
+    except docker_run_error:
+        pass
 
-def test_run_with_bad_flag():
+def test_run_with_bad_flag(cache_directory):
     'Pass in a bogus flag'
-    assert False
+    try:
+        info = generate_test_jet_fetch(cache_directory)
+        with run_docker(info, cache_directory, extra_flag="-k") as result_dir:
+            assert False
+    except docker_run_error:
+        pass

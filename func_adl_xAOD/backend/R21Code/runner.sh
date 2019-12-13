@@ -15,7 +15,7 @@ input_file=""
 compile=1
 run=1
 
-while getopts "d:c" opt; do
+while getopts "d:cr" opt; do
     case "$opt" in
     d)
         input_method="cmd"
@@ -27,8 +27,17 @@ while getopts "d:c" opt; do
     r)
         compile=0
         ;;
+    ?)
+        exit 10
     esac
 done
+
+# If there are any arguments left over, then very bad things have happened.
+shift $((OPTIND-1))
+if [ $# != 0 ]; then
+  echo "Extra arguments on the command line $@"
+  exit 1
+fi
 
 # Setup and config
 source /home/atlas/release_setup.sh
@@ -168,8 +177,6 @@ if [ $run = 1 ]; then
 
    # Place the output file where it belongs
    if [ $output_method == "cp" ]; then
-      echo $output_method
-      echo $output_dir
       cmd="cp"
       destination=$output_dir
    else
