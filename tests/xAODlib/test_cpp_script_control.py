@@ -30,7 +30,23 @@ def generate_test_jet_fetch(cache_dir: str):
         .value(executor=lambda a: use_executor_xaod_hash_cache(a, cache_path=cache_dir, no_hash_subdir=True))
 
 
-def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False) -> TemporaryDirectory:
+def generate_test_jet_fetch_bad(cache_dir: str):
+    '''
+    Generate an expression and C++ files, etc., that contains code for a invalid C++ run
+    '''
+    return f \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
+        .Select('lambda j: j.ptt()/1000.0') \
+        .AsROOTTTree('file.root', "analysis", 'JetPt') \
+        .value(executor=lambda a: use_executor_xaod_hash_cache(a, cache_path=cache_dir, no_hash_subdir=True))
+
+
+class docker_run_error(BaseException):
+    def __init__(self, message):
+        BaseException.__init__(self, message)
+
+
+def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False, compile_only:bool = False) -> TemporaryDirectory:
     'Run the docker command'
 
     # Unravel the file path. How we do this depends on how we are doing this work.
@@ -45,16 +61,20 @@ def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False) -> Tempo
     # create it as a cmd line option.
     cmd_options = ''
     if data_file_on_cmd_line:
-        cmd_options += f'-d /data/{filename}'
+        cmd_options += f'-d /data/{filename} '
     else:
         with open(os.path.join(code_dir, 'filelist.txt'), 'w') as f_out:
             f_out.writelines([f'/data/{filename}'])
+
+    # Compile only?
+    if compile_only:
+        cmd_options += '-c '
 
     results_dir = tempfile.TemporaryDirectory()
     docker_cmd = f'docker run --rm -v {code_dir}:/scripts -v {str(results_dir.name)}:/results -v {base_dir}:/data atlas/analysisbase:21.2.62 /scripts/{info.main_script} {cmd_options}'
     result = os.system(docker_cmd)
     if result != 0:
-        raise BaseException(f"nope, that didn't work {result}!")
+        raise docker_run_error(f"nope, that didn't work {result}!")
     return results_dir
 
 
@@ -66,7 +86,7 @@ def test_good_cpp_total_run(cache_directory):
         assert os.path.exists(os.path.join(result_dir, info.output_filename))
 
 def test_good_cpp_total_run_file_as_arg(cache_directory):
-    'Good C++, and no arguments that does full run'
+    'Bad C++ generated, should throw an exception'
 
     info = generate_test_jet_fetch(cache_directory)
     with run_docker(info, cache_directory, data_file_on_cmd_line=True) as result_dir:
@@ -75,18 +95,19 @@ def test_good_cpp_total_run_file_as_arg(cache_directory):
 def test_bad_cpp_total_run(cache_directory):
     'Bad C++, and no arguments that does full run'
 
-    info = generate_test_jet_fetch(cache_directory)
-    with run_docker(info, cache_directory) as result_dir:
-        assert os.path.exists(os.path.join(result_dir, info.output_filename))
-    assert False
+    try:
+        info = generate_test_jet_fetch_bad(cache_directory)
+        with run_docker(info, cache_directory, data_file_on_cmd_line=True) as result_dir:
+            assert False
+    except docker_run_error:
+        pass
 
 def test_good_cpp_just_compile(cache_directory):
-    'Good C++, and no arguments that does full run'
+    'Good C++, only do the compile'
 
-    assert False
     info = generate_test_jet_fetch(cache_directory)
-    with run_docker(info, cache_directory) as result_dir:
-        assert os.path.exists(os.path.join(result_dir, info.output_filename))
+    with run_docker(info, cache_directory, compile_only=True) as result_dir:
+        assert not os.path.exists(os.path.join(result_dir, info.output_filename))
 
 def test_bad_cpp_just_compile(cache_directory):
     'Good C++, and no arguments that does full run'
@@ -103,3 +124,11 @@ def test_good_cpp_compile_and_run(cache_directory):
     info = generate_test_jet_fetch(cache_directory)
     with run_docker(info, cache_directory) as result_dir:
         assert os.path.exists(os.path.join(result_dir, info.output_filename))
+
+def test_run_with_bad_positon_arg():
+    'Pass in a bogus argument at the end with no flag'
+    assert False
+
+def test_run_with_bad_flag():
+    'Pass in a bogus flag'
+    assert False
