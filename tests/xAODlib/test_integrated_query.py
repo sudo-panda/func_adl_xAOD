@@ -1,8 +1,9 @@
 # Contains test that will run the full query.
+import pytest
 
 # These are very long running do not run them normally!!
-import pytest
-pytestmark = pytest.mark.skipif(True, reason='Long running tests, skipped except when run by hand')
+from .control_tests import run_long_running_tests, f
+pytestmark = run_long_running_tests
 
 # These are *long* tests and so should not normally be run. Each test can take of order 30 seconds or so!!
 from func_adl import EventDataset
@@ -10,12 +11,6 @@ from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
 from func_adl_xAOD.backend.dataset_resolvers.gridds import use_executor_dataset_resolver
 import asyncio
 import os
-
-# The file we are going to go after:
-local_path = 'tests/xAODlib/jets_10_events.root'
-f_location = f'file:///{os.path.abspath(local_path)}'
-f = EventDataset(f_location)
-f_multiple = EventDataset([f_location, f_location])
 
 def test_select_first_of_array():
     # The hard part is that First() here does not return a single item, but, rather, an array that

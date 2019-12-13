@@ -24,12 +24,13 @@ def _build_result(cache: tuple, url_list: Iterable[str]) -> HashXAODExecutorInfo
     return HashXAODExecutorInfo(cache[0], cache[1], cache[2], cache[3], url_list)
 
 
-def use_executor_xaod_hash_cache(a: ast.AST, cache_path: str) -> HashXAODExecutorInfo:
+def use_executor_xaod_hash_cache(a: ast.AST, cache_path: str, no_hash_subdir: bool = False) -> HashXAODExecutorInfo:
     r'''Write out the C++ code and supporting files to a cache
 
     Arguments:
-        a           The ast that will be transformed
-        cache_path  Path the cache directory. We will write everything out in there.
+        a               The ast that will be transformed
+        cache_path      Path the cache directory. We will write everything out in there.
+        no_hash_subdir  Do not put files in the hash subdirectory
 
     Returns:
         HashXAODExecutorInfo    Named tuple with the hash and the list of files in it.
@@ -42,7 +43,7 @@ def use_executor_xaod_hash_cache(a: ast.AST, cache_path: str) -> HashXAODExecuto
     hash = ast_hash.calc_ast_hash(a)
 
     # Next, see if the hash file is there.
-    query_file_path = os.path.join(cache_path, hash)
+    query_file_path = os.path.join(cache_path, hash) if not no_hash_subdir else cache_path
     cache_file = os.path.join(query_file_path, 'rep_cache.pickle')
     if os.path.isfile(cache_file):
         # We have a cache hit. Look it up.
