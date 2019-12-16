@@ -47,14 +47,15 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 local=`pwd`
 
 # Create a release directory
-mkdir rel
-cd rel
-mkdir source
-mkdir build
-mkdir run
+if [ $compile = 1 ]; then
+   mkdir rel
+   cd rel
+   mkdir source
+   mkdir build
+   mkdir run
 
 # Create cmake infrastructure
-cat > source/CMakeLists.txt << 'EOF'
+   cat > source/CMakeLists.txt << 'EOF'
 #
 # Project configuration for UserAnalysis.
 #
@@ -110,25 +111,25 @@ install( FILES ${CMAKE_BINARY_DIR}/${ATLAS_PLATFORM}/env_setup.sh
 atlas_cpack_setup()
 EOF
 
-# Create a package infrastructure
-cd source
-mkdir analysis
-mkdir analysis/analysis
-mkdir analysis/Root
-mkdir analysis/src
-mkdir analysis/src/components
-mkdir analysis/share
+   # Create a package infrastructure
+   cd source
+   mkdir analysis
+   mkdir analysis/analysis
+   mkdir analysis/Root
+   mkdir analysis/src
+   mkdir analysis/src/components
+   mkdir analysis/share
 
-# Create the basics for cmake
-cp $DIR/package_CMakeLists.txt analysis/CMakeLists.txt
+   # Create the basics for cmake
+   cp $DIR/package_CMakeLists.txt analysis/CMakeLists.txt
 
-# Next, copy over the algorithm. The source directory needs to be correctly mounted.
-cp $DIR/query.h analysis/analysis
-cp $DIR/query.cxx analysis/Root
-cp $DIR/ATestRun_eljob.py analysis/share
-chmod +x analysis/share/ATestRun_eljob.py
+   # Next, copy over the algorithm. The source directory needs to be correctly mounted.
+   cp $DIR/query.h analysis/analysis
+   cp $DIR/query.cxx analysis/Root
+   cp $DIR/ATestRun_eljob.py analysis/share
+   chmod +x analysis/share/ATestRun_eljob.py
 
-cat > analysis/analysis/queryDict.h << EOF
+   cat > analysis/analysis/queryDict.h << EOF
 #ifndef analysis_query_DICT_H
 #define analysis_query_DICT_H
 
@@ -140,7 +141,7 @@ cat > analysis/analysis/queryDict.h << EOF
 #endif
 EOF
 
-cat > analysis/analysis/selection.xml << EOF
+   cat > analysis/analysis/selection.xml << EOF
 <lcgdict>
 
   <!-- This file contains a list of all classes for which a dictionary
@@ -152,16 +153,17 @@ cat > analysis/analysis/selection.xml << EOF
 EOF
 
 
-# Do the build
-if [ $compile = 1 ]; then
+   # Do the build
    cd ../build
    cmake ../source
    make
+else
+   cd rel/build
 fi
-source x86_64-slc6-gcc62-opt/setup.sh
 
 # Sort out the input file location
 if [ $run = 1 ]; then
+   source x86_64-slc6-gcc62-opt/setup.sh
    if [ "$input_method" == "filelist" ]; then
       if [ -e $DIR/filelist.txt ]; then
          cp $DIR/filelist.txt .
@@ -173,6 +175,9 @@ if [ $run = 1 ]; then
    fi
 
    # Do the run
+   if [ -e ./bogus ]; then
+     rm -rf bogus
+   fi
    python ../source/analysis/share/ATestRun_eljob.py --submission-dir=bogus
 
    # Place the output file where it belongs

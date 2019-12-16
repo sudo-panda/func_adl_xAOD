@@ -1,12 +1,13 @@
 # Tests that will make sure the runner.sh script can do everything it is supposed to do,
 # as we are now asking a fair amount from it.
+from func_adl_xAOD.backend.util_LINQ import extract_dataset_info
 from .control_tests import run_long_running_tests, f
 from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_hash_cache import use_executor_xaod_hash_cache
 #pytestmark = run_long_running_tests
 import pytest
 import tempfile
 import os
-from typing import cast, Optional
+from typing import cast, Optional, Union
 import sys
 from urllib import parse
 
@@ -46,10 +47,84 @@ class docker_run_error(BaseException):
         BaseException.__init__(self, message)
 
 
+def extract_fileinfo (info):
+    'Return directory and filename'
+    filepaths = info.filelist
+    assert len(filepaths) == 1
+    filepath_url = cast(str, filepaths[0])
+    filepath = parse.urlparse(filepath_url).path[1:]
+    base_dir = os.path.dirname(filepath)
+    filename = os.path.basename(filepath)
+    return (base_dir, filename)
+
+
+class docker_runner:
+    def __init__ (self, name: str, results_dir):
+        self._name = name
+        self.results_dir = results_dir
+
+    def compile(self, info):
+        'Run the script as a compile'
+
+        results_dir = tempfile.TemporaryDirectory()
+        docker_cmd = f'docker exec {self._name} /bin/bash -c "/scripts/{info.main_script} -c"'
+        result = os.system(docker_cmd)
+        if result != 0:
+            raise docker_run_error(f"nope, that didn't work {result}!")
+        return results_dir
+
+    def run(self, info):
+        'Run the docker command'
+
+        # Unravel the file path. How we do this depends on how we are doing this work.
+        (_, filename) = extract_fileinfo(info)
+
+        # Write the file list into a filelist in the scripts directory. If that isn't going to be what we do, then
+        # create it as a cmd line option.
+        cmd_options = ''
+        cmd_options += f'-d /data/{filename} '
+
+        # We are just going to run
+        cmd_options += '-r '
+
+        # Docker command
+        results_dir = tempfile.TemporaryDirectory()
+        docker_cmd = f'docker exec {self._name} /bin/bash -c "/scripts/{info.main_script} {cmd_options}"'
+        result = os.system(docker_cmd)
+        if result != 0:
+            raise docker_run_error(f"nope, that didn't work {result}!")
+        return results_dir
+
+class docker_running_container:
+    '''
+    This will start up a docker container running our analysis base.
+    '''
+    def __init__(self, info, code_dir:str):
+        'Init with directories for mapping, etc'
+        
+        self._code_dir = code_dir
+        self._data_dir, _ = extract_fileinfo(info)
+
+    def __enter__(self):
+        'Get the docker command up and running'
+        self._results_dir = tempfile.TemporaryDirectory()
+        docker_cmd = f'docker run --name test_func_xAOD --rm -d -v {self._code_dir}:/scripts -v {str(self._results_dir.name)}:/results -v {self._data_dir}:/data atlas/analysisbase:21.2.62 /bin/bash -c "while [ 1 ] ; do sleep 1; echo hi ; done"'
+        r = os.system(docker_cmd)
+        if r != 0:
+            raise BaseException(f'Unable to start docker deamon: {r}')
+        return docker_runner('test_func_xAOD', self._results_dir.name)
+
+    def __exit__(self, type, value, traceback):
+        with self._results_dir:
+            r = os.system('docker rm -f test_func_xAOD')
+            if r != 0:
+                raise BaseException(f'Unable to stop docker container: {r}')
+
+
 def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False,
                compile_only:bool = False, run_only:bool = False,
                add_position_argument_at_start:Optional[str] = None,
-               extra_flag:Optional[str] = None) -> TemporaryDirectory:
+               extra_flag:Optional[str] = None) -> Union[TemporaryDirectory]:
     'Run the docker command'
 
     # Unravel the file path. How we do this depends on how we are doing this work.
@@ -138,9 +213,21 @@ def test_good_cpp_compile_and_run(cache_directory):
     'Good C++, first do the compile, and then do the run'
 
     info = generate_test_jet_fetch(cache_directory)
-    with run_docker(info, cache_directory, compile_only=True) as result_dir1:
-        with run_docker(info, cache_directory, run_only=True) as result_dir2:
-            assert os.path.exists(os.path.join(result_dir2, info.output_filename))
+    with docker_running_container(info, cache_directory) as runner:
+        runner.compile(info)
+        runner.run(info)
+        assert os.path.exists(os.path.join(runner.results_dir, info.output_filename))
+
+def test_good_cpp_compile_and_run_2_files(cache_directory):
+    'Make sure we can run a second file w/out seeing errors'
+    info = generate_test_jet_fetch(cache_directory)
+    with docker_running_container(info, cache_directory) as runner:
+        runner.compile(info)
+        runner.run(info)
+        out_file = os.path.join(runner.results_dir, info.output_filename)
+        os.unlink(out_file)
+        runner.run(info)
+        assert os.path.exists(out_file)
 
 def test_run_with_bad_position_arg(cache_directory):
     'Pass in a bogus argument at the end with no flag'
