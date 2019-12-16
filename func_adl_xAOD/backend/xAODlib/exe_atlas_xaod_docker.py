@@ -65,7 +65,7 @@ async def use_executor_xaod_docker(a: ast.AST):
 
         # Build a docker command to run this.
         datafile_mount = "" if datafile_dir is None else f'-v {datafile_dir}:/data'
-        docker_cmd = f'docker run --rm -v {f_spec.output_path}:/scripts -v {f_spec.output_path}:/results {datafile_mount} atlas/analysisbase:21.2.62 /scripts/{f_spec.main_script} /results'
+        docker_cmd = f'docker run --rm -v {f_spec.output_path}:/scripts -v {f_spec.output_path}:/results {datafile_mount} atlas/analysisbase:21.2.62 /scripts/{f_spec.main_script}'
         proc = await asyncio.create_subprocess_shell(docker_cmd,
                                                      stdout=asyncio.subprocess.PIPE,
                                                      stderr=asyncio.subprocess.PIPE)
