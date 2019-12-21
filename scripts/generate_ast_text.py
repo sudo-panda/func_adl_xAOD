@@ -19,9 +19,21 @@ def as_ast_lang_query_0():
     return r
 
 
+def as_ast_lang_query_1():
+    'Generate a real query that works on our 10 event root file'
+    r = EventDataset("localds:bogus") \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
+        .Select('lambda j: j.pt()/1000.0') \
+        .AsROOTTTree("junk.root", "analysis", ['JetPt']) \
+        .value(executor=translate_to_ast_language)
+    return r
+
+
 def as_ast_lang(query_number: int) -> str:
     if query_number == 0:
         return as_ast_lang_query_0()
+    elif query_number == 1:
+        return as_ast_lang_query_1()
     else:
         raise BaseException(f"Query number {query_number} is not known")
 
