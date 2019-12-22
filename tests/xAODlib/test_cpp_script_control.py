@@ -67,7 +67,7 @@ class docker_runner:
         'Run the script as a compile'
 
         results_dir = tempfile.TemporaryDirectory()
-        docker_cmd = f'docker exec {self._name} /bin/bash -c "/scripts/{info.main_script} -c"'
+        docker_cmd = f'docker exec {self._name} /bin/bash -c "cd /home/atlas; /scripts/{info.main_script} -c"'
         result = os.system(docker_cmd)
         if result != 0:
             raise docker_run_error(f"nope, that didn't work {result}!")
@@ -89,7 +89,7 @@ class docker_runner:
 
         # Docker command
         results_dir = tempfile.TemporaryDirectory()
-        docker_cmd = f'docker exec {self._name} /bin/bash -c "/scripts/{info.main_script} {cmd_options}"'
+        docker_cmd = f'docker exec {self._name} /bin/bash -c "cd /home/atlas; /scripts/{info.main_script} {cmd_options}"'
         result = os.system(docker_cmd)
         if result != 0:
             raise docker_run_error(f"nope, that didn't work {result}!")
@@ -108,7 +108,7 @@ class docker_running_container:
     def __enter__(self):
         'Get the docker command up and running'
         self._results_dir = tempfile.TemporaryDirectory()
-        docker_cmd = f'docker run --name test_func_xAOD --rm -d -v {self._code_dir}:/scripts -v {str(self._results_dir.name)}:/results -v {self._data_dir}:/data atlas/analysisbase:21.2.62 /bin/bash -c "while [ 1 ] ; do sleep 1; echo hi ; done"'
+        docker_cmd = f'docker run --name test_func_xAOD --rm -d -v {self._code_dir}:/scripts:ro -v {str(self._results_dir.name)}:/results -v {self._data_dir}:/data:ro atlas/analysisbase:21.2.62 /bin/bash -c "while [ 1 ] ; do sleep 1; echo hi ; done"'
         r = os.system(docker_cmd)
         if r != 0:
             raise BaseException(f'Unable to start docker deamon: {r}')
@@ -161,7 +161,7 @@ def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False,
 
     # Docker command
     results_dir = tempfile.TemporaryDirectory()
-    docker_cmd = f'docker run --rm -v {code_dir}:/scripts -v {str(results_dir.name)}:/results -v {base_dir}:/data atlas/analysisbase:21.2.62 /scripts/{info.main_script} {initial_args} {cmd_options}'
+    docker_cmd = f'docker run --rm -v {code_dir}:/scripts:ro -v {str(results_dir.name)}:/results -v {base_dir}:/data:ro atlas/analysisbase:21.2.62 /scripts/{info.main_script} {initial_args} {cmd_options}'
     result = os.system(docker_cmd)
     if result != 0:
         raise docker_run_error(f"nope, that didn't work {result}!")
