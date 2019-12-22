@@ -163,7 +163,7 @@ fi
 
 # Sort out the input file location
 if [ $run = 1 ]; then
-   source x86_64-slc6-gcc62-opt/setup.sh
+   source ${AnalysisBaseExternals_PLATFORM}/setup.sh
    if [ "$input_method" == "filelist" ]; then
       if [ -e $DIR/filelist.txt ]; then
          cp $DIR/filelist.txt .
