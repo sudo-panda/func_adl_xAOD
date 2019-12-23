@@ -124,7 +124,8 @@ class docker_running_container:
 def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False,
                compile_only:bool = False, run_only:bool = False,
                add_position_argument_at_start:Optional[str] = None,
-               extra_flag:Optional[str] = None) -> Union[TemporaryDirectory]:
+               extra_flag:Optional[str] = None,
+               output_dir:Optional[str] = None, mount_output:bool = True) -> Union[TemporaryDirectory]:
     'Run the docker command'
 
     # Unravel the file path. How we do this depends on how we are doing this work.
@@ -153,6 +154,14 @@ def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False,
     # Extra random flag
     if extra_flag is not None:
         cmd_options += f'{extra_flag} '
+
+    if output_dir is not None:
+        cmd_options += f'-o {output_dir} '
+    else:
+        output_dir = '/results'
+
+    results_dir = tempfile.TemporaryDirectory()
+    mount_output_options = f'-v {str(results_dir.name)}:{output_dir}' if mount_output else ''
     
     # Add an argument at the start?
     initial_args = ''
@@ -160,8 +169,7 @@ def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False,
         initial_args = f'{add_position_argument_at_start} '
 
     # Docker command
-    results_dir = tempfile.TemporaryDirectory()
-    docker_cmd = f'docker run --rm -v {code_dir}:/scripts:ro -v {str(results_dir.name)}:/results -v {base_dir}:/data:ro atlas/analysisbase:latest /scripts/{info.main_script} {initial_args} {cmd_options}'
+    docker_cmd = f'docker run --rm -v {code_dir}:/scripts:ro {mount_output_options} -v {base_dir}:/data:ro atlas/analysisbase:latest /scripts/{info.main_script} {initial_args} {cmd_options}'
     result = os.system(docker_cmd)
     if result != 0:
         raise docker_run_error(f"nope, that didn't work {result}!")
@@ -174,6 +182,21 @@ def test_good_cpp_total_run(cache_directory):
     info = generate_test_jet_fetch(cache_directory)
     with run_docker(info, cache_directory) as result_dir:
         assert os.path.exists(os.path.join(result_dir, info.output_filename))
+
+def test_good_cpp_total_run_output_dir(cache_directory):
+    'Good C++, and no arguments that does full run'
+
+    info = generate_test_jet_fetch(cache_directory)
+    with run_docker(info, cache_directory, output_dir='/home/atlas/results') as result_dir:
+        assert os.path.exists(os.path.join(result_dir, info.output_filename))
+
+def test_good_cpp_total_run_output_dir_no_mount(cache_directory):
+    'Good C++, and no arguments that does full run'
+
+    info = generate_test_jet_fetch(cache_directory)
+    with run_docker(info, cache_directory, output_dir='/home/atlas/results', mount_output=False) as result_dir:
+        # We aren't mounting so we can't look. So we just want to make sure no errors occur.
+        pass
 
 def test_good_cpp_total_run_file_as_arg(cache_directory):
     'Bad C++ generated, should throw an exception'
