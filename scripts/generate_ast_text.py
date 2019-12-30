@@ -29,11 +29,22 @@ def as_ast_lang_query_1():
     return r
 
 
+def as_ast_lang_query_2():
+    'Marc needed this to run some performance tests. THis is ugly, until qastle can accept subscripts'
+    r = EventDataset("localds:bogus") \
+        .Select('lambda e: (e.Jets("AntiKt4EMTopoJets").Select(lambda e: e.pt()), e.Muons("Muons").Select(lambda mu: mu.pt()))') \
+        .AsROOTTTree("junk.root", "analysis", ['ElePt', 'MuPt']) \
+        .value(executor=translate_to_ast_language)
+    return r
+
+
 def as_ast_lang(query_number: int) -> str:
     if query_number == 0:
         return as_ast_lang_query_0()
     elif query_number == 1:
         return as_ast_lang_query_1()
+    elif query_number == 2:
+        return as_ast_lang_query_2()
     else:
         raise BaseException(f"Query number {query_number} is not known")
 
