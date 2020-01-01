@@ -32,7 +32,7 @@ def as_ast_lang_query_1():
 def as_ast_lang_query_2():
     'Marc needed this to run some performance tests. THis is ugly, until qastle can accept subscripts'
     r = EventDataset("localds:bogus") \
-        .Select('lambda e: (e.Jets("AntiKt4EMTopoJets").Select(lambda e: e.pt()), e.Muons("Muons").Select(lambda mu: mu.pt()))') \
+        .Select('lambda e: (e.Electrons("Electrons").Select(lambda e: e.pt()), e.Muons("Muons").Select(lambda mu: mu.pt()))') \
         .AsROOTTTree("junk.root", "analysis", ['ElePt', 'MuPt']) \
         .value(executor=translate_to_ast_language)
     return r
