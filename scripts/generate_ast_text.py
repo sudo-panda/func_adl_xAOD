@@ -30,10 +30,11 @@ def as_ast_lang_query_1():
 
 
 def as_ast_lang_query_2():
-    'Marc needed this to run some performance tests. THis is ugly, until qastle can accept subscripts'
-    r = EventDataset("localds:bogus") \
-        .Select('lambda e: (e.Electrons("Electrons").Select(lambda e: e.pt()), e.Muons("Muons").Select(lambda mu: mu.pt()))') \
-        .AsROOTTTree("junk.root", "analysis", ['ElePt', 'MuPt']) \
+    'Marc needed this to run some performance tests.'
+    r = EventDataset('localds:bogus') \
+        .Select('lambda e: (e.Electrons("Electrons"), e.Muons("Muons"))') \
+        .Select('lambda e: (e[0].Select(lambda ele: ele.E()), e[0].Select(lambda ele: ele.pt()), e[0].Select(lambda ele: ele.phi()), e[0].Select(lambda ele: ele.eta()), e[1].Select(lambda mu: mu.E()), e[1].Select(lambda mu: mu.pt()), e[1].Select(lambda mu: mu.phi()), e[1].Select(lambda mu: mu.eta()))') \
+        .AsROOTTTree('dude.root', 'forkme', ['e_E', 'e_pt', 'e_phi', 'e_eta', 'mu_E', 'mu_pt', 'mu_phi', 'mu_eta']) \
         .value(executor=translate_to_ast_language)
     return r
 
