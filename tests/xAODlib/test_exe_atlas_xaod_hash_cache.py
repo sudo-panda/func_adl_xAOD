@@ -38,7 +38,7 @@ def build_ast_pandas() -> ast.AST:
 def build_ast_mark() -> ast.AST:
     return EventDataset('file://root.root') \
             .Select('lambda e: (e.Electrons("Electrons"), e.Muons("Muons"))') \
-            .Select('lambda e: (e[0].E, e[0].pt, e[0].phi, e[0].eta, e[1].E, e[1].pt, e[1].phi, e[1].eta)') \
+            .Select('lambda e: (e[0].Select(lambda ele: ele.E()), e[0].Select(lambda ele: ele.pt()), e[0].Select(lambda ele: ele.phi()), e[0].Select(lambda ele: ele.eta()), e[1].Select(lambda mu: mu.E()), e[1].Select(lambda mu: mu.pt()), e[1].Select(lambda mu: mu.phi()), e[1].Select(lambda mu: mu.eta()))') \
             .AsROOTTTree('dude.root', 'forkme', ['e_E', 'e_pt', 'e_phi', 'e_eta', 'mu_E', 'mu_pt', 'mu_phi', 'mu_eta']) \
             .value(executor=do_exe)
 
