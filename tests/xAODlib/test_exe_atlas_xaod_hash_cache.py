@@ -35,6 +35,13 @@ def build_ast_pandas() -> ast.AST:
         .AsPandasDF('JetPt') \
         .value(executor=do_exe)
 
+def build_ast_mark() -> ast.AST:
+    return EventDataset('file://root.root') \
+            .Select('lambda e: (e.Electrons("Electrons"), e.Muons("Muons"))') \
+            .Select('lambda e: (e[0].E, e[0].pt, e[0].phi, e[0].eta, e[1].E, e[1].pt, e[1].phi, e[1].eta)') \
+            .AsROOTTTree('dude.root', 'forkme', ['e_E', 'e_pt', 'e_phi', 'e_eta', 'mu_E', 'mu_pt', 'mu_phi', 'mu_eta']) \
+            .value(executor=do_exe)
+
 def test_no_cache_ever(local_cache_dir):
     # Item hasn't been cached before.
     r = use_executor_xaod_hash_cache(build_ast(), local_cache_dir)
@@ -45,6 +52,11 @@ def test_no_cache_ever(local_cache_dir):
     assert r.treename.startswith('forkme')
     # Because it isn't easy to change this in the ATLAS framework
     assert r.output_filename == 'ANALYSIS.root'
+
+def test_marcs_generates_cpp_code(local_cache_dir, ):
+    r = use_executor_xaod_hash_cache(build_ast_mark(), local_cache_dir)
+    assert r is not None
+
 
 def test_deltaR(local_cache_dir):
     'Make sure there is no exception when doing a deltaR'
