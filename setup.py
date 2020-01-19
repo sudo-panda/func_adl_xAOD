@@ -29,7 +29,7 @@ setup(name="func_adl_xAOD",
           "retry~=0.9",
           "jinja2",
           "func_adl==1.0.0a17",
-          "qastle"
+          "qastle==0.3"
       ],
       extras_require={
           'test': [
@@ -40,7 +40,7 @@ setup(name="func_adl_xAOD",
               'coverage',
               'flake8',
               'codecov',
-              'autopep8'
+              'autopep8',
           ],
       },
       classifiers=[
