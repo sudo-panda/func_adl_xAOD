@@ -26,7 +26,7 @@ setup(name="func_adl_xAOD",
           "pandas~=0.24",
           "uproot~=3.7",
           "retry~=0.9",
-          "func_adl==1.0.0a17",
+          "func_adl==1.0.0a18",
           "qastle==0.3"
       ],
       classifiers=[

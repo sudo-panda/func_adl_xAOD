@@ -57,8 +57,11 @@
     "python.linting.pylintEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.autoTestDiscoverOnSaveEnabled": false,
-    "python.pythonPath": "C:\\Users\\gordonwatts.MASSIVEHIGGS\\Anaconda3\\envs\\func-adl.xAOD-dev\\python.exe",
+    "python.pythonPath": "I:\\Anaconda3\\envs\\func_adl_xAOD\\python.exe",
     "pyright.openFilesOnly": false,
     "python.analysis.openFilesOnly": false,
-    "python.dataScience.debugJustMyCode": false
+    "python.dataScience.debugJustMyCode": false,
+    "python.testing.pytestArgs": [
+        "--no-cov"
+    ]
 }
