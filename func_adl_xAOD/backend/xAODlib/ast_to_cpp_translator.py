@@ -533,6 +533,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
     def visit_Subscript(self, node):
         'Index into an array. Check types, as tuple indexing can be very bad for us'
         v = self.get_rep(node.value)
+        print(ast.dump(node.slice))
         if not isinstance(v, crep.cpp_collection):
             raise BaseException("Do not know how to take the index of type '{0}'".format(v.cpp_type()))
 
@@ -554,6 +555,15 @@ class query_ast_visitor(FuncADLNodeVisitor):
         '''
         tuple_node.rep = crep.cpp_tuple(tuple(self.get_rep(e, retain_scope=True) for e in tuple_node.elts), self._gc.current_scope())
         self._result = tuple_node.rep
+
+    def visit_List(self, list_node):
+        r'''
+        Process a list. We visit each component of it, and build up a representation from each result.
+
+        See github bug #21 for the special case of dealing with (x1, x2, x3)[0].
+        '''
+        list_node.rep = crep.cpp_tuple(tuple(self.get_rep(e, retain_scope=True) for e in list_node.elts), self._gc.current_scope())
+        self._result = list_node.rep
 
     def visit_BinOp(self, node):
         'An in-line add'
