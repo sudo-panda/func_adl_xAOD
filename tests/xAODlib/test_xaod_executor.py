@@ -285,6 +285,18 @@ def test_electron_and_muon_with_tuple():
     print_lines(lines)
     assert find_line_with("->Fill()", lines) != 0
 
+def test_electron_and_muon_with_tuple_qastle():
+    # See if we can re-create a bug we are seeing with
+    # Marc's long query.
+    r = EventDataset("file://root.root") \
+        .Select('lambda e: (e.Electrons("Electrons"), e.Muons("Muons"))') \
+        .Select('lambda e: (e[0].Select(lambda ele: ele.E()), e[0].Select(lambda ele: ele.pt()), e[0].Select(lambda ele: ele.phi()), e[0].Select(lambda ele: ele.eta()), e[1].Select(lambda mu: mu.E()), e[1].Select(lambda mu: mu.pt()), e[1].Select(lambda mu: mu.phi()), e[1].Select(lambda mu: mu.eta()))') \
+        .AsROOTTTree('dude.root', 'forkme', ['e_E', 'e_pt', 'e_phi', 'e_eta', 'mu_E', 'mu_pt', 'mu_phi', 'mu_eta']) \
+        .value(executor=lambda a: exe_for_test(a, qastle_roundtrip=True))
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    assert find_line_with("->Fill()", lines) != 0
+
 def test_electron_and_muon_with_list():
     # See if we can re-create a bug we are seeing with
     # Marc's long query.

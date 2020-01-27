@@ -28,12 +28,18 @@ class dummy_executor:
         self.ResultRep = result_rep
         return self
 
-async def exe_for_test(a: ast.AST):
-    'Dummy executor that will return the ast properly rendered'
+async def exe_for_test(a: ast.AST, qastle_roundtrip=False):
+    'Dummy executor that will return the ast properly rendered. If qastle_roundtrip is true, then we will round trip the ast via qastle first.'
     # Setup the rep for this filter
     file = find_dataset(a)
     iterator = cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
     file.rep = cpp_sequence(iterator, iterator)
+
+    # Round trip qastle if requested.
+    if qastle_roundtrip:
+        import qastle
+        a_text = qastle.python_ast_to_text_ast(a)
+        a = qastle.text_ast_to_python_ast(a_text)
 
     # Use the dummy executor to process this, and return it.
     exe = dummy_executor()
