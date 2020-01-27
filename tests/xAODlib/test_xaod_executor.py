@@ -5,7 +5,7 @@ from func_adl_xAOD.backend.util_LINQ import find_dataset
 from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
 from tests.xAODlib.utils_for_testing import *
 from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
-import ast
+import pytest
 
 class Atlas_xAOD_File_Type:
     def __init__(self):
@@ -308,3 +308,22 @@ def test_electron_and_muon_with_list():
     lines = get_lines_of_code(r)
     print_lines(lines)
     assert find_line_with("->Fill()", lines) != 0
+
+def test_electron_and_muon_with_list_qastle():
+    # See if we can re-create a bug we are seeing with
+    # Marc's long query.
+    r = EventDataset("file://root.root") \
+        .Select('lambda e: [e.Electrons("Electrons"), e.Muons("Muons")]') \
+        .Select('lambda e: [e[0].Select(lambda ele: ele.E()), e[0].Select(lambda ele: ele.pt()), e[0].Select(lambda ele: ele.phi()), e[0].Select(lambda ele: ele.eta()), e[1].Select(lambda mu: mu.E()), e[1].Select(lambda mu: mu.pt()), e[1].Select(lambda mu: mu.phi()), e[1].Select(lambda mu: mu.eta())]') \
+        .AsROOTTTree('dude.root', 'forkme', ['e_E', 'e_pt', 'e_phi', 'e_eta', 'mu_E', 'mu_pt', 'mu_phi', 'mu_eta']) \
+        .value(executor=lambda a: exe_for_test(a, qastle_roundtrip=True))
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    assert find_line_with("->Fill()", lines) != 0
+
+@pytest.mark.asyncio
+
+async def test_electron_and_muon_from_qastle():
+    q = "(call ResultTTree (call Select (call Select (call EventDataset (list 'localds:bogus')) (lambda (list e) (list (call (attr e 'Electrons') 'Electrons') (call (attr e 'Muons') 'Muons')))) (lambda (list e) (list (call (attr (subscript e 0) 'Select') (lambda (list ele) (call (attr ele 'E')))) (call (attr (subscript e 0) 'Select') (lambda (list ele) (call (attr ele 'pt')))) (call (attr (subscript e 0) 'Select') (lambda (list ele) (call (attr ele 'phi')))) (call (attr (subscript e 0) 'Select') (lambda (list ele) (call (attr ele 'eta')))) (call (attr (subscript e 1) 'Select') (lambda (list mu) (call (attr mu 'E')))) (call (attr (subscript e 1) 'Select') (lambda (list mu) (call (attr mu 'pt')))) (call (attr (subscript e 1) 'Select') (lambda (list mu) (call (attr mu 'phi')))) (call (attr (subscript e 1) 'Select') (lambda (list mu) (call (attr mu 'eta'))))))) (list 'e_E' 'e_pt' 'e_phi' 'e_eta' 'mu_E' 'mu_pt' 'mu_phi' 'mu_eta') 'forkme' 'dude.root')"
+    r = await exe_from_qastle(q)
+    print(r)
