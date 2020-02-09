@@ -1,20 +1,23 @@
 # Code to support running an ast at a remote func-adl server.
 import ast
-from typing import Any
-import requests
-import os
 import importlib.util
-import time
-import uproot
-import pandas as pd
-import numpy as np
-import urllib
-from retry import retry
-import logging
 from io import StringIO
-import asyncio
+import logging
+import os
+import time
+from typing import List, Union, Any
+import urllib
+
+import ServiceX_fe
+from func_adl.util_ast import as_ast, function_call
+import numpy as np
+import pandas as pd
 from qastle import python_ast_to_text_ast
-from func_adl.util_ast import function_call, as_ast
+import requests
+from retry import retry
+import uproot
+
+from build.lib.func_adl_xAOD.backend.util_LINQ import extract_dataset_info
 
 
 class FuncADLServerException (BaseException):
@@ -62,6 +65,46 @@ def _best_access(files):
             # A different method of accessing besides a local file. Assume it is
             # awesome.
             return [uri, t_name]
+
+
+def _resolve_dataset(ast_request: ast.AST) -> Union[str, List[str]]:
+    '''Return any datasets in the request.
+
+    Arguments:
+        ast_request         The full AST of the request. Must contains a EventDataset call.
+
+    Returns:
+        str                 Name of the dataset
+        List[str]           List of all names of the datasets
+
+    Exceptions:
+        No EventDataset     If no call to EventDataset is made, this will blow up.
+    '''
+    class dataset_finder (ast.NodeVisitor):
+        def __init__(self):
+            self._datasets = None
+
+        'Any event datasets are resolved to be local.'
+        def visit_Call(self, node: ast.Call):
+            '''
+            Look at the call and see if the event dataset is in there.
+            '''
+            if not isinstance(node.func, ast.Name):
+                return super().generic_visit(node)
+            if node.func.id != 'EventDataset':
+                return super().generic_visit(node)
+
+            assert len(node.args) > 0
+            # Cache the names and return them.
+            if self._datasets is not None:
+                raise BaseException('Unable to deal with more than one EventDataset in a single query')
+            self._datasets = extract_dataset_info(node)
+
+    df = dataset_finder()
+    df.visit(ast_request)
+    if df._datasets is None:
+        raise BaseException('Unable to find EventDataset call - so cannot tell what dataset this query starts from!')
+    return df._datasets
 
 
 class WalkFuncADLAST(ast.NodeTransformer):
@@ -252,38 +295,33 @@ class WalkFuncADLAST(ast.NodeTransformer):
             return call_node
 
 
-async def use_exe_func_adl_server(a: ast.AST,
-                                  node='http://localhost:30000',
-                                  sleep_interval=5,
-                                  wait_for_finished=True,
-                                  quiet=True):
+async def use_exe_servicex(a: ast.AST,
+                           endpoint: str = 'http://localhost:5000/servicex'
+                           ) -> pd.DataFrame:
     r'''
     Run a query against a func-adl server backend. The appropriate part of the AST is shipped there, and it is interpreted.
 
     Arguments:
 
         a:                  The ast that we should evaluate
-        node:               The remote node/port combo where we can make the query. Defaults to the local thing.
-        sleep_interval:     How many seconds to wait between queries to the server when the data isn't yet ready
-        wait_for_finished:  If true will wait until the dataset has been fully processed. Otherwise will
-                            come back without a complete dataset just fine, as long as a least one file is done.
-        quiet               If true, run with as little output as possible.
+        endpoint:           The ServiceX node/port endpoint where we can make the query. Defaults to the local thing.
 
     Returns:
-        A dictionary with the following keys:
-        'files'          A list of files that contain the requested data. These are either local
-                         or they are available via xrootd (they will be file:// or root://).
+        dataframe           A Pandas DataFrame object that contains the result of the query.
     '''
+    # Now, make sure the ast is formed in a way we cna deal with.
+    if not isinstance(a, ast.Call):
+        raise FuncADLServerException(f'Unable to use ServiceX to fetch a {a}.')
+    a_func = a.func
+    if not isinstance(a_func, ast.Name):
+        raise FuncADLServerException(f'Unable to use ServiceX to fetch a call from {a_func}')
 
-    # The func-adl server can only deal with certian types of queries. So we need to
-    # make sure we only send those. Do that by walking the nodes.
-    # This is syncrhonous code, unfortunately, so we have to have it running
-    # in another thread to make this async (there is no way to fix this since the NodeVisitor
-    # class is totally synchronous).
-    async def run_task(wlk, run_ast):
-        # Todo: We shouldn't have to run in a separate thread. Most of the time we are spending
-        # sleeping!
-        return await asyncio.get_event_loop().run_in_executor(None, wlk.visit, run_ast)
+    # Parse out the dataset components, which will drive the servicex call.
+    q_str = python_ast_to_text_ast(a)
+    datasets = _resolve_dataset(a)
 
-    walker = WalkFuncADLAST(node, sleep_interval, partial_ds_ok=not wait_for_finished, quiet=quiet)
-    return await run_task(walker, a)
+    # Make the servicex call, asking for the appropriate return type.
+    if a_func.id == 'ResultPandasDF':
+        return await ServiceX_fe.get_data_async(q_str, datasets, servicex_endpoint=endpoint)
+    else:
+        raise FuncADLServerException(f'Unable to use ServiceX to fetch a result in the form {a_func.id}')

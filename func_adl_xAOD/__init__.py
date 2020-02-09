@@ -1,3 +1,3 @@
 # Main two things from this package
 # flake8: noqa
-from .use_exe_func_adl_server import FuncADLServerException, use_exe_func_adl_server
+from .use_exe_servicex import FuncADLServerException, use_exe_servicex
