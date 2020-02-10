@@ -8,7 +8,7 @@ import time
 from typing import List, Union, Any
 import urllib
 
-import ServiceX_fe
+import servicex
 from func_adl.util_ast import as_ast, function_call
 import numpy as np
 import pandas as pd
@@ -322,6 +322,6 @@ async def use_exe_servicex(a: ast.AST,
 
     # Make the servicex call, asking for the appropriate return type.
     if a_func.id == 'ResultPandasDF':
-        return await ServiceX_fe.get_data_async(q_str, datasets, servicex_endpoint=endpoint)
+        return await servicex.get_data_async(q_str, datasets, servicex_endpoint=endpoint)
     else:
         raise FuncADLServerException(f'Unable to use ServiceX to fetch a result in the form {a_func.id}')

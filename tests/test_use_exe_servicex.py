@@ -48,7 +48,7 @@ def simple_query_ast_Pandas():
 @pytest.fixture()
 def simple_Servicex_fe_watcher(mocker):
     'A magic mock'
-    m = mocker.patch('ServiceX_fe.get_data_async')
+    m = mocker.patch('servicex.get_data_async')
     f = asyncio.Future()
     f.set_result(pd.DataFrame())
     m.return_value = f
