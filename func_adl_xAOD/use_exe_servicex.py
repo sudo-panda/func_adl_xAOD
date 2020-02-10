@@ -321,7 +321,12 @@ async def use_exe_servicex(a: ast.AST,
     datasets = _resolve_dataset(a)
 
     # Make the servicex call, asking for the appropriate return type.
+    return_type = ''
     if a_func.id == 'ResultPandasDF':
-        return await servicex.get_data_async(q_str, datasets, servicex_endpoint=endpoint)
+        return_type = 'pandas'
+    elif a_func.id == 'ResultAwkwardArray':
+        return_type = 'awkward'
     else:
         raise FuncADLServerException(f'Unable to use ServiceX to fetch a result in the form {a_func.id}')
+
+    return await servicex.get_data_async(q_str, datasets, servicex_endpoint=endpoint, data_type=return_type)
