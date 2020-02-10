@@ -5,19 +5,19 @@ from io import StringIO
 import logging
 import os
 import time
-from typing import List, Union, Any
+from typing import Any, List, Union
 import urllib
 
-import servicex
 from func_adl.util_ast import as_ast, function_call
 import numpy as np
 import pandas as pd
 from qastle import python_ast_to_text_ast
 import requests
 from retry import retry
+import servicex
 import uproot
 
-from build.lib.func_adl_xAOD.backend.util_LINQ import extract_dataset_info
+from .backend.util_LINQ import extract_dataset_info
 
 
 class FuncADLServerException (BaseException):
