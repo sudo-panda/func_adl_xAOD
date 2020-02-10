@@ -24,7 +24,7 @@ setup(name="func_adl_xAOD",
       test_suite="tests",
       install_requires=[
           "requests~=2.0",
-          "pandas~=0.24",
+          "pandas~=1.0",
           "uproot~=3.7",
           "retry~=0.9",
           "jinja2",
