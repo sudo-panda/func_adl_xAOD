@@ -8,7 +8,7 @@ from func_adl import EventDataset
 import pandas as pd
 import pytest
 
-from func_adl_xAOD import FuncADLServerException, use_exe_servicex
+from func_adl_xAOD import use_exe_servicex
 
 async def dummy_executor_coroutine(a: ast.AST) -> ast.AST:
     'Called to evaluate a guy - but it will take a long time'
@@ -79,6 +79,7 @@ async def test_pandas_query(simple_query_ast_Pandas, simple_Servicex_fe_watcher)
     assert len(args) == 2
     assert args[1] == ['localds://bogus_ds']
     assert args[0].find('SelectMany') >= 0
+    assert args[0].startswith('(call ResultTTree')
     assert kwargs['data_type'] == 'pandas'
 
 
@@ -96,6 +97,7 @@ async def test_awkward_query(simple_query_ast_Awkward, simple_Servicex_fe_watche
     assert len(args) == 2
     assert args[1] == ['localds://bogus_ds']
     assert args[0].find('SelectMany') >= 0
+    assert args[0].startswith('(call ResultTTree')
     assert kwargs['data_type'] == 'awkward'
 
 

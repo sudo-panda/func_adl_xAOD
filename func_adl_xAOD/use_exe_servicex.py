@@ -316,17 +316,26 @@ async def use_exe_servicex(a: ast.AST,
     if not isinstance(a_func, ast.Name):
         raise FuncADLServerException(f'Unable to use ServiceX to fetch a call from {a_func}')
 
-    # Parse out the dataset components, which will drive the servicex call.
-    q_str = python_ast_to_text_ast(a)
-    datasets = _resolve_dataset(a)
-
-    # Make the servicex call, asking for the appropriate return type.
+    # Make the servicex call, asking for the appropriate return type. Depending on the return-type
+    # alter it so it can return something that ServiceX can understand.
     return_type = ''
+    top_level_ast = a
+
     if a_func.id == 'ResultPandasDF':
         return_type = 'pandas'
+        source = a.args[0]
+        cols = a.args[1]
+        top_level_ast = ast.Call(func=ast.Name('ResultTTree'), args=[source, cols, ast.Str('treeme'), ast.Str('file.root')])
     elif a_func.id == 'ResultAwkwardArray':
         return_type = 'awkward'
+        source = a.args[0]
+        cols = a.args[1]
+        top_level_ast = ast.Call(func=ast.Name('ResultTTree'), args=[source, cols, ast.Str('treeme'), ast.Str('file.root')])
     else:
         raise FuncADLServerException(f'Unable to use ServiceX to fetch a result in the form {a_func.id}')
+
+    # Parse out the dataset components, which will drive the servicex call.
+    q_str = python_ast_to_text_ast(top_level_ast)
+    datasets = _resolve_dataset(a)
 
     return await servicex.get_data_async(q_str, datasets, servicex_endpoint=endpoint, data_type=return_type)
