@@ -36,6 +36,16 @@ def simple_query_ast_Pandas():
         .value(executor=dummy_executor_coroutine)
 
 @pytest.fixture()
+def simple_scoped_query_ast_Pandas():
+    'Return a simple ast for a query'
+    f_ds = EventDataset(r'localds://user.fork:bogus_ds')
+    return f_ds \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
+        .Select('lambda j: j.pt()/1000.0') \
+        .AsPandasDF('JetPt') \
+        .value(executor=dummy_executor_coroutine)
+
+@pytest.fixture()
 def simple_query_ast_Awkward():
     'Return a simple ast for a query'
     f_ds = EventDataset(r'localds://bogus_ds')
@@ -99,6 +109,24 @@ async def test_awkward_query(simple_query_ast_Awkward, simple_Servicex_fe_watche
     assert args[0].find('SelectMany') >= 0
     assert args[0].startswith('(call ResultTTree')
     assert kwargs['data_type'] == 'awkward'
+
+
+@pytest.mark.asyncio
+async def test_scoped_dataset_name(simple_scoped_query_ast_Pandas, simple_Servicex_fe_watcher):
+    'Simple pandas based query'
+    r = await(use_exe_servicex(simple_scoped_query_ast_Pandas))
+    assert r is not None
+    assert isinstance(r, pd.DataFrame)
+    assert len(r) == 0
+
+    simple_Servicex_fe_watcher.assert_called_once()
+    args = simple_Servicex_fe_watcher.call_args[0]
+    kwargs = simple_Servicex_fe_watcher.call_args[1]
+    assert len(args) == 2
+    assert args[1] == ['user.fork:bogus_ds']
+    assert args[0].find('SelectMany') >= 0
+    assert args[0].startswith('(call ResultTTree')
+    assert kwargs['data_type'] == 'pandas'
 
 
 @pytest.mark.asyncio

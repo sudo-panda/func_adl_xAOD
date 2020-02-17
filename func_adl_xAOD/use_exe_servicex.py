@@ -72,9 +72,10 @@ def _clean_url(ds: str) -> str:
     if ds.find('//') < 0:
         return ds
 
+    # Strip off the scheme name
     url_p = urllib.parse.urlparse(ds)
-    assert url_p.hostname is not None
-    return url_p.hostname
+    ds_name = ds[len(url_p.scheme) + 3:]
+    return ds_name
 
 
 def _resolve_dataset(ast_request: ast.AST) -> Union[str, List[str]]:
