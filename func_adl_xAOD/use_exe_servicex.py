@@ -67,6 +67,16 @@ def _best_access(files):
             return [uri, t_name]
 
 
+def _clean_url(ds: str) -> str:
+    'If the dataset name coming in is a url, then strip everything off'
+    if ds.find('//') < 0:
+        return ds
+
+    url_p = urllib.parse.urlparse(ds)
+    assert url_p.hostname is not None
+    return url_p.hostname
+
+
 def _resolve_dataset(ast_request: ast.AST) -> Union[str, List[str]]:
     '''Return any datasets in the request.
 
@@ -75,7 +85,7 @@ def _resolve_dataset(ast_request: ast.AST) -> Union[str, List[str]]:
 
     Returns:
         str                 Name of the dataset
-        List[str]           List of all names of the datasets
+        List[str]           List of all names of the datasets. URLs are stripped out, if present.
 
     Exceptions:
         No EventDataset     If no call to EventDataset is made, this will blow up.
@@ -104,7 +114,11 @@ def _resolve_dataset(ast_request: ast.AST) -> Union[str, List[str]]:
     df.visit(ast_request)
     if df._datasets is None:
         raise BaseException('Unable to find EventDataset call - so cannot tell what dataset this query starts from!')
-    return df._datasets
+
+    # If there is any encoding in the dataset, remove it.
+    datasets = [_clean_url(ds) for ds in df._datasets]
+
+    return datasets
 
 
 class WalkFuncADLAST(ast.NodeTransformer):

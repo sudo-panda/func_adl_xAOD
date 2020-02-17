@@ -77,7 +77,7 @@ async def test_pandas_query(simple_query_ast_Pandas, simple_Servicex_fe_watcher)
     args = simple_Servicex_fe_watcher.call_args[0]
     kwargs = simple_Servicex_fe_watcher.call_args[1]
     assert len(args) == 2
-    assert args[1] == ['localds://bogus_ds']
+    assert args[1] == ['bogus_ds']
     assert args[0].find('SelectMany') >= 0
     assert args[0].startswith('(call ResultTTree')
     assert kwargs['data_type'] == 'pandas'
@@ -95,7 +95,7 @@ async def test_awkward_query(simple_query_ast_Awkward, simple_Servicex_fe_watche
     args = simple_Servicex_fe_watcher.call_args[0]
     kwargs = simple_Servicex_fe_watcher.call_args[1]
     assert len(args) == 2
-    assert args[1] == ['localds://bogus_ds']
+    assert args[1] == ['bogus_ds']
     assert args[0].find('SelectMany') >= 0
     assert args[0].startswith('(call ResultTTree')
     assert kwargs['data_type'] == 'awkward'
