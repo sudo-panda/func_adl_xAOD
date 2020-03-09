@@ -1,20 +1,22 @@
 # Drive the translate of the AST from start into a set of files, which one can then do whatever
 # is needed to.
-import sys
-import os
-import jinja2
 import ast
 from collections import namedtuple
+import os
+import sys
 
-from func_adl.ast.function_simplifier import simplify_chained_calls
 from func_adl.ast.aggregate_shortcuts import aggregate_node_transformer
 from func_adl.ast.func_adl_ast_utils import change_extension_functions_to_calls
-from func_adl_xAOD.backend.cpplib.cpp_functions import find_known_functions
-from func_adl_xAOD.util_LINQ import extract_dataset_info
+from func_adl.ast.function_simplifier import simplify_chained_calls
+import jinja2
+
 import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
-from func_adl_xAOD.backend.xAODlib.ast_to_cpp_translator import query_ast_visitor
+from func_adl_xAOD.backend.cpplib.cpp_functions import find_known_functions
 import func_adl_xAOD.backend.cpplib.cpp_representation as crep
-from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
+from func_adl_xAOD.util_LINQ import extract_dataset_info
+
+from .ast_to_cpp_translator import query_ast_visitor
+from .util_scope import top_level_scope
 
 xAODExecutionInfo = namedtuple('xAODExecutionInfo', 'input_urls result_rep output_path main_script all_filenames')
 
