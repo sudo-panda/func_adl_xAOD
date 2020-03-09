@@ -53,16 +53,6 @@ def simple_query_ast_Awkward():
         .AsAwkwardArray('JetPt') \
         .value(executor=dummy_executor_coroutine)
 
-# @pytest.fixture()
-# def simple_query_ast_awkward():
-#     'Return a simple ast for a query'
-#     f_ds = EventDataset(r'localds://bogus_ds')
-#     return f_ds \
-#         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
-#         .Select('lambda j: j.pt()/1000.0') \
-#         .AsAwkwardArray('JetPt') \
-#         .value(executor=dummy_executor_coroutine)
-
 @pytest.fixture()
 def simple_Servicex_fe_watcher(mocker):
     'A magic mock'
