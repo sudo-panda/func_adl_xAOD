@@ -30,7 +30,7 @@ setup(name="func_adl_xAOD",
           "jinja2",
           "func_adl==1.0.0a18",
           "qastle==0.3",
-          "ServiceX-fe",
+          "servicex",
       ],
       extras_require={
           'test': [
