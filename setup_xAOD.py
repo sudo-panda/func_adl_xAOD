@@ -42,4 +42,5 @@ setup(name="func_adl_xAOD",
           "Topic :: Utilities",
       ],
       platforms="Any",
+      python_requires='>=3.7, <3.8',
       )

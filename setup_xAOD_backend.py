@@ -21,6 +21,7 @@ setup(name="func_adl_xAOD.backend",
       url="https://github.com/iris-hep/func_adl_xAOD",
       license="TBD",
       test_suite="tests",
+      python_requires='>=3.7, <3.8',
       install_requires=[
           'jinja2',
           f"func_adl_xAOD=={version_func_adl_xaod}",
