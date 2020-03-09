@@ -1,8 +1,6 @@
 # Tests to make sure we get at the functionality in the remote executor.
 import ast
 import asyncio
-import os
-from unittest.mock import Mock
 
 from func_adl import EventDataset
 import pandas as pd
