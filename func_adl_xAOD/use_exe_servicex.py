@@ -17,7 +17,7 @@ from retry import retry
 import servicex
 import uproot
 
-from .backend.util_LINQ import extract_dataset_info
+from .util_LINQ import extract_dataset_info
 
 
 class FuncADLServerException (BaseException):

@@ -1,16 +1,20 @@
 # Python code to help with working with a grid dataset
 # that should be downloaded locally to be run on.False
-from func_adl.ast.func_adl_ast_utils import FuncADLNodeTransformer, function_call
-from func_adl.util_ast import as_ast
-from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_docker import use_executor_xaod_docker
-from ..util_LINQ import extract_dataset_info
-from urllib import parse
-import os
 import ast
-import errno
-from typing import List, Optional
-import requests
 import asyncio
+import errno
+import os
+from typing import List, Optional
+from urllib import parse
+
+from func_adl.ast.func_adl_ast_utils import (
+    FuncADLNodeTransformer, function_call)
+from func_adl.util_ast import as_ast
+import requests
+
+from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_docker import (
+    use_executor_xaod_docker)
+from func_adl_xAOD.util_LINQ import extract_dataset_info
 
 
 # Resolvers:

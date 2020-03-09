@@ -1,11 +1,13 @@
 # Tests that make sure the xaod executor is working correctly
 from func_adl import EventDataset
-from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import atlas_xaod_executor
-from func_adl_xAOD.backend.util_LINQ import find_dataset
-from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
-from tests.xAODlib.utils_for_testing import *
-from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
 import pytest
+
+from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
+from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import (
+    atlas_xaod_executor)
+from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
+from func_adl_xAOD.util_LINQ import find_dataset
+from tests.xAODlib.utils_for_testing import *
 
 class Atlas_xAOD_File_Type:
     def __init__(self):

@@ -4,10 +4,13 @@ from collections import namedtuple
 import os
 import pickle
 from typing import Iterable
+
 from func_adl.ast import ast_hash
 from func_adl.ast.func_adl_ast_utils import is_call_of
-from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import atlas_xaod_executor
-from func_adl_xAOD.backend.util_LINQ import find_dataset, extract_dataset_info
+
+from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import (
+    atlas_xaod_executor)
+from func_adl_xAOD.util_LINQ import extract_dataset_info, find_dataset
 
 
 class CacheExeException(BaseException):

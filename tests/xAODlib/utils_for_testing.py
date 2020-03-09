@@ -1,13 +1,16 @@
 # Some utilities to help with testing out when we have to run a dummy version of the
 # xaod executor.
 #
-from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import atlas_xaod_executor
-from func_adl_xAOD.backend.cpplib.cpp_representation import cpp_variable, cpp_sequence
-from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
-from func_adl_xAOD.backend.util_LINQ import find_dataset
-from func_adl_xAOD.backend.xAODlib.ast_to_cpp_translator import query_ast_visitor
-
 import ast
+
+from func_adl_xAOD.backend.cpplib.cpp_representation import (
+    cpp_sequence, cpp_variable)
+from func_adl_xAOD.backend.xAODlib.ast_to_cpp_translator import (
+    query_ast_visitor)
+from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import (
+    atlas_xaod_executor)
+from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
+from func_adl_xAOD.util_LINQ import find_dataset
 
 
 class dummy_executor:

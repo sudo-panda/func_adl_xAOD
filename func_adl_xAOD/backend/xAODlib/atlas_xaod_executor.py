@@ -10,7 +10,7 @@ from func_adl.ast.function_simplifier import simplify_chained_calls
 from func_adl.ast.aggregate_shortcuts import aggregate_node_transformer
 from func_adl.ast.func_adl_ast_utils import change_extension_functions_to_calls
 from func_adl_xAOD.backend.cpplib.cpp_functions import find_known_functions
-from func_adl_xAOD.backend.util_LINQ import extract_dataset_info
+from func_adl_xAOD.util_LINQ import extract_dataset_info
 import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
 from func_adl_xAOD.backend.xAODlib.ast_to_cpp_translator import query_ast_visitor
 import func_adl_xAOD.backend.cpplib.cpp_representation as crep
@@ -92,7 +92,7 @@ class atlas_xaod_executor:
         """
 
         # Find the base file dataset and mark it.
-        from func_adl_xAOD.backend.util_LINQ import find_dataset
+        from func_adl_xAOD.util_LINQ import find_dataset
         file = find_dataset(ast)
         iterator = crep.cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
         file.rep = crep.cpp_sequence(iterator, iterator)

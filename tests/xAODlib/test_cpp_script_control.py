@@ -1,17 +1,21 @@
 # Tests that will make sure the runner.sh script can do everything it is supposed to do,
 # as we are now asking a fair amount from it.
-from func_adl_xAOD.backend.util_LINQ import extract_dataset_info
-from .control_tests import run_long_running_tests, f
-from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_hash_cache import use_executor_xaod_hash_cache
-pytestmark = run_long_running_tests
-import pytest
-import tempfile
 import os
-from typing import cast, Optional, Union
 import sys
+import tempfile
+from tempfile import TemporaryDirectory
+from typing import Optional, Union, cast
 from urllib import parse
 
-from tempfile import TemporaryDirectory
+import pytest
+
+from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_hash_cache import (
+    use_executor_xaod_hash_cache)
+from func_adl_xAOD.util_LINQ import extract_dataset_info
+
+from .control_tests import f, run_long_running_tests
+pytestmark = run_long_running_tests
+
 
 @pytest.yield_fixture()
 def cache_directory():
