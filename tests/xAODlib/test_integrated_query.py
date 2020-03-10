@@ -11,6 +11,11 @@ from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
 from func_adl_xAOD.backend.dataset_resolvers.gridds import use_executor_dataset_resolver
 import asyncio
 import os
+import sys
+
+
+if os.name == 'nt':
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 def test_select_first_of_array():
     # The hard part is that First() here does not return a single item, but, rather, an array that
@@ -39,11 +44,11 @@ async def test_two_simultaneous_runs():
     f_training_df_1 = f \
             .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Tracks("InDetTrackParticles")).First().Count()') \
             .AsPandasDF('dude') \
-            .future_value(executor=use_executor_dataset_resolver)
+            .value_async(executor=use_executor_dataset_resolver)
     f_training_df_2 = f \
             .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Tracks("InDetTrackParticles")).First().Count()') \
             .AsPandasDF('dude') \
-            .future_value(executor=use_executor_dataset_resolver)
+            .value_async(executor=use_executor_dataset_resolver)
     r1, r2 = await asyncio.gather(f_training_df_1, f_training_df_2)
     assert r1.iloc[0]['dude'] == 1897
     assert r2.iloc[0]['dude'] == 1897
