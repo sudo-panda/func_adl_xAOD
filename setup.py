@@ -42,7 +42,8 @@ setup(name="func_adl_xAOD",
               'flake8',
               'codecov',
               'autopep8',
-              'twine'
+              'twine',
+              'testfixtures'
           ],
       },
       classifiers=[

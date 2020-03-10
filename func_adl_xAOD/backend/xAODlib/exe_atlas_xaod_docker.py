@@ -1,12 +1,14 @@
 # Use an in-process docker container to do the actual execution work.
-from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import atlas_xaod_executor
-import func_adl_xAOD.backend.xAODlib.result_handlers as rh
-
 import ast
+import asyncio
+import logging
+import os
 import tempfile
 from urllib.parse import urlparse
-import os
-import asyncio
+
+from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import (
+    atlas_xaod_executor)
+import func_adl_xAOD.backend.xAODlib.result_handlers as rh
 
 # Use this to turn on dumping of output and C++
 dump_running_log = True
@@ -71,9 +73,10 @@ async def use_executor_xaod_docker(a: ast.AST):
                                                      stderr=asyncio.subprocess.PIPE)
         p_stdout, p_stderr = await proc.communicate()
         if proc.returncode != 0 or dump_running_log:
-            print(f"Result of run: {proc.returncode}")
-            print(f'Output:\n{p_stdout}')
-            print(f'Error:\n{p_stderr}')
+            lg = logging.getLogger(__name__)
+            lg.info(f"Result of run: {proc.returncode}")
+            lg.info(f'Output:\n{p_stdout}')
+            lg.info(f'Error:\n{p_stderr}')
         if dump_cpp or proc.returncode != 0:
             os.system("type " + os.path.join(str(local_run_dir), "query.cxx"))
         if proc.returncode != 0:
