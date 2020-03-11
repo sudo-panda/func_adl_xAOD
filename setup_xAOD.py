@@ -26,7 +26,7 @@ setup(name="func_adl_xAOD",
           "pandas~=1.0",
           "uproot~=3.7",
           "retry~=0.9",
-          "func_adl.ast==1.0.0a19",
+          "func_adl.ast==1.0.0a21",
           "qastle==0.3",
           "servicex"
       ],
