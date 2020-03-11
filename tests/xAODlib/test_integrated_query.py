@@ -1,18 +1,20 @@
 # Contains test that will run the full query.
+import asyncio
+import logging
+import os
+
+from func_adl import EventDataset
 import pytest
 
-# These are very long running do not run them normally!!
-from .control_tests import run_long_running_tests, f
-pytestmark = run_long_running_tests
+from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
+from func_adl_xAOD.backend.dataset_resolvers.gridds import (
+    use_executor_dataset_resolver)
+from testfixtures import LogCapture
+
+from .control_tests import f, run_long_running_tests
 
 # These are *long* tests and so should not normally be run. Each test can take of order 30 seconds or so!!
-from func_adl import EventDataset
-from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
-from func_adl_xAOD.backend.dataset_resolvers.gridds import use_executor_dataset_resolver
-import asyncio
-import os
-import sys
-
+pytestmark = run_long_running_tests
 
 if os.name == 'nt':
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
@@ -80,6 +82,16 @@ def test_first_object_in_event():
         .AsPandasDF('FirstJetPt') \
         .value(executor=use_executor_dataset_resolver)
     assert int(training_df.iloc[0]['FirstJetPt']) == 257
+
+def test_no_reported_statistics():
+    'Look at the log file and report if it contains a statistics line'
+
+    with LogCapture() as l_cap:
+        f \
+            .Select('lambda e: e.Jets("AntiKt4EMTopoJets").First().pt()/1000.0') \
+            .AsPandasDF('FirstJetPt') \
+            .value(executor=use_executor_dataset_resolver)
+        assert str(l_cap).find('TFileAccessTracer   INFO    Sending') == -1
 
 def test_first_object_in_event_with_where():
     # Make sure First puts it's if statement in the right place.

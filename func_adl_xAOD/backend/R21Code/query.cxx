@@ -1,5 +1,6 @@
 #include <AsgTools/MessageCheck.h>
 #include <analysis/query.h>
+#include "xAODRootAccess/tools/TFileAccessTracer.h"
 
 {% for i in include_files %}
 #include "{{i}}"
@@ -16,6 +17,12 @@ query :: query (const std::string& name,
   // declare all properties for your algorithm.  Note that things like
   // resetting statistics variables or booking histograms should
   // rather go into the initialize() function.
+
+  // Turn off file access statistics reporting. This is, according to Attila, useful
+  // for GRID jobs, but not so much for other jobs. For those of us not located at CERN
+  // and for a large amount of data, this can sometimes take a minute.
+  // So we get rid of it.
+  xAOD::TFileAccessTracer::enableDataSubmission(false);
 }
 
 StatusCode query :: initialize ()
