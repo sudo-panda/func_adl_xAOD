@@ -1,3 +1,4 @@
+.\.venv\Scripts\Activate.ps1
 Remove-Item -ErrorAction SilentlyContinue -Recurse ./dist/*
 Remove-Item -ErrorAction SilentlyContinue -Recurse ./build/*
 Remove-Item -ErrorAction SilentlyContinue -Recurse -Confirm:$false ./*.egg-info
