@@ -57,7 +57,7 @@
     "python.linting.pylintEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.autoTestDiscoverOnSaveEnabled": false,
-    "python.pythonPath": "i:\\gwatts\\Code\\irishep\\func_adl.xAOD\\.venv\\Scripts\\python.exe",
+    "python.pythonPath": ".venv\\Scripts\\python.exe",
     "pyright.openFilesOnly": false,
     "python.analysis.openFilesOnly": false,
     "python.dataScience.debugJustMyCode": false,

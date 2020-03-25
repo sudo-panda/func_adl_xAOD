@@ -43,7 +43,8 @@ setup(name="func_adl_xAOD",
               'codecov',
               'autopep8',
               'twine',
-              'testfixtures'
+              'testfixtures',
+              'wheel'
           ],
       },
       classifiers=[
