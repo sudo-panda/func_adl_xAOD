@@ -53,7 +53,7 @@ def _find(pathname: str, matchFunc=os.path.isfile):
         if matchFunc(candidate):
             return candidate
     all_dirs = ','.join(sys.path + ['/usr/local'])
-    raise BaseException(f"Can't find file '{pathname}'. Looked in {all_dirs}")
+    raise Exception(f"Can't find file '{pathname}'. Looked in {all_dirs}")
 
 
 def find_file(pathname):

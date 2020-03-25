@@ -23,10 +23,10 @@ class gc_scope:
         you will get back everything but the last thing. -2 last two thigns, etc.
         '''
         if type(key) is not int:
-            raise BaseException("Key must be an integer")
+            raise Exception("Key must be an integer")
 
         if len(self._scope_stack[:key]) == 0:
-            raise BaseException("Winding up at the top level scope is not yet supported")
+            raise Exception("Winding up at the top level scope is not yet supported")
 
         return gc_scope(self._scope_stack[:key])
 
@@ -63,7 +63,7 @@ class gc_scope_top_level:
         return True
 
     def __getitem__(self, key: int) -> gc_scope:
-        raise BaseException("This should never be called. Internal error")
+        raise Exception("This should never be called. Internal error")
 
     def starts_with(self, c):
         'Starts with can only be true for top level if the other guy is top level'

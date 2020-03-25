@@ -46,9 +46,9 @@ class generated_code:
                 self._scope_stack = self._scope_stack + (st,)
         else:
             if not isinstance(below, block):
-                raise BaseException("Internal Error: Can't a statement below a statement that isn't a scoping block.")
+                raise Exception("Internal Error: Can't a statement below a statement that isn't a scoping block.")
             if not isinstance(st, block):
-                raise BaseException("Internal Error: Can't a statement that isn't a scoping block.")
+                raise Exception("Internal Error: Can't a statement that isn't a scoping block.")
             for s in below._statements:
                 st.add_statement(s)
             below._statements = []
@@ -70,7 +70,7 @@ class generated_code:
     def set_scope(self, scope_info: Union[gc_scope, gc_scope_top_level]):
         'Set the scope to a previously cached value'
         if scope_info is None:
-            raise BaseException("Scope can't be set to null")
+            raise Exception("Scope can't be set to null")
         if scope_info.is_top_level():
             # Special case this guy as it is a unicorn.
             self._scope_stack = self._scope_stack[:1]

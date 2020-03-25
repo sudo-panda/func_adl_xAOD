@@ -53,10 +53,10 @@ resolve_callbacks = {
 }
 
 
-class GridDsException (BaseException):
+class GridDsException (Exception):
     'Thrown when an error occurs going after a grid dataset of some sort'
     def __init__(self, message):
-        BaseException.__init__(self, message)
+        Exception.__init__(self, message)
 
 
 def resolve_local_ds_url(url: str) -> Optional[List[str]]:
@@ -151,5 +151,5 @@ async def use_executor_dataset_resolver(a: ast.AST, chained_executor=use_executo
 
     # Ok, we have a modified AST and we can now get it processed.
     if am is None:
-        raise BaseException("internal programming error - resolved AST should not be null")
+        raise Exception("internal programming error - resolved AST should not be null")
     return await chained_executor(am)

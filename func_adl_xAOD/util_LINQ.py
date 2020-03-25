@@ -26,7 +26,7 @@ def find_dataset(a: ast.AST) -> ast.Call:
 
         def call_EventDataset(self, node: ast.Call, args: List[ast.AST]):
             if self.ds is not None:
-                raise BaseException("AST Query has more than one EventDataSet in it!")
+                raise Exception("AST Query has more than one EventDataSet in it!")
             self.ds = node
             return node
 
@@ -34,7 +34,7 @@ def find_dataset(a: ast.AST) -> ast.Call:
     ds_f.visit(a)
 
     if ds_f.ds is None:
-        raise BaseException("AST Query has no root EventDataset")
+        raise Exception("AST Query has no root EventDataset")
 
     return ds_f.ds
 

@@ -163,7 +163,7 @@ def test_Select_of_2D_array_fails():
             .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: (j.pt()/1000.0, j.eta()))') \
             .AsPandasDF(['JetInfo']) \
             .value(executor=exe_for_test)
-    except BaseException as e:
+    except Exception as e:
         msg = str(e)
     assert "Nested data structures" in msg
 

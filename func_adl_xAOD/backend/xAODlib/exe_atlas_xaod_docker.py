@@ -15,9 +15,9 @@ dump_running_log = True
 dump_cpp = False
 
 
-class AtlasXAODDockerException(BaseException):
+class AtlasXAODDockerException(Exception):
     def __init__(self, message):
-        BaseException.__init__(self, message)
+        Exception.__init__(self, message)
 
 
 # Result handlers - for each return type representation, add a handler that can process it
@@ -59,7 +59,7 @@ async def use_executor_xaod_docker(a: ast.AST):
                     else:
                         t = os.path.dirname(ds_path)
                         if t != datafile_dir:
-                            raise BaseException(f'Data files must be from the same directory. Have seen {t} and {datafile_dir} so far.')
+                            raise Exception(f'Data files must be from the same directory. Have seen {t} and {datafile_dir} so far.')
                 elif scheme == 'root':
                     flist_out.write(f'{scheme}://{netloc}/{path}')
                 else:
@@ -80,9 +80,9 @@ async def use_executor_xaod_docker(a: ast.AST):
         if dump_cpp or proc.returncode != 0:
             os.system("type " + os.path.join(str(local_run_dir), "query.cxx"))
         if proc.returncode != 0:
-            raise BaseException(f"Docker command failed with error {proc.returncode} ({docker_cmd})")
+            raise Exception(f"Docker command failed with error {proc.returncode} ({docker_cmd})")
 
         # Now that we have run, we can pluck out the result.
         if type(f_spec.result_rep) not in result_handlers:
-            raise BaseException(f'Do not know how to process result of type {type(f_spec.result_rep.__name__)}.')
+            raise Exception(f'Do not know how to process result of type {type(f_spec.result_rep.__name__)}.')
         return result_handlers[type(f_spec.result_rep)](f_spec.result_rep, local_run_dir)

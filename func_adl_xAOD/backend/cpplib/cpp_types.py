@@ -26,7 +26,7 @@ class terminal:
         elif self._type == "int":
             return "0"
         else:
-            raise BaseException("Do not know a default value for the type '{0}'.".format(self._type))
+            raise Exception("Do not know a default value for the type '{0}'.".format(self._type))
 
 
 class collection:

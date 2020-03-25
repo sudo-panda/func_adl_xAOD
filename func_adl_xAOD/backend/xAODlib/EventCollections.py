@@ -85,9 +85,9 @@ def getCollection(info, call_node):
     '''
     # Get the name jet collection to look at.
     if len(call_node.args) != 1:
-        raise BaseException("Calling {0} - only one argument is allowed".format(info['function_name']))
+        raise Exception("Calling {0} - only one argument is allowed".format(info['function_name']))
     if not isinstance(call_node.args[0], ast.Str):
-        raise BaseException("Calling {0} - only acceptable argument is a string".format(info['function_name']))
+        raise Exception("Calling {0} - only acceptable argument is a string".format(info['function_name']))
 
     # Fill in the CPP block next.
     r = cpp_ast.CPPCodeValue()

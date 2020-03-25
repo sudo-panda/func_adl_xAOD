@@ -46,9 +46,9 @@ def generate_test_jet_fetch_bad(cache_dir: str):
         .value(executor=lambda a: use_executor_xaod_hash_cache(a, cache_path=cache_dir, no_hash_subdir=True))
 
 
-class docker_run_error(BaseException):
+class docker_run_error(Exception):
     def __init__(self, message):
-        BaseException.__init__(self, message)
+        Exception.__init__(self, message)
 
 
 def extract_fileinfo (info):
@@ -115,14 +115,14 @@ class docker_running_container:
         docker_cmd = f'docker run --name test_func_xAOD --rm -d -v {self._code_dir}:/scripts:ro -v {str(self._results_dir.name)}:/results -v {self._data_dir}:/data:ro atlas/analysisbase:latest /bin/bash -c "while [ 1 ] ; do sleep 1; echo hi ; done"'
         r = os.system(docker_cmd)
         if r != 0:
-            raise BaseException(f'Unable to start docker deamon: {r}')
+            raise Exception(f'Unable to start docker deamon: {r}')
         return docker_runner('test_func_xAOD', self._results_dir.name)
 
     def __exit__(self, type, value, traceback):
         with self._results_dir:
             r = os.system('docker rm -f test_func_xAOD')
             if r != 0:
-                raise BaseException(f'Unable to stop docker container: {r}')
+                raise Exception(f'Unable to stop docker container: {r}')
 
 
 def run_docker(info, code_dir: str, data_file_on_cmd_line:bool = False,

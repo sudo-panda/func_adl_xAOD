@@ -29,14 +29,14 @@ def extract_result_TTree(rep, run_dir):
     path_to_root_file: Full path to the file, copied into the local directory
     tree_name: the name of the tree.
     '''
-    raise BaseException("extract_result_TTree is not yet implemented.")
+    raise Exception("extract_result_TTree is not yet implemented.")
     # # This would be trivial other than the directory is about to be deleted. So in this case we are going to
     # # need to copy the file over somewhere else!
     # df_name = os.path.join(os.getcwd(), unique_name("datafile") + ".root")
     # df_current = os.path.join(run_dir, 'data.root')
 
     # if not os.path.exists(df_current):
-    #     raise BaseException("Unable to find ROOT file '{0}' which contains the data we need!".format(df_current))
+    #     raise Exception("Unable to find ROOT file '{0}' which contains the data we need!".format(df_current))
 
     # shutil.copyfile(df_current, df_name)
 

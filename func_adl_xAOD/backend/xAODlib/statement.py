@@ -3,9 +3,9 @@ import func_adl_xAOD.backend.cpplib.cpp_representation as crep
 from typing import Any
 
 
-class BlockException (BaseException):
+class BlockException (Exception):
     def __init__(self, message):
-        BaseException.__init__(self, message)
+        Exception.__init__(self, message)
 
 
 class block:

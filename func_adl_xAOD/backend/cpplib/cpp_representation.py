@@ -61,7 +61,7 @@ def dereference_var(v):
     just return the object itself.
     '''
     if not isinstance(v, cpp_value):
-        raise BaseException("Internal Error: Makes no sense to dereference anything but a C++ value")
+        raise Exception("Internal Error: Makes no sense to dereference anything but a C++ value")
 
     if not v.cpp_type().is_pointer():
         return v
@@ -117,7 +117,7 @@ class cpp_value(cpp_rep_base):
     def is_pointer(self):
         'Return true if this type is a pointer'
         if self._cpp_type is None:
-            raise BaseException(f"Attempt to get the type of a typeless C++ expression '{self._expression}''.")
+            raise Exception(f"Attempt to get the type of a typeless C++ expression '{self._expression}''.")
         return self._cpp_type.is_pointer()
 
     def as_cpp(self):
@@ -128,14 +128,14 @@ class cpp_value(cpp_rep_base):
         if self._scope is None:
             self._scope = scope
         else:
-            raise BaseException("Internal Error: You can't reset the scope to something new")
+            raise Exception("Internal Error: You can't reset the scope to something new")
 
     def scope(self) -> Union[gc_scope, gc_scope_top_level]:
         'Return the scope at which this variable becomes valid.'
         if self._scope is not None:
             return self._scope
         else:
-            raise BaseException("Internal Error: Asking for the undefined scope of a value.")
+            raise Exception("Internal Error: Asking for the undefined scope of a value.")
 
     def cpp_type(self):
         return self._cpp_type
@@ -229,10 +229,10 @@ class cpp_sequence(cpp_rep_base):
         return self._iterator
 
     def cpp_type(self):
-        raise BaseException("Do not know how to get the type of a sequence!")
+        raise Exception("Do not know how to get the type of a sequence!")
 
     def as_cpp(self):
-        raise BaseException("Do not know how to get the cpp rep of a sequence!")
+        raise Exception("Do not know how to get the cpp rep of a sequence!")
 
     def scope(self) -> Union[gc_scope, gc_scope_top_level]:
         return self._sequence.scope()

@@ -20,10 +20,10 @@ import uproot
 from .util_LINQ import extract_dataset_info
 
 
-class FuncADLServerException (BaseException):
+class FuncADLServerException (Exception):
     'Thrown when an exception happens contacting the server'
     def __init__(self, msg):
-        BaseException.__init__(self, msg)
+        Exception.__init__(self, msg)
 
 
 def _uri_exists(uri):
@@ -108,13 +108,13 @@ def _resolve_dataset(ast_request: ast.AST) -> Union[str, List[str]]:
             assert len(node.args) > 0
             # Cache the names and return them.
             if self._datasets is not None:
-                raise BaseException('Unable to deal with more than one EventDataset in a single query')
+                raise Exception('Unable to deal with more than one EventDataset in a single query')
             self._datasets = extract_dataset_info(node)
 
     df = dataset_finder()
     df.visit(ast_request)
     if df._datasets is None:
-        raise BaseException('Unable to find EventDataset call - so cannot tell what dataset this query starts from!')
+        raise Exception('Unable to find EventDataset call - so cannot tell what dataset this query starts from!')
 
     # If there is any encoding in the dataset, remove it.
     datasets = [_clean_url(ds) for ds in df._datasets]
@@ -253,7 +253,7 @@ class WalkFuncADLAST(ast.NodeTransformer):
 
         files = self.visit(a_root)
         if not isinstance(files, dict) or "files" not in files:
-            raise BaseException(f"Fetch of data for conversion to pandas cameback in a format we don't know: {files}.")
+            raise Exception(f"Fetch of data for conversion to pandas cameback in a format we don't know: {files}.")
 
         # Now, open them, one by one.
         frames = [self._load_df(f_name, t_name) for f_name, t_name in files['files']]
@@ -280,7 +280,7 @@ class WalkFuncADLAST(ast.NodeTransformer):
 
         files = self.visit(a_root)
         if not isinstance(files, dict) or "files" not in files:
-            raise BaseException(f"Fetch of data for conversion to pandas cameback in a format we don't know: {files}.")
+            raise Exception(f"Fetch of data for conversion to pandas cameback in a format we don't know: {files}.")
 
         # Now, open them, one by one.
         frames = [self._load_awkward(f_name, t_name) for f_name, t_name in files['files']]

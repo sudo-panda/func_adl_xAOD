@@ -34,10 +34,10 @@ compare_operations = {
 }
 
 
-class xAODTranslationError(BaseException):
+class xAODTranslationError(Exception):
     'Thrown when a translation error happens of one sort or another.'
     def __init__(self, msg):
-        BaseException.__init__(self, msg)
+        Exception.__init__(self, msg)
 
 
 def check_accumulator_type(t: ctyp.terminal):
@@ -64,7 +64,7 @@ def get_ttree_type(rep):
     'Looking at a rep, figure out how it should get stored in a tree'
     if isinstance(rep, crep.cpp_sequence):
         if not isinstance(rep.sequence_value(), crep.cpp_value):
-            raise BaseException("Nested data structures (2D arrays, etc.) in TTree's are not yet supported. Numbers or arrays of numbers only for now.")
+            raise Exception("Nested data structures (2D arrays, etc.) in TTree's are not yet supported. Numbers or arrays of numbers only for now.")
         return ctyp.collection(rep.sequence_value().cpp_type())
     else:
         return rep.cpp_type()
@@ -80,7 +80,7 @@ def determine_type_mf(parent_type, function_name):
     '''
     # If we don't know the type...
     if parent_type is None:
-        raise BaseException("Internal Error: Trying to call member function for a type we do not know!")
+        raise Exception("Internal Error: Trying to call member function for a type we do not know!")
     # If we are doing one of the normal "terminals", then we can just bomb. This should not happen!
 
     rtn_type = ctyp.method_type_info(str(parent_type), function_name)
@@ -165,7 +165,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
             result = node.rep
             if not self._gc.current_scope().starts_with(result.scope()):
                 # if type(node) is crep.dummy_ast:
-                #     raise BaseException("Internal Error - out of scope dummy ast!")
+                #     raise Exception("Internal Error - out of scope dummy ast!")
                 result = None
 
         # If this node already has a representation, then it has been
@@ -178,7 +178,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         # If it still didn't work, this is an internal error. But make the error message a bit nicer.
         if not hasattr(node, 'rep'):
-            raise BaseException('Internal Error: attempted to get C++ representation for AST note "{0}", but failed.'.format(ast.dump(node)))
+            raise Exception('Internal Error: attempted to get C++ representation for AST note "{0}", but failed.'.format(ast.dump(node)))
         self._result = node.rep
 
         # Reset the result
@@ -198,7 +198,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         '''
         v = self.get_rep(node, use_generic_visit, reset_result, retain_scope)
         if not isinstance(v, crep.cpp_value):
-            raise BaseException("Expected a cpp value! Internal error")
+            raise Exception("Expected a cpp value! Internal error")
         return v
 
     def resolve_id(self, id):
@@ -252,7 +252,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
             return r
 
         # If it isn't a sequence or a collection, then something has gone wrong.
-        raise BaseException(f"Unable to generate a sequence from the given AST. Either there is an internal error, or you are trying to manipulate a '{type(rep).__name__}' as a sequence (ast is: {ast.dump(generation_ast)})")
+        raise Exception(f"Unable to generate a sequence from the given AST. Either there is an internal error, or you are trying to manipulate a '{type(rep).__name__}' as a sequence (ast is: {ast.dump(generation_ast)})")
 
     def visit_Call_Lambda(self, call_node):
         'Call to a lambda function. We propagate the arguments through the function'
@@ -270,10 +270,10 @@ class query_ast_visitor(FuncADLNodeVisitor):
         if accumulator_type is None:
             sv = seq.sequence_value()
             if not isinstance(sv, crep.cpp_value):
-                raise BaseException("Do not know how to accumulate a sequence!")
+                raise Exception("Do not know how to accumulate a sequence!")
             accumulator_type = sv.cpp_type()
         if not check_accumulator_type(accumulator_type):
-            raise BaseException("Aggregate over a sequence of type '{0}' is not supported.".format(str(accumulator_type)))
+            raise Exception("Aggregate over a sequence of type '{0}' is not supported.".format(str(accumulator_type)))
 
         # Getting the scope level right is tricky. If this is a straight sequence of items, then we want the sequence level.
         # But if this is a sequence of sequences, we are aggregating over the sequence itself. So we need to do it one level
@@ -296,12 +296,12 @@ class query_ast_visitor(FuncADLNodeVisitor):
         - (acc lambda): the accumulator is set to the first element, and the lambda is called to
                         update it after that. This is called `agg_only`.
         '''
-        raise BaseException('not converted yet')
+        raise Exception('not converted yet')
         agg_lambda = node.args[0]
 
         # Get the sequence we are calling against and the accumulator
         if not isinstance(node.func, ast.Attribute):
-            raise BaseException("Wrong type of function")
+            raise Exception("Wrong type of function")
         seq = self.as_sequence(node.func.value)
         accumulator, accumulator_scope = self.create_accumulator(seq)
 
@@ -375,7 +375,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
                         element in the sequence, and then acc is called to update it after that.
                         This is called `agg_initial_func`
         '''
-        raise BaseException("Not yet implemented")
+        raise Exception("Not yet implemented")
         # Needs testing!
         # agg_lambda = node.args[1]
         # init_lambda = node.args[0]
@@ -455,7 +455,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
                 return self.visit_call_Aggregate_initial(node, args)
 
         # This isn't good!
-        raise BaseException("Unknown call to Aggregate. Must be Aggregate(func), Aggregate(const, func), or Aggregate(func, func)")
+        raise Exception("Unknown call to Aggregate. Must be Aggregate(func), Aggregate(const, func), or Aggregate(func, func)")
 
     def visit_Call_Member(self, call_node):
         'Method call on an object'
@@ -470,7 +470,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         function_name = call_node.func.attr
         if not isinstance(calling_against, crep.cpp_value):
             # We didn't use get_rep_value above because now we can make a better error message.
-            raise BaseException("Do not know how to call '{0}' on '{1}'".format(function_name, type(calling_against).__name__))
+            raise Exception("Do not know how to call '{0}' on '{1}'".format(function_name, type(calling_against).__name__))
 
         # We support member calls that directly translate only. Here, for example, this is only for
         # obj.pt() or similar. The translation is direct.
@@ -519,7 +519,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
             # Perhaps a method call we can normalize?
             r = FuncADLNodeVisitor.visit_Call(self, call_node)
             if r is None and not hasattr(call_node, 'rep'):
-                raise BaseException("Do not know how to call '{0}'".format(ast.dump(call_node.func, annotate_fields=False)))
+                raise Exception("Do not know how to call '{0}'".format(ast.dump(call_node.func, annotate_fields=False)))
             if r is not None:
                 self._result = r
         call_node.rep = self._result
@@ -535,7 +535,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         v = self.get_rep(node.value)
         print(ast.dump(node.slice))
         if not isinstance(v, crep.cpp_collection):
-            raise BaseException("Do not know how to take the index of type '{0}'".format(v.cpp_type()))
+            raise Exception("Do not know how to take the index of type '{0}'".format(v.cpp_type()))
 
         index = self.get_rep(node.slice)
         node.rep = crep.cpp_value("{0}.at({1})".format(v.as_cpp(), index.as_cpp()), self._gc.current_scope(), cpp_type=v.get_element_type())
@@ -581,7 +581,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         elif isinstance(node.op, ast.Mult):
             r = crep.cpp_value("({0}*{1})".format(left.as_cpp(), right.as_cpp()), s, left.cpp_type())
         else:
-            raise BaseException("Binary operator {0} is not implemented.".format(type(node.op)))
+            raise Exception("Binary operator {0} is not implemented.".format(type(node.op)))
 
         # Cache the result to push it back further up.
         node.rep = r
@@ -621,7 +621,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
     def visit_Compare(self, node):
         'A compare between two things. Python supports more than that, but not implemented yet.'
         if len(node.ops) != 1:
-            raise BaseException("Do not support 1 < a < 10 comparisons yet!")
+            raise Exception("Do not support 1 < a < 10 comparisons yet!")
 
         left = self.get_rep(node.left)
         right = self.get_rep(node.comparators[0])
@@ -697,7 +697,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         # Make sure the number of items is the same as the number of columns specified.
         if len(seq_values.values()) != len(column_names):
-            raise BaseException("Number of columns ({0}) is not the same as labels ({1}) in TTree creation".format(len(seq_values.values()), len(column_names)))
+            raise Exception("Number of columns ({0}) is not the same as labels ({1}) in TTree creation".format(len(seq_values.values()), len(column_names)))
 
         # Next, look at each on in turn to decide if it is a vector or a simple variable.
         # Create a variable that we will fill for each one.
@@ -770,7 +770,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         ttree = function_call('ResultTTree', [source, column_names, cast(ast.Expr, ast.parse('"awkwardtree"').body[0]).value, cast(ast.Expr, ast.parse('"output.root"').body[0]).value])
         r = self.get_rep(ttree)
         if not isinstance(r, rh.cpp_ttree_rep):
-            raise BaseException("Can't deal with different return type from tree!")
+            raise Exception("Can't deal with different return type from tree!")
         node.rep = rh.cpp_awkward_rep(r.filename, r.treename, self._gc.current_scope())
         self._result = node.rep
 
@@ -786,7 +786,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         ttree = function_call('ResultTTree', [source, column_names, ast.parse('"pandatree"').body[0].value, ast.parse('"output.root"').body[0].value])
         r = self.get_rep(ttree)
         if not isinstance(r, rh.cpp_ttree_rep):
-            raise BaseException("Can't deal with different return type from tree!")
+            raise Exception("Can't deal with different return type from tree!")
         node.rep = rh.cpp_pandas_rep(r.filename, r.treename, self._gc.current_scope())
         self._result = node.rep
 
@@ -865,7 +865,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # Protect against sequence of sequences (LOVE type checkers, which caught this as a possibility)
         w_val = seq.sequence_value()
         if isinstance(w_val, crep.cpp_sequence):
-            raise BaseException("Internal error: don't know how to look at a sequence")
+            raise Exception("Internal error: don't know how to look at a sequence")
         new_sequence_var = w_val.copy_with_new_scope(self._gc.current_scope())
         node.rep = crep.cpp_sequence(new_sequence_var, seq.iterator_value())
 

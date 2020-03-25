@@ -101,7 +101,7 @@ def find_line_with(text, lines, throw_if_not_found = True):
         if text in l:
             return index
     if throw_if_not_found:
-        raise BaseException("Unable to find text '{0}' in any lines in text output".format(text))
+        raise Exception("Unable to find text '{0}' in any lines in text output".format(text))
     return -1
 
 def find_line_numbers_with(text, lines):

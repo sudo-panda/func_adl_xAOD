@@ -12,9 +12,9 @@ from ...util_LINQ import extract_dataset_info, find_dataset
 from .atlas_xaod_executor import atlas_xaod_executor
 
 
-class CacheExeException(BaseException):
+class CacheExeException(Exception):
     def __init__(self, message):
-        BaseException.__init__(self, message)
+        Exception.__init__(self, message)
 
 
 # Return info

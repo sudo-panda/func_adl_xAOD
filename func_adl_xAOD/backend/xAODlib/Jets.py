@@ -12,9 +12,9 @@ def getAttributeFloatAst(call_node: ast.Call):
     '''
     # Get the name of the moment out
     if len(call_node.args) != 1:
-        raise BaseException("Calling getMomentFloat - only one argument is allowed")
+        raise Exception("Calling getMomentFloat - only one argument is allowed")
     if not isinstance(call_node.args[0], ast.Str):
-        raise BaseException("Calling getMomentFloat - only acceptable argument is a string")
+        raise Exception("Calling getMomentFloat - only acceptable argument is a string")
 
     r = cpp_ast.CPPCodeValue()
     # We don't need include files for this - just quick access
@@ -36,9 +36,9 @@ def getAttributeVectorFloatAst(call_node: ast.Call):
     '''
     # Get the name of the moment out
     if len(call_node.args) != 1:
-        raise BaseException("Calling getMomentFloat - only one argument is allowed")
+        raise Exception("Calling getMomentFloat - only one argument is allowed")
     if not isinstance(call_node.args[0], ast.Str):
-        raise BaseException("Calling getMomentFloat - only acceptable argument is a string")
+        raise Exception("Calling getMomentFloat - only acceptable argument is a string")
 
     r = cpp_ast.CPPCodeValue()
     r.include_files += ['vector']
