@@ -33,6 +33,18 @@ def test_per_jet_item():
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 1==["for" in a for a in active_blocks].count(True)
 
+def test_ifexpr():
+    r = EventDataset("file://root.root") \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: 1.0 if j.pt() > 10.0 else 2.0)') \
+        .AsPandasDF('JetPts') \
+        .value(executor=lambda a: exe_for_test(a, qastle_roundtrip=True))
+    # Make sure that a test around 10.0 occurs.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    lines = [l for l in lines if '10.0' in l]
+    assert len(lines) == 1
+    assert 'if ' in lines[0]
+
 def test_per_jet_item_with_where():
     # The following statement should be a straight sequence, not an array.
     r = EventDataset("file://root.root") \

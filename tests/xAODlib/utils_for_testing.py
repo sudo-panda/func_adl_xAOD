@@ -2,6 +2,7 @@
 # xaod executor.
 #
 import ast
+from typing import List
 
 from func_adl_xAOD.backend.cpplib.cpp_representation import (
     cpp_sequence, cpp_variable)
@@ -88,7 +89,7 @@ class dummy_emitter:
         func(self)
         return self
 
-def get_lines_of_code(executor):
+def get_lines_of_code(executor) -> List[str]:
     'Return all lines of code'
     qv = executor.QueryVisitor
     d = dummy_emitter()
