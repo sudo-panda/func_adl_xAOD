@@ -1,27 +1,26 @@
 # Code to translate from a reduced AST into C++ code. This is done by traversing the
 # Python AST code.
 
-from func_adl_xAOD.backend.xAODlib.generated_code import generated_code
-from func_adl_xAOD.backend.xAODlib.util_scope import deepest_scope, top_level_scope
-import func_adl_xAOD.backend.xAODlib.statement as statement
-from func_adl.util_ast import lambda_unwrap
+import ast
+from typing import Any, List, Union, cast
+
+from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
-from func_adl_xAOD.backend.cpplib.cpp_vars import unique_name
+from func_adl.util_ast import lambda_unwrap
+
 import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
+from func_adl_xAOD.backend.cpplib.cpp_functions import FunctionAST
 import func_adl_xAOD.backend.cpplib.cpp_representation as crep
 import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
-import func_adl_xAOD.backend.xAODlib.result_handlers as rh
-from func_adl.ast.call_stack import argument_stack, stack_frame
-from func_adl_xAOD.backend.cpplib.cpp_functions import FunctionAST
-
-# Bring in all the machinery to process xAOD files. This adds
-# extra stuff to the processing engine to special case things.
-import func_adl_xAOD.backend.xAODlib.Jets
+from func_adl_xAOD.backend.cpplib.cpp_vars import unique_name
+import func_adl_xAOD.backend.cpplib.math_utils
 import func_adl_xAOD.backend.xAODlib.EventCollections
-import func_adl_xAOD.backend.cpplib.math_utils  # noqa: F401
-
-import ast
-from typing import Union, List, Any, cast
+import func_adl_xAOD.backend.xAODlib.Jets  # NOQA
+from func_adl_xAOD.backend.xAODlib.generated_code import generated_code
+import func_adl_xAOD.backend.xAODlib.result_handlers as rh
+import func_adl_xAOD.backend.xAODlib.statement as statement
+from func_adl_xAOD.backend.xAODlib.util_scope import (
+    deepest_scope, top_level_scope)
 
 # Convert between Python comparisons and C++.
 compare_operations = {
