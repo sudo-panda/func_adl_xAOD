@@ -29,7 +29,7 @@ setup(name="func_adl_xAOD",
           "retry~=0.9",
           "jinja2",
           "func_adl.ast==1.0.0a22",
-          "qastle==0.3",
+          "qastle==0.6",
           "servicex",
       ],
       extras_require={
