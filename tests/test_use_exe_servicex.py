@@ -130,6 +130,26 @@ async def test_custom_servicex_endpoint(simple_query_ast_Pandas, simple_Servicex
     assert kwargs['servicex_endpoint'] == 'http://my.node.io/servicex'
 
 
+@pytest.mark.asyncio
+async def test_no_cache_request(simple_query_ast_Pandas, simple_Servicex_fe_watcher):
+    'Make sure that the end point gets passed properly through'
+    await(use_exe_servicex(simple_query_ast_Pandas, cached_results_OK=False))
+
+    assert simple_Servicex_fe_watcher.call_count == 1
+    simple_Servicex_fe_watcher.assert_called_once()
+    kwargs = simple_Servicex_fe_watcher.call_args[1]
+    assert kwargs['use_cache'] == False
+
+
+@pytest.mark.asyncio
+async def test_cache_request(simple_query_ast_Pandas, simple_Servicex_fe_watcher):
+    'Make sure that the end point gets passed properly through'
+    await(use_exe_servicex(simple_query_ast_Pandas, cached_results_OK=True))
+
+    assert simple_Servicex_fe_watcher.call_count == 1
+    kwargs = simple_Servicex_fe_watcher.call_args[1]
+    assert kwargs['use_cache'] == True
+
 # @pytest.yield_fixture()
 # def event_loop():
 #     'Get the loop done right on windows'
