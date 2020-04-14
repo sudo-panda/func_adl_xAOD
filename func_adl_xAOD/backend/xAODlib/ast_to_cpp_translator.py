@@ -2,7 +2,7 @@
 # Python AST code.
 
 import ast
-from typing import Any, List, Union, cast
+from typing import Any, Dict, List, Type, Union, cast
 
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
@@ -22,6 +22,7 @@ import func_adl_xAOD.backend.xAODlib.statement as statement
 from func_adl_xAOD.backend.xAODlib.util_scope import (
     deepest_scope, top_level_scope)
 
+
 # Convert between Python comparisons and C++.
 compare_operations = {
     ast.Lt: '<',
@@ -30,6 +31,23 @@ compare_operations = {
     ast.GtE: '>=',
     ast.Eq: '==',
     ast.NotEq: '!=',
+}
+
+
+# Unary operators - we aren't doing not and invert just yet.
+_known_unary_operators: Dict[Type, str] = {
+    ast.UAdd: '+',
+    ast.USub: '-',
+}
+
+
+# Known binary operators
+_known_binary_operators: Dict[Type, str] = {
+    ast.Add: '+',
+    ast.Sub: '-',
+    ast.Mult: '*',
+    ast.Div: '/',
+    ast.Mod: '%',  
 }
 
 
@@ -566,23 +584,29 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
     def visit_BinOp(self, node):
         'An in-line add'
+        if type(node.op) not in _known_binary_operators:
+            raise Exception(f"Do not know how to translate Binary operator {ast.dump(node.op)}!")
         left = self.get_rep(node.left)
         right = self.get_rep(node.right)
 
         # TODO: Turn this into a table lookup rather than the same thing repeated over and over
         s = deepest_scope(left, right).scope()
-        if isinstance(node.op, ast.Add):
-            r = crep.cpp_value("({0}+{1})".format(left.as_cpp(), right.as_cpp()), s, left.cpp_type())
-        elif isinstance(node.op, ast.Div):
-            r = crep.cpp_value("({0}/{1})".format(left.as_cpp(), right.as_cpp()), s, left.cpp_type())
-        elif isinstance(node.op, ast.Sub):
-            r = crep.cpp_value("({0}-{1})".format(left.as_cpp(), right.as_cpp()), s, left.cpp_type())
-        elif isinstance(node.op, ast.Mult):
-            r = crep.cpp_value("({0}*{1})".format(left.as_cpp(), right.as_cpp()), s, left.cpp_type())
-        else:
-            raise Exception("Binary operator {0} is not implemented.".format(type(node.op)))
+        r = crep.cpp_value(f"({left.as_cpp()}{_known_binary_operators[type(node.op)]}{right.as_cpp()})",
+                           s, left.cpp_type())
 
         # Cache the result to push it back further up.
+        node.rep = r
+        self._result = r
+
+    def visit_UnaryOp(self, node: ast.UnaryOp):
+        if type(node.op) not in _known_unary_operators:
+            raise Exception(f"Do not know how to translate Unary operator {ast.dump(node.op)}!")
+
+        operand = self.get_rep(node.operand)
+
+        s = operand.scope()
+        r = crep.cpp_value(f"({_known_unary_operators[type(node.op)]}{operand.as_cpp()}",
+                           s, operand.cpp_type())
         node.rep = r
         self._result = r
 
