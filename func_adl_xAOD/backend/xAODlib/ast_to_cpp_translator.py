@@ -48,7 +48,7 @@ _known_binary_operators: Dict[Type, str] = {
     ast.Sub: '-',
     ast.Mult: '*',
     ast.Div: '/',
-    ast.Mod: '%',  
+    ast.Mod: '%',
 }
 
 
