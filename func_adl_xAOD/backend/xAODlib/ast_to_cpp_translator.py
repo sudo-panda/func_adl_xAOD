@@ -177,7 +177,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         # If it still didn't work, this is an internal error. But make the error message a bit nicer.
         if not hasattr(node, 'rep'):
-            raise Exception('Internal Error: attempted to get C++ representation for AST note "{0}", but failed.'.format(ast.dump(node)))
+            raise Exception('Internal Error: attempted to get C++ representation for AST node "{0}", but failed.'.format(ast.dump(node)))
         self._result = node.rep
 
         # Reset the result
