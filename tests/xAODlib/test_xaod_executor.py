@@ -213,7 +213,17 @@ def test_generate_unary_operations():
             .value(executor=exe_for_test)
         lines = get_lines_of_code(r)
         print_lines(lines)
-        _ = find_line_with(f"pt()+({o}1)", lines)
+        _ = find_line_with(f"pt()+({o}(1))", lines)
+
+
+def test_generate_unary_not():
+    r = EventDataset("file://root.root") \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: not (j.pt() > 50.0))') \
+        .AsPandasDF(['JetInfo']) \
+        .value(executor=exe_for_test)
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    _ = find_line_with(f"!(", lines)
 
 
 def test_per_jet_with_matching():

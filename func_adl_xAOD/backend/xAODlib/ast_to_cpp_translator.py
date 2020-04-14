@@ -38,6 +38,7 @@ compare_operations = {
 _known_unary_operators: Dict[Type, str] = {
     ast.UAdd: '+',
     ast.USub: '-',
+    ast.Not: '!',
 }
 
 
@@ -605,7 +606,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         operand = self.get_rep(node.operand)
 
         s = operand.scope()
-        r = crep.cpp_value(f"({_known_unary_operators[type(node.op)]}{operand.as_cpp()}",
+        r = crep.cpp_value(f"({_known_unary_operators[type(node.op)]}({operand.as_cpp()}))",
                            s, operand.cpp_type())
         node.rep = r
         self._result = r
