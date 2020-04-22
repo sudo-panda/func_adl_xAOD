@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Type, Union, cast
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
 from func_adl.util_ast import lambda_unwrap
+from .utils import most_accurate_type
 
 import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
 from func_adl_xAOD.backend.cpplib.cpp_functions import FunctionAST
@@ -378,7 +379,15 @@ class query_ast_visitor(FuncADLNodeVisitor):
         else:
             self._gc.set_scope(sv.scope())
         call = ast.Call(func=agg_lambda, args=[accumulator.as_ast(), seq.sequence_value().as_ast()])
-        self._gc.add_statement(statement.set_var(accumulator, self.get_rep(call)))
+        update_lambda = self.get_rep(call)
+
+        # Check the accumulator value still hols out. Since we need the accumulator previously,
+        # this will allow us to patch things up. This isn't perfect, but it will do.
+        if update_lambda.cpp_type().type != init_val.cpp_type().type:
+            best_type = most_accurate_type([init_val.cpp_type(), update_lambda.cpp_type()])
+            accumulator.update_type(best_type)
+
+        self._gc.add_statement(statement.set_var(accumulator, update_lambda))
 
         # Finally, since this is a terminal, we need to pop off the top.
         self._gc.set_scope(accumulator_scope)
@@ -590,10 +599,14 @@ class query_ast_visitor(FuncADLNodeVisitor):
         left = self.get_rep(node.left)
         right = self.get_rep(node.right)
 
+        best_type = most_accurate_type([left.cpp_type(), right.cpp_type()])
+        if type(node.op) is ast.Div:
+            best_type = ctyp.terminal('double', False)
+
         # TODO: Turn this into a table lookup rather than the same thing repeated over and over
         s = deepest_scope(left, right).scope()
         r = crep.cpp_value(f"({left.as_cpp()}{_known_binary_operators[type(node.op)]}{right.as_cpp()})",
-                           s, left.cpp_type())
+                           s, best_type)
 
         # Cache the result to push it back further up.
         node.rep = r

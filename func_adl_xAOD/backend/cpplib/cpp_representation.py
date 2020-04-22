@@ -50,6 +50,7 @@
 # TODO: Rename the classes in here to be proper Python names
 #
 from func_adl_xAOD.backend.xAODlib.util_scope import gc_scope, gc_scope_top_level
+import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
 import ast
 import copy
 from typing import Union
@@ -137,7 +138,7 @@ class cpp_value(cpp_rep_base):
         else:
             raise Exception("Internal Error: Asking for the undefined scope of a value.")
 
-    def cpp_type(self):
+    def cpp_type(self) -> ctyp.terminal:
         return self._cpp_type
 
     def copy_with_new_scope(self, scope):
@@ -145,6 +146,12 @@ class cpp_value(cpp_rep_base):
         new_v = copy.copy(self)
         new_v._scope = scope
         return new_v
+
+    def update_type(self, new_type: ctyp.terminal):
+        '''
+        Update to a new type
+        '''
+        self._cpp_type = new_type
 
 
 class cpp_variable(cpp_value):
@@ -157,6 +164,11 @@ class cpp_variable(cpp_value):
 
     def initial_value(self):
         return self._initial_value
+
+    def update_type(self, new_type: ctyp.terminal):
+        if self._initial_value is not None:
+            self._initial_value._cpp_type = new_type
+        cpp_value.update_type(self, new_type)
 
 
 class cpp_collection(cpp_value):
@@ -228,7 +240,7 @@ class cpp_sequence(cpp_rep_base):
     def iterator_value(self):
         return self._iterator
 
-    def cpp_type(self):
+    def cpp_type(self) -> ctyp.terminal:
         raise Exception("Do not know how to get the type of a sequence!")
 
     def as_cpp(self):

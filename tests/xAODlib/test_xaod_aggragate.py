@@ -13,6 +13,16 @@ def test_Aggregate_not_initial_const_SUM():
     l_sets = find_line_numbers_with("/1000", lines)
     assert 1 == len(l_sets)
 
+def test_Aggregate_uses_floats_for_float_sum():
+    r = EventDataset("file://root.root") \
+        .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()/1000).Sum()") \
+        .AsROOTTTree('dude.root', 'analysis', 'jetPT') \
+        .value(executor=exe_for_test)
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_agg_decl = find_line_with('double agg', lines)
+    assert l_agg_decl > 0
+
 def test_count_after_single_sequence():
     r = EventDataset("file://root.root") \
         .Select('lambda e: e.Jets("AllMyJets").Select(lambda j: j.pt()).Count()') \
@@ -140,6 +150,17 @@ def test_Aggregate_per_jet():
         .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()).Count()") \
         .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value(executor=exe_for_test)
+
+def test_Aggregate_per_jet_int():
+    r = EventDataset("file://root.root") \
+        .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()).Count()") \
+        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
+        .value(executor=exe_for_test)
+
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_agg_decl = find_line_with('int agg', lines)
+    assert l_agg_decl > 0
 
 def test_generate_Max():
     r = EventDataset("file://root.root") \

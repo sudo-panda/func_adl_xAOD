@@ -13,7 +13,7 @@ class terminal:
         self._is_pointer = is_pointer
 
     def __str__(self):
-        return self._type
+        return self.type
 
     def is_pointer(self):
         return self._is_pointer
@@ -27,6 +27,10 @@ class terminal:
             return "0"
         else:
             raise Exception("Do not know a default value for the type '{0}'.".format(self._type))
+
+    @property
+    def type(self) -> str:
+        return self._type
 
 
 class collection:

@@ -260,7 +260,6 @@ def test_generate_unary_operations():
         print_lines(lines)
         _ = find_line_with(f"pt()+({o}(1))", lines)
 
-
 def test_generate_unary_not():
     r = EventDataset("file://root.root") \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: not (j.pt() > 50.0))') \
