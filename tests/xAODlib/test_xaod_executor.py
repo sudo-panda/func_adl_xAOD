@@ -60,6 +60,39 @@ def test_per_jet_item_with_where():
     assert "Fill()" in lines[l_jetpt+1]
 
 
+def test_and_clause_in_where():
+    # The following statement should be a straight sequence, not an array.
+    r = EventDataset("file://root.root") \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
+        .Where("lambda j: j.pt()>40.0 and j.eta()<2.5") \
+        .Select("lambda j: j.pt()") \
+        .AsPandasDF('JetPts') \
+        .value(executor=exe_for_test)
+    # Make sure that the tree Fill is at the same level as the _JetPts2 getting set.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_if = [l for l in lines if "if (" in l]
+    assert len(l_if) == 2
+    assert l_if[0] == l_if[1]
+
+
+def test_or_clause_in_where():
+    # The following statement should be a straight sequence, not an array.
+    r = EventDataset("file://root.root") \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
+        .Where("lambda j: j.pt()>40.0 or j.eta()<2.5") \
+        .Select("lambda j: j.pt()") \
+        .AsPandasDF('JetPts') \
+        .value(executor=exe_for_test)
+    # Make sure that the tree Fill is at the same level as the _JetPts2 getting set.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_if = [l for l in lines if "if (" in l]
+    assert len(l_if) == 2
+    assert l_if[0] != l_if[1]
+    assert l_if[0].replace("!", "") == l_if[1]
+
+
 def test_result_awkward():
     # The following statement should be a straight sequence, not an array.
     r = EventDataset("file://root.root") \
