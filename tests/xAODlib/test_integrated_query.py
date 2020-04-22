@@ -75,6 +75,18 @@ def test_First_two_outer_loops():
             .value(executor=use_executor_dataset_resolver)
     assert training_df.iloc[0]['dude'] == 693
 
+
+def test_not_in_where():
+    # THis is a little tricky because the First there is actually running over one jet in the event. Further, the Where
+    # on the number of tracks puts us another level down. So it is easy to produce code that compiles, but the First's if statement
+    # is very much in the wrong place.
+    training_df = f \
+            .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Tracks("InDetTrackParticles").Where(lambda t: not (t.pt() > 1000.0))).First().Count()') \
+            .AsPandasDF('dude') \
+            .value(executor=use_executor_dataset_resolver)
+    assert training_df.iloc[0]['dude'] == 1204
+
+
 def test_first_object_in_event():
     # Make sure First puts it if statement in the right place.
     training_df = f \
