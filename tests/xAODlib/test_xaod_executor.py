@@ -33,6 +33,18 @@ def test_per_jet_item():
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 1==["for" in a for a in active_blocks].count(True)
 
+def test_abs_function():
+    # The following statement should be a straight sequence, not an array.
+    r = EventDataset("file://root.root") \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: abs(j.pt()))') \
+        .AsPandasDF('JetPts') \
+        .value(executor=exe_for_test)
+    # Check to see if there mention of push_back anywhere.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_abs = find_line_with("std::abs", lines)
+    assert "->pt()" in lines[l_abs]
+
 def test_ifexpr():
     r = EventDataset("file://root.root") \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: 1.0 if j.pt() > 10.0 else 2.0)') \
