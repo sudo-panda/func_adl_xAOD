@@ -105,6 +105,18 @@ def test_or_clause_in_where():
     assert l_if[0].replace("!", "") == l_if[1]
 
 
+def test_nested_lambda_argument_name_with_monad():
+    # Need both the monad and the "e" reused to get this error!
+    r = EventDataset("file://root.root") \
+        .Select('lambda e: (e.Electrons("Electrons"), e.Muons("Muons"))') \
+        .Select('lambda e: e[0].Select(lambda e: e.E())') \
+        .AsROOTTTree('dude.root', 'forkme', ['e_E']) \
+        .value(executor=exe_for_test)
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_push = find_line_with('push_back', lines)
+    assert "->E()" in lines[l_push]
+
 def test_result_awkward():
     # The following statement should be a straight sequence, not an array.
     r = EventDataset("file://root.root") \
