@@ -1,3 +1,4 @@
+from __future__ import annotations
 # The representation, in C++ code, of all the data being passed around the system by the C++
 # code. Mostly, these are used as "representations" of a particular AST node. Here is an outline
 # of how this works:
@@ -53,7 +54,7 @@ from func_adl_xAOD.backend.xAODlib.util_scope import gc_scope, gc_scope_top_leve
 import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
 import ast
 import copy
-from typing import Union
+from typing import Union, Optional
 
 
 def dereference_var(v):
@@ -102,7 +103,7 @@ class cpp_value(cpp_rep_base):
     r'''
     Represents a value. This has a particular value in C++ code that is valid at some C++ scope, or deeper.
     '''
-    def __init__(self, cpp_expression: str, scope: Union[gc_scope, gc_scope_top_level], cpp_type):
+    def __init__(self, cpp_expression: str, scope: Union[gc_scope, gc_scope_top_level], cpp_type: ctyp.terminal):
         r'''
         Initialize a C++ value
 
@@ -223,16 +224,18 @@ class cpp_sequence(cpp_rep_base):
     A sequence is a stream of values of a particular type. You can think of it like a generator expression,
     or like a vector of some type.
     '''
-    def __init__(self, sequence_value, iterator_value: cpp_value):
+    def __init__(self, sequence_value: Union[cpp_value, cpp_sequence], iterator_value: cpp_value):
         '''
         Create a sequence
 
         sequence_value:         The value of the sequence - of the data items that are in sequence
         iterator_value:         The iterator that is incremented to get the next value in the sequence.
+        scope:                  The scope at which this sequence is declared
         '''
         cpp_rep_base.__init__(self)
         self._sequence = sequence_value
         self._iterator = iterator_value
+        self._type: Optional[ctyp.collection] = None
 
     def sequence_value(self):
         return self._sequence
@@ -241,7 +244,9 @@ class cpp_sequence(cpp_rep_base):
         return self._iterator
 
     def cpp_type(self) -> ctyp.terminal:
-        raise Exception("Do not know how to get the type of a sequence!")
+        if self._type is None:
+            self._type = ctyp.collection(self._sequence.cpp_type().type)
+        return self._type
 
     def as_cpp(self):
         raise Exception("Do not know how to get the cpp rep of a sequence!")

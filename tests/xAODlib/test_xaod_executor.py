@@ -224,17 +224,25 @@ def test_Select_Multiple_arrays_2_step():
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 0==["for" in a for a in active_blocks].count(True)
 
-def test_Select_of_2D_array_fails():
+def test_Select_of_2D_array():
     # The following statement should be a straight sequence, not an array.
-    msg = ""
-    try:
-        EventDataset("file://root.root") \
-            .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: (j.pt()/1000.0, j.eta()))') \
-            .AsPandasDF(['JetInfo']) \
-            .value(executor=exe_for_test)
-    except Exception as e:
-        msg = str(e)
-    assert "Nested data structures" in msg
+    r = EventDataset("file://root.root") \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Electrons("Electrons").Select(lambda e: e.pt()))') \
+        .AsPandasDF(['JetInfo']) \
+        .value(executor=exe_for_test)
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    assert False
+
+def test_Select_of_2D_array_with_tuple():
+    # The following statement should be a straight sequence, not an array.
+    r = EventDataset("file://root.root") \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: (j.pt()/1000.0, j.eta()))') \
+        .AsPandasDF(['JetInfo']) \
+        .value(executor=exe_for_test)
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    assert False
 
 def test_SelectMany_of_tuple_is_not_array():
     # The following statement should be a straight sequence, not an array.

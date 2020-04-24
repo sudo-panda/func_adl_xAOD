@@ -34,6 +34,7 @@
         "ltlow",
         "nllp",
         "noqa",
+        "ntuple",
         "numpy",
         "orelse",
         "posix",

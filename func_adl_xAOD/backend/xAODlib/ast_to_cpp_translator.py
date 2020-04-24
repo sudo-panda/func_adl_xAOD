@@ -2,7 +2,7 @@
 # Python AST code.
 
 import ast
-from typing import Any, Dict, List, Type, Union, cast
+from typing import Any, Dict, List, Type, Union, cast, Tuple
 
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
@@ -21,7 +21,7 @@ from func_adl_xAOD.backend.xAODlib.generated_code import generated_code
 import func_adl_xAOD.backend.xAODlib.result_handlers as rh
 import func_adl_xAOD.backend.xAODlib.statement as statement
 from func_adl_xAOD.backend.xAODlib.util_scope import (
-    deepest_scope, top_level_scope)
+    deepest_scope, gc_scope, gc_scope_top_level, top_level_scope)
 
 
 # Convert between Python comparisons and C++.
@@ -82,7 +82,7 @@ def rep_is_collection(rep) -> bool:
 def get_ttree_type(rep):
     'Looking at a rep, figure out how it should get stored in a tree'
     if isinstance(rep, crep.cpp_sequence):
-        if not isinstance(rep.sequence_value(), crep.cpp_value):
+        if not isinstance(rep.sequence_value(), (crep.cpp_value, crep.cpp_sequence)):
             raise Exception("Nested data structures (2D arrays, etc.) in TTree's are not yet supported. Numbers or arrays of numbers only for now.")
         return ctyp.collection(rep.sequence_value().cpp_type())
     else:
@@ -706,6 +706,70 @@ class query_ast_visitor(FuncADLNodeVisitor):
         node.rep = crep.cpp_value('"{0}"'.format(node.s), self._gc.current_scope(), ctyp.terminal("string"))
         self._result = node.rep
 
+    def code_fill_ttree(self, e_rep: crep.cpp_rep_base, e_name: crep.cpp_variable,
+                        scope_fill: Union[gc_scope, gc_scope_top_level]) -> Union[gc_scope, gc_scope_top_level]:
+        '''
+        How we code up setting the variables that will get collected by the 'TTree::Fill' method is a bit tricky.
+
+        - If we have a sequence then we have to make sure to use push_back into a vector
+        - If we have sequences of sequences, then we have to do multiple vector decl and push-backs, including
+          declaring some extra variables
+        - If the variable is set at a very low level, we need to make sure the Fill is triggered at the proper
+          depth.
+
+        Arguments:
+            e_rep           XXX
+            e_name          The variable that we are saving everything to
+            scope_fill      The scope at which the current fill statement is going to be run. We should
+                            put the statements that set the variable for collection by Fill at that scope level.
+
+        Returns
+            scope_fill      Possibly updated fill scope setting - if we were forced to go down a level (or so).
+
+        '''
+        def set_scope(scope: Union[gc_scope_top_level, gc_scope], fill_scope: Union[gc_scope, gc_scope_top_level]):
+            if scope.starts_with(fill_scope):
+                self._gc.set_scope(scope)
+            else:
+                self._gc.set_scope(fill_scope)
+
+        # If this is a sequence of a sequence (or deeper) then we need to setup the proper variables.
+        if rep_is_collection(e_rep):
+            assert isinstance(e_rep, crep.cpp_sequence), 'Internal error'
+
+            def do_it(seq: crep.cpp_sequence, accumulator: crep.cpp_value):
+                inner = seq.sequence_value()
+                if isinstance(inner, crep.cpp_sequence):
+                    # TODO: Declare the variable
+                    storage = crep.cpp_variable(unique_name('ntuple'), seq.scope(), cpp_type=inner.cpp_type())
+                    do_it(inner, storage)
+                    inner = storage
+
+                set_scope(seq.scope(), scope_fill)
+                self._gc.add_statement(statement.push_back(accumulator, inner))
+
+            do_it(e_rep, e_name)
+
+        else:
+            # Set the scope. Normally we want to do it where the variable was calculated
+            # (think of cases when you have to calculate something with a `push_back`),
+            # but if the variable was already calculated, we want to make sure we are at least
+            # in the same scope as the tree fill.
+            assert isinstance(e_rep, crep.cpp_value)
+            set_scope(e_rep.scope(), scope_fill)
+
+            # If the variable is something we are iterating over, then fill it, otherwise,
+            # just set it.
+            # if rep_is_collection(e_rep):
+            #     self._gc.add_statement(statement.push_back(e_name, e_rep.sequence_value()))
+            # else:
+            self._gc.add_statement(statement.set_var(e_name, e_rep))
+            cs = self._gc.current_scope()
+            if cs.starts_with(scope_fill):
+                scope_fill = cs
+
+        return scope_fill
+
     def call_ResultTTree(self, node: ast.Call, args: List[ast.AST]):
         '''This AST means we are taking an iterable and converting it to a ROOT file.
         '''
@@ -760,25 +824,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # Make sure that it happens at the proper scope, where what we are after is defined!
         s_orig = self._gc.current_scope()
         for e_rep, e_name in zip(seq_values.values(), var_names):
-            # Set the scope. Normally we want to do it where the variable was calculated
-            # (think of cases when you have to calculate something with a `push_back`),
-            # but if the variable was already calculated, we want to make sure we are at least
-            # in the same scope as the tree fill.
-            e_rep_scope = e_rep.scope() if not isinstance(e_rep, crep.cpp_sequence) else e_rep.sequence_value().scope()
-            if e_rep_scope.starts_with(scope_fill):
-                self._gc.set_scope(e_rep_scope)
-            else:
-                self._gc.set_scope(scope_fill)
-
-            # If the variable is something we are iterating over, then fill it, otherwise,
-            # just set it.
-            if rep_is_collection(e_rep):
-                self._gc.add_statement(statement.push_back(e_name[1], e_rep.sequence_value()))
-            else:
-                self._gc.add_statement(statement.set_var(e_name[1], e_rep))
-                cs = self._gc.current_scope()
-                if cs.starts_with(scope_fill):
-                    scope_fill = cs
+            scope_fill = self.code_fill_ttree(e_rep, e_name[1], scope_fill)
 
         # The fill statement. This should happen at the scope where the tuple was defined.
         # The scope where this should be done is a bit tricky (note the update above):
