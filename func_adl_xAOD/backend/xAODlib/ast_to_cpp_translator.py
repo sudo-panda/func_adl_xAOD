@@ -739,13 +739,16 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
             def do_it(seq: crep.cpp_sequence, accumulator: crep.cpp_value):
                 inner = seq.sequence_value()
+                scope = seq.scope()
                 if isinstance(inner, crep.cpp_sequence):
                     # TODO: Declare the variable
                     storage = crep.cpp_variable(unique_name('ntuple'), seq.scope(), cpp_type=inner.cpp_type())
+                    scope = seq.scope()[-1]
+                    scope.declare_variable(storage)
                     do_it(inner, storage)
                     inner = storage
 
-                set_scope(seq.scope(), scope_fill)
+                set_scope(scope, scope_fill)
                 self._gc.add_statement(statement.push_back(accumulator, inner))
 
             do_it(e_rep, e_name)
@@ -868,8 +871,16 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         ttree = function_call('ResultTTree', [source, column_names, ast.parse('"pandatree"').body[0].value, ast.parse('"output.root"').body[0].value])
         r = self.get_rep(ttree)
+
+        # Make sure what we are asking for make sense in a pandas world
         if not isinstance(r, rh.cpp_ttree_rep):
             raise Exception("Can't deal with different return type from tree!")
+        source_rep = self.get_rep(source)
+        if isinstance(source_rep, crep.cpp_sequence):
+            if (rep_is_collection(source_rep.sequence_value())):
+                raise Exception("Unable to render arrays of ararys in a pandas dataframe")
+
+        # Ok - push it out up higher
         node.rep = rh.cpp_pandas_rep(r.filename, r.treename, self._gc.current_scope())
         self._result = node.rep
 
