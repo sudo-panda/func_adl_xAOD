@@ -128,3 +128,24 @@ def test_truth_particles_awk():
         .value(executor=use_executor_dataset_resolver)
     print (training_df)
     assert len(training_df[b'NTruthParticles']) == 10
+
+def test_1D_array():
+    # A very simple flattening of arrays
+    training_df = f \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0)') \
+        .AsAwkwardArray('JetPt') \
+        .value(executor=use_executor_dataset_resolver)
+    print (training_df)    
+    assert len(training_df[b'JetPt']) == 10
+    assert len(training_df[b'JetPt'][0]) == 32
+
+def test_2D_array():
+    # A very simple flattening of arrays
+    training_df = f \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.Jets("AntiKt4EMTopoJets").Select(lambda j1: j1.pt()/1000.0))') \
+        .AsAwkwardArray('JetPt') \
+        .value(executor=use_executor_dataset_resolver)
+    print (training_df)    
+    assert len(training_df[b'JetPt']) == 10
+    assert len(training_df[b'JetPt'][0]) == 32
+    assert len(training_df[b'JetPt'][0][0]) == 32
