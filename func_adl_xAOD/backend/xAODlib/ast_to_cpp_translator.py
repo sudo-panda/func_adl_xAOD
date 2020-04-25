@@ -2,7 +2,7 @@
 # Python AST code.
 
 import ast
-from typing import Any, Dict, List, Type, Union, cast, Tuple
+from typing import Any, Dict, List, Type, Union, cast
 
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
@@ -679,7 +679,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         # How we check and short-circuit depends on if we are doing and or or.
         check_expr = result.as_cpp() if type(node.op) == ast.And else '!{0}'.format(result.as_cpp())
-        check = crep.cpp_value(check_expr, self._gc.current_scope(), cpp_type='bool')
+        check = crep.cpp_value(check_expr, self._gc.current_scope(), cpp_type=ctyp.terminal('bool'))
 
         first = True
         scope = self._gc.current_scope()
@@ -743,6 +743,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
                 if isinstance(inner, crep.cpp_sequence):
                     scope = seq.scope()
                     storage = crep.cpp_variable(unique_name('ntuple'), scope, cpp_type=inner.cpp_type())
+                    assert not isinstance(scope, gc_scope_top_level)
                     scope.declare_variable(storage)
                     fill_colection_levels(inner, storage)
                     inner = storage
