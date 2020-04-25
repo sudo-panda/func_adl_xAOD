@@ -240,6 +240,23 @@ def test_Select_of_2D_array():
     l_first_push_active = len(find_open_blocks(lines[:l_first_push]))
     assert (l_vector_active+1) == l_first_push_active
 
+def test_Select_of_3D_array():
+    # This should generate a 2D array.
+    r = EventDataset("file://root.root") \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Electrons("Electrons").Select(lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt())))') \
+        .AsAwkwardArray(['JetInfo']) \
+        .value(executor=exe_for_test)
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+
+    l_vector_decl = find_line_with("vector<double> ", lines)
+    l_vector_active = len(find_open_blocks(lines[:l_vector_decl]))
+
+    l_vector_double_decl = find_line_with("vector<std::vector<double>>", lines)
+    l_vector_double_active = len(find_open_blocks(lines[:l_vector_double_decl]))
+
+    assert l_vector_active == (l_vector_double_active+1)
+
 def test_Select_of_2D_array_pandas():
     # We can't do funny things in pandas, so bomb it early
     with pytest.raises(Exception) as e:
