@@ -155,7 +155,7 @@ def test_Select_is_an_array_with_where():
     # The following statement should be a straight sequence, not an array.
     r = EventDataset("file://root.root") \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0).Where(lambda jpt: jpt > 10.0)') \
-        .AsPandasDF('JetPts') \
+        .AsAwkwardArray('JetPts') \
         .value(executor=exe_for_test)
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
@@ -169,7 +169,7 @@ def test_Select_is_an_array():
     # The following statement should be a straight sequence, not an array.
     r = EventDataset("file://root.root") \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt())') \
-        .AsPandasDF('JetPts') \
+        .AsAwkwardArray('JetPts') \
         .value(executor=exe_for_test)
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)

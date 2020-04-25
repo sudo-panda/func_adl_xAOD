@@ -875,10 +875,11 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # Make sure what we are asking for make sense in a pandas world
         if not isinstance(r, rh.cpp_ttree_rep):
             raise Exception("Can't deal with different return type from tree!")
-        source_rep = self.get_rep(source)
-        if isinstance(source_rep, crep.cpp_sequence):
-            if (rep_is_collection(source_rep.sequence_value())):
-                raise Exception("Unable to render arrays of ararys in a pandas dataframe")
+        if hasattr(source, 'rep'):
+            source_rep = source.rep
+            if isinstance(source_rep, crep.cpp_sequence):
+                if (rep_is_collection(source_rep.sequence_value())):
+                    raise Exception("Unable to render arrays of ararys in a pandas dataframe")
 
         # Ok - push it out up higher
         node.rep = rh.cpp_pandas_rep(r.filename, r.treename, self._gc.current_scope())
