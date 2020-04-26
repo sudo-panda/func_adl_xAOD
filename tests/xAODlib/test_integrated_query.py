@@ -1,5 +1,6 @@
 # Contains test that will run the full query.
 import asyncio
+from enum import auto
 import logging
 import os
 
@@ -18,6 +19,12 @@ pytestmark = run_long_running_tests
 
 if os.name == 'nt':
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
+@pytest.fixture(autouse=True)
+def turn_on_logging():
+    logging.basicConfig(level=logging.DEBUG)
+    yield None
+    logging.basicConfig(level=logging.WARNING)
 
 def test_select_first_of_array():
     # The hard part is that First() here does not return a single item, but, rather, an array that
@@ -149,3 +156,18 @@ def test_2D_array():
     assert len(training_df[b'JetPt']) == 10
     assert len(training_df[b'JetPt'][0]) == 32
     assert len(training_df[b'JetPt'][0][0]) == 32
+
+def test_2D_nested_where():
+    # Seen in the wild as generating bad C++.
+    training_df = f \
+        .Select('lambda e0304: (e0304.Jets("AntiKt4EMTopoJets"), e0304)') \
+        .Select('lambda e0305: (e0305[0].Where(lambda e0352: (((e0352.pt() / 1000.0) > 20)) and (((abs(e0352.eta())) < 1.5))), e0305[1])') \
+        .Select('lambda e0317: e0317[0].Select(lambda e0353: e0317[1].TruthParticles("TruthParticles").Where(lambda e0345: (e0345.pdgId() == 11)).Where(lambda e0346: (((e0346.pt() / 1000.0) > 20)) and (((abs(e0346.eta())) < 1.5))).Where(lambda e0347: (DeltaR(e0353.eta(), e0353.phi(), e0347.eta(), e0347.phi()) < 0.5)))') \
+        .Select('lambda e0348: e0348.Select(lambda e0354: e0354.Count())') \
+        .AsAwkwardArray('NTruthParticles') \
+        .value(executor=use_executor_dataset_resolver)
+    
+    print(training_df)
+    a = training_df[b'NTruthParticles']
+    assert a.shape[0] == 10
+    assert a[0].shape[0] == 8

@@ -237,7 +237,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         iterator_value.reset_scope(self._gc.current_scope())
 
         # For a new sequence like this the sequence and iterator value are the same
-        return crep.cpp_sequence(iterator_value, iterator_value)
+        return crep.cpp_sequence(iterator_value, iterator_value, self._gc.current_scope())
 
     def as_sequence(self, generation_ast: ast.AST):
         r'''
@@ -741,7 +741,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
                 inner = seq.sequence_value()
                 scope = seq.scope()
                 if isinstance(inner, crep.cpp_sequence):
-                    scope = seq.scope()
+                    scope = seq.iterator_value().scope()
                     storage = crep.cpp_variable(unique_name('ntuple'), scope, cpp_type=inner.cpp_type())
                     assert not isinstance(scope, gc_scope_top_level)
                     scope.declare_variable(storage)
@@ -902,7 +902,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         new_sequence_value = self.get_rep(c)
 
         # We need to build a new sequence.
-        rep = crep.cpp_sequence(new_sequence_value, seq.iterator_value())
+        rep = crep.cpp_sequence(new_sequence_value, seq.iterator_value(), self._gc.current_scope())
 
         node.rep = rep
         self._result = rep
@@ -960,9 +960,9 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # Protect against sequence of sequences (LOVE type checkers, which caught this as a possibility)
         w_val = seq.sequence_value()
         if isinstance(w_val, crep.cpp_sequence):
-            raise Exception("Internal error: don't know how to look at a sequence")
+            raise Exception("Error: A Where clause must evaluate to a value, not a sequence")
         new_sequence_var = w_val.copy_with_new_scope(self._gc.current_scope())
-        node.rep = crep.cpp_sequence(new_sequence_var, seq.iterator_value())
+        node.rep = crep.cpp_sequence(new_sequence_var, seq.iterator_value(), self._gc.current_scope())
 
         self._result = node.rep
 

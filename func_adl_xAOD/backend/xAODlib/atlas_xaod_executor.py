@@ -97,7 +97,7 @@ class atlas_xaod_executor:
         from func_adl_xAOD.util_LINQ import find_dataset
         file = find_dataset(ast)
         iterator = crep.cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
-        file.rep = crep.cpp_sequence(iterator, iterator)
+        file.rep = crep.cpp_sequence(iterator, iterator, top_level_scope())
 
         # Visit the AST to generate the code structure and find out what the
         # result is going to be.

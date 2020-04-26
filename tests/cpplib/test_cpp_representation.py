@@ -39,7 +39,7 @@ def test_sequence_type():
     s_value = crep.cpp_value('0.0', tc, ctyp.terminal('int', False))
     i_value = crep.cpp_value('1.0', tc, ctyp.terminal('object', False))
 
-    seq = crep.cpp_sequence(s_value, i_value)
+    seq = crep.cpp_sequence(s_value, i_value, tc)
 
     assert seq.sequence_value().cpp_type().type == 'int'
 
@@ -49,7 +49,7 @@ def test_sequence_type():
     s_value = crep.cpp_value('0.0', tc, ctyp.terminal('int', False))
     i_value = crep.cpp_value('1.0', tc, ctyp.terminal('object', False))
 
-    seq = crep.cpp_sequence(s_value, i_value)
-    seq_array = crep.cpp_sequence(seq, i_value)
+    seq = crep.cpp_sequence(s_value, i_value, tc)
+    seq_array = crep.cpp_sequence(seq, i_value, tc)
 
     assert seq_array.sequence_value().cpp_type().type == 'std::vector<int>'

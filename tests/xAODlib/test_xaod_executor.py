@@ -179,6 +179,24 @@ def test_Select_is_an_array():
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 0==["for" in a for a in active_blocks].count(True)
 
+def test_Select_1D_array_with_Where():
+    # The following statement should be a straight sequence, not an array.
+    r = EventDataset("file://root.root") \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Where(lambda j1: j1.pt() > 10).Select(lambda j: j.pt())') \
+        .AsAwkwardArray('JetPts') \
+        .value(executor=exe_for_test)
+    # Check to see if there mention of push_back anywhere.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    assert 1==["push_back" in l for l in lines].count(True)
+    l_push_back = find_line_with("Fill()", lines)
+    active_blocks = find_open_blocks(lines[:l_push_back])
+    assert 0==["for" in a for a in active_blocks].count(True)
+
+    push_back = find_line_with("push_back", lines)
+    active_blocks = find_open_blocks(lines[:push_back])
+    assert 1==['if' in a for a in active_blocks].count(True)
+
 def test_Select_is_not_an_array():
     # The following statement should be a straight sequence, not an array.
     r = EventDataset("file://root.root") \
@@ -236,9 +254,30 @@ def test_Select_of_2D_array():
     l_vector_decl = find_line_with("vector<double>", lines)
     l_vector_active = len(find_open_blocks(lines[:l_vector_decl]))
 
+    l_first_push = find_line_numbers_with("push_back", lines)
+    assert len(l_first_push) == 2
+    l_first_push_active = len(find_open_blocks(lines[:l_first_push[0]]))
+    assert (l_vector_active+1) == l_first_push_active
+
+    # Now, make sure the second push_back is at the right level.
+    l_second_push_active = len(find_open_blocks(lines[:l_first_push[1]]))
+    assert (l_second_push_active+1) == l_first_push_active
+
+def test_Select_of_2D_with_where():
+    # This should generate a 2D array.
+    r = EventDataset("file://root.root") \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Electrons("Electrons").Where(lambda ele: ele.pt() > 10).Select(lambda e: e.pt()))') \
+        .AsAwkwardArray(['JetInfo']) \
+        .value(executor=exe_for_test)
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+
+    l_vector_decl = find_line_with("vector<double>", lines)
+    l_vector_active = len(find_open_blocks(lines[:l_vector_decl]))
+
     l_first_push = find_line_with("push_back", lines)
     l_first_push_active = len(find_open_blocks(lines[:l_first_push]))
-    assert (l_vector_active+1) == l_first_push_active
+    assert (l_vector_active+2) == l_first_push_active  # +2 because it is inside the for loop and the if block
 
 def test_Select_of_3D_array():
     # This should generate a 2D array.
