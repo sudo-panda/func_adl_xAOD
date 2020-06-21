@@ -28,7 +28,7 @@ setup(name="func_adl_xAOD",
           "retry~=0.9",
           "func_adl.ast==1.0.0a22",
           "qastle==0.7",
-          "servicex"
+          "servicex~=1.0"
       ],
       classifiers=[
           "Development Status :: 3 - Alpha",
