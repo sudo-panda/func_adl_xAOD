@@ -191,8 +191,8 @@ class WalkFuncADLAST(ast.NodeTransformer):
                             print(f'  Message: {dr["message"]}', file=s)
                         if 'log' in dr:
                             print('  Log lines:', file=s)
-                            for l in dr['log']:
-                                print(f'    {l}', file=s)
+                            for line in dr['log']:
+                                print(f'    {line}', file=s)
                         raise FuncADLServerException(s.getvalue())
 
                 r = {'files': self.extract_filespec(dr)}
