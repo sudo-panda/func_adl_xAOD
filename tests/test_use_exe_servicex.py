@@ -34,6 +34,15 @@ def simple_query_ast_Pandas():
         .value(executor=dummy_executor_coroutine)
 
 @pytest.fixture()
+def simple_query_ast_1D_Pandas():
+    'Return a simple ast for a query'
+    f_ds = EventDataset(r'localds://bogus_ds')
+    return f_ds \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select("lambda j: j.pt()/1000.0")') \
+        .AsPandasDF('JetPt') \
+        .value(executor=dummy_executor_coroutine)
+
+@pytest.fixture()
 def simple_scoped_query_ast_Pandas():
     'Return a simple ast for a query'
     f_ds = EventDataset(r'localds://user.fork:bogus_ds')
@@ -75,7 +84,7 @@ async def test_pandas_query(simple_query_ast_Pandas, simple_Servicex_fe_watcher)
     args = simple_Servicex_fe_watcher.call_args[0]
     kwargs = simple_Servicex_fe_watcher.call_args[1]
     assert len(args) == 2
-    assert args[1] == ['bogus_ds']
+    assert args[1] == 'bogus_ds'
     assert args[0].find('SelectMany') >= 0
     assert args[0].startswith('(call ResultTTree')
     assert kwargs['data_type'] == 'pandas'
@@ -93,10 +102,21 @@ async def test_awkward_query(simple_query_ast_Awkward, simple_Servicex_fe_watche
     args = simple_Servicex_fe_watcher.call_args[0]
     kwargs = simple_Servicex_fe_watcher.call_args[1]
     assert len(args) == 2
-    assert args[1] == ['bogus_ds']
+    assert args[1] == 'bogus_ds'
     assert args[0].find('SelectMany') >= 0
     assert args[0].startswith('(call ResultTTree')
     assert kwargs['data_type'] == 'awkward'
+
+# Without the full backend machinery here, we can't actually determine this on the client.
+# So we are going to have to run the request. Good thing - with caching, it should be a quick
+# fix.
+# @pytest.mark.asyncio
+# async def test_pandas_1d_array(simple_query_ast_1D_Pandas, simple_Servicex_fe_watcher):
+#     'Arrays are really not good things for pandas to bring back - we should bomb.'
+#     with pytest.raises(Exception) as e:
+#         await(use_exe_servicex(simple_query_ast_1D_Pandas))
+
+#     assert "array" in str(e.value)
 
 
 @pytest.mark.asyncio
@@ -111,7 +131,7 @@ async def test_scoped_dataset_name(simple_scoped_query_ast_Pandas, simple_Servic
     args = simple_Servicex_fe_watcher.call_args[0]
     kwargs = simple_Servicex_fe_watcher.call_args[1]
     assert len(args) == 2
-    assert args[1] == ['user.fork:bogus_ds']
+    assert args[1] == 'user.fork:bogus_ds'
     assert args[0].find('SelectMany') >= 0
     assert args[0].startswith('(call ResultTTree')
     assert kwargs['data_type'] == 'pandas'
@@ -129,6 +149,26 @@ async def test_custom_servicex_endpoint(simple_query_ast_Pandas, simple_Servicex
     kwargs = simple_Servicex_fe_watcher.call_args[1]
     assert kwargs['servicex_endpoint'] == 'http://my.node.io/servicex'
 
+
+@pytest.mark.asyncio
+async def test_no_cache_request(simple_query_ast_Pandas, simple_Servicex_fe_watcher):
+    'Make sure that the end point gets passed properly through'
+    await(use_exe_servicex(simple_query_ast_Pandas, cached_results_OK=False))
+
+    assert simple_Servicex_fe_watcher.call_count == 1
+    simple_Servicex_fe_watcher.assert_called_once()
+    kwargs = simple_Servicex_fe_watcher.call_args[1]
+    assert kwargs['use_cache'] == False
+
+
+@pytest.mark.asyncio
+async def test_cache_request(simple_query_ast_Pandas, simple_Servicex_fe_watcher):
+    'Make sure that the end point gets passed properly through'
+    await(use_exe_servicex(simple_query_ast_Pandas, cached_results_OK=True))
+
+    assert simple_Servicex_fe_watcher.call_count == 1
+    kwargs = simple_Servicex_fe_watcher.call_args[1]
+    assert kwargs['use_cache'] == True
 
 # @pytest.yield_fixture()
 # def event_loop():

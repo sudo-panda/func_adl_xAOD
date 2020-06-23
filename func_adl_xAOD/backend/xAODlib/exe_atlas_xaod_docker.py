@@ -5,6 +5,7 @@ import logging
 import os
 import tempfile
 from urllib.parse import urlparse
+from typing import Callable
 
 from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import (
     atlas_xaod_executor)
@@ -26,6 +27,11 @@ result_handlers = {
     rh.cpp_awkward_rep: rh.extract_awkward_result,
     rh.cpp_pandas_rep: rh.extract_pandas_result,
 }
+
+
+def dump_split_string(s: str, dump: Callable[[str], None]):
+    for l in s.split('\n'):
+        dump(l)
 
 
 async def use_executor_xaod_docker(a: ast.AST):
@@ -74,11 +80,18 @@ async def use_executor_xaod_docker(a: ast.AST):
         p_stdout, p_stderr = await proc.communicate()
         if proc.returncode != 0 or dump_running_log:
             lg = logging.getLogger(__name__)
-            lg.info(f"Result of run: {proc.returncode}")
-            lg.info(f'Output:\n{p_stdout}')
-            lg.info(f'Error:\n{p_stderr}')
+            level = logging.INFO if proc.returncode == 0 else logging.ERROR
+            lg.log(level, f"Result of run: {proc.returncode}")
+            lg.log(level, 'std Output: ')
+            dump_split_string(p_stdout.decode(), lambda l: lg.log(level, f'  {l}'))
+            lg.log(level, 'std Error: ')
+            dump_split_string(p_stderr.decode(), lambda l: lg.log(level, f'  {l}'))
         if dump_cpp or proc.returncode != 0:
-            os.system("type " + os.path.join(str(local_run_dir), "query.cxx"))
+            level = logging.INFO if proc.returncode == 0 else logging.ERROR
+            lg = logging.getLogger(__name__)
+            with open(os.path.join(str(local_run_dir), "query.cxx"), 'r') as f:
+                lg.log(level, 'C++ Source Code:')
+                dump_split_string(f.read(), lambda l: lg.log(level, f'  {l}'))
         if proc.returncode != 0:
             raise Exception(f"Docker command failed with error {proc.returncode} ({docker_cmd})")
 

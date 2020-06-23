@@ -1,5 +1,6 @@
 # Contains test that will run the full query.
 import asyncio
+from enum import auto
 import logging
 import os
 
@@ -18,6 +19,12 @@ pytestmark = run_long_running_tests
 
 if os.name == 'nt':
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
+@pytest.fixture(autouse=True)
+def turn_on_logging():
+    logging.basicConfig(level=logging.DEBUG)
+    yield None
+    logging.basicConfig(level=logging.WARNING)
 
 def test_select_first_of_array():
     # The hard part is that First() here does not return a single item, but, rather, an array that
@@ -75,6 +82,18 @@ def test_First_two_outer_loops():
             .value(executor=use_executor_dataset_resolver)
     assert training_df.iloc[0]['dude'] == 693
 
+
+def test_not_in_where():
+    # THis is a little tricky because the First there is actually running over one jet in the event. Further, the Where
+    # on the number of tracks puts us another level down. So it is easy to produce code that compiles, but the First's if statement
+    # is very much in the wrong place.
+    training_df = f \
+            .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Tracks("InDetTrackParticles").Where(lambda t: not (t.pt() > 1000.0))).First().Count()') \
+            .AsPandasDF('dude') \
+            .value(executor=use_executor_dataset_resolver)
+    assert training_df.iloc[0]['dude'] == 1204
+
+
 def test_first_object_in_event():
     # Make sure First puts it if statement in the right place.
     training_df = f \
@@ -116,3 +135,39 @@ def test_truth_particles_awk():
         .value(executor=use_executor_dataset_resolver)
     print (training_df)
     assert len(training_df[b'NTruthParticles']) == 10
+
+def test_1D_array():
+    # A very simple flattening of arrays
+    training_df = f \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0)') \
+        .AsAwkwardArray('JetPt') \
+        .value(executor=use_executor_dataset_resolver)
+    print (training_df)    
+    assert len(training_df[b'JetPt']) == 10
+    assert len(training_df[b'JetPt'][0]) == 32
+
+def test_2D_array():
+    # A very simple flattening of arrays
+    training_df = f \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.Jets("AntiKt4EMTopoJets").Select(lambda j1: j1.pt()/1000.0))') \
+        .AsAwkwardArray('JetPt') \
+        .value(executor=use_executor_dataset_resolver)
+    print (training_df)    
+    assert len(training_df[b'JetPt']) == 10
+    assert len(training_df[b'JetPt'][0]) == 32
+    assert len(training_df[b'JetPt'][0][0]) == 32
+
+def test_2D_nested_where():
+    # Seen in the wild as generating bad C++.
+    training_df = f \
+        .Select('lambda e0304: (e0304.Jets("AntiKt4EMTopoJets"), e0304)') \
+        .Select('lambda e0305: (e0305[0].Where(lambda e0352: (((e0352.pt() / 1000.0) > 20)) and (((abs(e0352.eta())) < 1.5))), e0305[1])') \
+        .Select('lambda e0317: e0317[0].Select(lambda e0353: e0317[1].TruthParticles("TruthParticles").Where(lambda e0345: (e0345.pdgId() == 11)).Where(lambda e0346: (((e0346.pt() / 1000.0) > 20)) and (((abs(e0346.eta())) < 1.5))).Where(lambda e0347: (DeltaR(e0353.eta(), e0353.phi(), e0347.eta(), e0347.phi()) < 0.5)))') \
+        .Select('lambda e0348: e0348.Select(lambda e0354: e0354.Count())') \
+        .AsAwkwardArray('NTruthParticles') \
+        .value(executor=use_executor_dataset_resolver)
+    
+    print(training_df)
+    a = training_df[b'NTruthParticles']
+    assert a.shape[0] == 10
+    assert a[0].shape[0] == 8

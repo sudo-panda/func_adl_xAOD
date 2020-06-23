@@ -1,5 +1,6 @@
+from __future__ import annotations
 # The representation, in C++ code, of all the data being passed around the system by the C++
-# code. Mostly, these are used as "representations" of a particular AST note. Here is an outline
+# code. Mostly, these are used as "representations" of a particular AST node. Here is an outline
 # of how this works:
 #
 # Things are broken down, generally, into values and sequences.
@@ -50,9 +51,10 @@
 # TODO: Rename the classes in here to be proper Python names
 #
 from func_adl_xAOD.backend.xAODlib.util_scope import gc_scope, gc_scope_top_level
+import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
 import ast
 import copy
-from typing import Union
+from typing import Union, Optional
 
 
 def dereference_var(v):
@@ -101,7 +103,7 @@ class cpp_value(cpp_rep_base):
     r'''
     Represents a value. This has a particular value in C++ code that is valid at some C++ scope, or deeper.
     '''
-    def __init__(self, cpp_expression: str, scope: Union[gc_scope, gc_scope_top_level], cpp_type):
+    def __init__(self, cpp_expression: str, scope: Union[gc_scope, gc_scope_top_level], cpp_type: ctyp.terminal):
         r'''
         Initialize a C++ value
 
@@ -137,7 +139,7 @@ class cpp_value(cpp_rep_base):
         else:
             raise Exception("Internal Error: Asking for the undefined scope of a value.")
 
-    def cpp_type(self):
+    def cpp_type(self) -> ctyp.terminal:
         return self._cpp_type
 
     def copy_with_new_scope(self, scope):
@@ -145,6 +147,12 @@ class cpp_value(cpp_rep_base):
         new_v = copy.copy(self)
         new_v._scope = scope
         return new_v
+
+    def update_type(self, new_type: ctyp.terminal):
+        '''
+        Update to a new type
+        '''
+        self._cpp_type = new_type
 
 
 class cpp_variable(cpp_value):
@@ -157,6 +165,11 @@ class cpp_variable(cpp_value):
 
     def initial_value(self):
         return self._initial_value
+
+    def update_type(self, new_type: ctyp.terminal):
+        if self._initial_value is not None:
+            self._initial_value._cpp_type = new_type
+        cpp_value.update_type(self, new_type)
 
 
 class cpp_collection(cpp_value):
@@ -211,16 +224,24 @@ class cpp_sequence(cpp_rep_base):
     A sequence is a stream of values of a particular type. You can think of it like a generator expression,
     or like a vector of some type.
     '''
-    def __init__(self, sequence_value, iterator_value: cpp_value):
+    def __init__(self, sequence_value: Union[cpp_value, cpp_sequence], iterator_value: cpp_value,
+                 scope: Union[gc_scope_top_level, gc_scope]):
         '''
         Create a sequence
 
-        sequence_value:         The value of the sequence - of the data items that are in sequence
-        iterator_value:         The iterator that is incremented to get the next value in the sequence.
+        sequence_value:         The value of the sequence - of the data items that are in sequence.
+        iterator_value:         The iterator that is incremented to get the next value in the sequence. The
+                                iterator's scope is defined where it was created.
+        scope:                  The scope at which this sequence is declared. Note that this may be different
+                                from the of the interator if we are, for example, inside an if statement caused
+                                by a Where (or similar). If the `sequence_value` is an actual value, it will have
+                                the same scope.
         '''
         cpp_rep_base.__init__(self)
         self._sequence = sequence_value
         self._iterator = iterator_value
+        self._type: Optional[ctyp.collection] = None
+        self._scope = scope
 
     def sequence_value(self):
         return self._sequence
@@ -228,11 +249,14 @@ class cpp_sequence(cpp_rep_base):
     def iterator_value(self):
         return self._iterator
 
-    def cpp_type(self):
-        raise Exception("Do not know how to get the type of a sequence!")
+    def cpp_type(self) -> ctyp.terminal:
+        if self._type is None:
+            self._type = ctyp.collection(self._sequence.cpp_type().type)
+        return self._type
 
     def as_cpp(self):
         raise Exception("Do not know how to get the cpp rep of a sequence!")
 
     def scope(self) -> Union[gc_scope, gc_scope_top_level]:
-        return self._sequence.scope()
+        'Return scope where this sequence was created/valid'
+        return self._scope

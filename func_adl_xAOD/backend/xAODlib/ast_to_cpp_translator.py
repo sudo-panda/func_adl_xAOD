@@ -2,11 +2,12 @@
 # Python AST code.
 
 import ast
-from typing import Any, List, Union, cast
+from typing import Any, Dict, List, Type, Union, cast
 
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
 from func_adl.util_ast import lambda_unwrap
+from .utils import most_accurate_type
 
 import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
 from func_adl_xAOD.backend.cpplib.cpp_functions import FunctionAST
@@ -20,7 +21,8 @@ from func_adl_xAOD.backend.xAODlib.generated_code import generated_code
 import func_adl_xAOD.backend.xAODlib.result_handlers as rh
 import func_adl_xAOD.backend.xAODlib.statement as statement
 from func_adl_xAOD.backend.xAODlib.util_scope import (
-    deepest_scope, top_level_scope)
+    deepest_scope, gc_scope, gc_scope_top_level, top_level_scope)
+
 
 # Convert between Python comparisons and C++.
 compare_operations = {
@@ -30,6 +32,24 @@ compare_operations = {
     ast.GtE: '>=',
     ast.Eq: '==',
     ast.NotEq: '!=',
+}
+
+
+# Unary operators - we aren't doing not and invert just yet.
+_known_unary_operators: Dict[Type, str] = {
+    ast.UAdd: '+',
+    ast.USub: '-',
+    ast.Not: '!',
+}
+
+
+# Known binary operators
+_known_binary_operators: Dict[Type, str] = {
+    ast.Add: '+',
+    ast.Sub: '-',
+    ast.Mult: '*',
+    ast.Div: '/',
+    ast.Mod: '%',
 }
 
 
@@ -62,7 +82,7 @@ def rep_is_collection(rep) -> bool:
 def get_ttree_type(rep):
     'Looking at a rep, figure out how it should get stored in a tree'
     if isinstance(rep, crep.cpp_sequence):
-        if not isinstance(rep.sequence_value(), crep.cpp_value):
+        if not isinstance(rep.sequence_value(), (crep.cpp_value, crep.cpp_sequence)):
             raise Exception("Nested data structures (2D arrays, etc.) in TTree's are not yet supported. Numbers or arrays of numbers only for now.")
         return ctyp.collection(rep.sequence_value().cpp_type())
     else:
@@ -177,7 +197,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         # If it still didn't work, this is an internal error. But make the error message a bit nicer.
         if not hasattr(node, 'rep'):
-            raise Exception('Internal Error: attempted to get C++ representation for AST note "{0}", but failed.'.format(ast.dump(node)))
+            raise Exception('Internal Error: attempted to get C++ representation for AST node "{0}", but failed.'.format(ast.dump(node)))
         self._result = node.rep
 
         # Reset the result
@@ -217,7 +237,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         iterator_value.reset_scope(self._gc.current_scope())
 
         # For a new sequence like this the sequence and iterator value are the same
-        return crep.cpp_sequence(iterator_value, iterator_value)
+        return crep.cpp_sequence(iterator_value, iterator_value, self._gc.current_scope())
 
     def as_sequence(self, generation_ast: ast.AST):
         r'''
@@ -359,7 +379,15 @@ class query_ast_visitor(FuncADLNodeVisitor):
         else:
             self._gc.set_scope(sv.scope())
         call = ast.Call(func=agg_lambda, args=[accumulator.as_ast(), seq.sequence_value().as_ast()])
-        self._gc.add_statement(statement.set_var(accumulator, self.get_rep(call)))
+        update_lambda = self.get_rep(call)
+
+        # Check the accumulator value still hols out. Since we need the accumulator previously,
+        # this will allow us to patch things up. This isn't perfect, but it will do.
+        if update_lambda.cpp_type().type != init_val.cpp_type().type:
+            best_type = most_accurate_type([init_val.cpp_type(), update_lambda.cpp_type()])
+            accumulator.update_type(best_type)
+
+        self._gc.add_statement(statement.set_var(accumulator, update_lambda))
 
         # Finally, since this is a terminal, we need to pop off the top.
         self._gc.set_scope(accumulator_scope)
@@ -566,23 +594,33 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
     def visit_BinOp(self, node):
         'An in-line add'
+        if type(node.op) not in _known_binary_operators:
+            raise Exception(f"Do not know how to translate Binary operator {ast.dump(node.op)}!")
         left = self.get_rep(node.left)
         right = self.get_rep(node.right)
 
+        best_type = most_accurate_type([left.cpp_type(), right.cpp_type()])
+        if type(node.op) is ast.Div:
+            best_type = ctyp.terminal('double', False)
+
         # TODO: Turn this into a table lookup rather than the same thing repeated over and over
         s = deepest_scope(left, right).scope()
-        if isinstance(node.op, ast.Add):
-            r = crep.cpp_value("({0}+{1})".format(left.as_cpp(), right.as_cpp()), s, left.cpp_type())
-        elif isinstance(node.op, ast.Div):
-            r = crep.cpp_value("({0}/{1})".format(left.as_cpp(), right.as_cpp()), s, left.cpp_type())
-        elif isinstance(node.op, ast.Sub):
-            r = crep.cpp_value("({0}-{1})".format(left.as_cpp(), right.as_cpp()), s, left.cpp_type())
-        elif isinstance(node.op, ast.Mult):
-            r = crep.cpp_value("({0}*{1})".format(left.as_cpp(), right.as_cpp()), s, left.cpp_type())
-        else:
-            raise Exception("Binary operator {0} is not implemented.".format(type(node.op)))
+        r = crep.cpp_value(f"({left.as_cpp()}{_known_binary_operators[type(node.op)]}{right.as_cpp()})",
+                           s, best_type)
 
         # Cache the result to push it back further up.
+        node.rep = r
+        self._result = r
+
+    def visit_UnaryOp(self, node: ast.UnaryOp):
+        if type(node.op) not in _known_unary_operators:
+            raise Exception(f"Do not know how to translate Unary operator {ast.dump(node.op)}!")
+
+        operand = self.get_rep(node.operand)
+
+        s = operand.scope()
+        r = crep.cpp_value(f"({_known_unary_operators[type(node.op)]}({operand.as_cpp()}))",
+                           s, operand.cpp_type())
         node.rep = r
         self._result = r
 
@@ -641,7 +679,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         # How we check and short-circuit depends on if we are doing and or or.
         check_expr = result.as_cpp() if type(node.op) == ast.And else '!{0}'.format(result.as_cpp())
-        check = crep.cpp_value(check_expr, self._gc.current_scope(), cpp_type='bool')
+        check = crep.cpp_value(check_expr, self._gc.current_scope(), cpp_type=ctyp.terminal('bool'))
 
         first = True
         scope = self._gc.current_scope()
@@ -667,6 +705,73 @@ class query_ast_visitor(FuncADLNodeVisitor):
     def visit_Str(self, node):
         node.rep = crep.cpp_value('"{0}"'.format(node.s), self._gc.current_scope(), ctyp.terminal("string"))
         self._result = node.rep
+
+    def code_fill_ttree(self, e_rep: crep.cpp_rep_base, e_name: crep.cpp_variable,
+                        scope_fill: Union[gc_scope, gc_scope_top_level]) -> Union[gc_scope, gc_scope_top_level]:
+        '''
+        How we code up setting the variables that will get collected by the 'TTree::Fill' method is a bit tricky.
+
+        - If we have a sequence then we have to make sure to use push_back into a vector
+        - If we have sequences of sequences, then we have to do multiple vector decl and push-backs, including
+          declaring some extra variables
+        - If the variable is set at a very low level, we need to make sure the Fill is triggered at the proper
+          depth.
+
+        Arguments:
+            e_rep           XXX
+            e_name          The variable that we are saving everything to
+            scope_fill      The scope at which the current fill statement is going to be run. We should
+                            put the statements that set the variable for collection by Fill at that scope level.
+
+        Returns
+            scope_fill      Possibly updated fill scope setting - if we were forced to go down a level (or so).
+
+        '''
+        def set_scope(scope: Union[gc_scope_top_level, gc_scope], fill_scope: Union[gc_scope, gc_scope_top_level]):
+            if scope.starts_with(fill_scope):
+                self._gc.set_scope(scope)
+            else:
+                self._gc.set_scope(fill_scope)
+
+        # If this is a sequence of a sequence (or deeper) then we need to setup the proper variables.
+        if rep_is_collection(e_rep):
+            assert isinstance(e_rep, crep.cpp_sequence), 'Internal error'
+
+            def fill_colection_levels(seq: crep.cpp_sequence, accumulator: crep.cpp_value):
+                inner = seq.sequence_value()
+                scope = seq.scope()
+                if isinstance(inner, crep.cpp_sequence):
+                    scope = seq.iterator_value().scope()
+                    storage = crep.cpp_variable(unique_name('ntuple'), scope, cpp_type=inner.cpp_type())
+                    assert not isinstance(scope, gc_scope_top_level)
+                    scope.declare_variable(storage)
+                    fill_colection_levels(inner, storage)
+                    inner = storage
+
+                set_scope(scope, scope_fill)
+                self._gc.add_statement(statement.push_back(accumulator, inner))
+
+            fill_colection_levels(e_rep, e_name)
+
+        else:
+            # Set the scope. Normally we want to do it where the variable was calculated
+            # (think of cases when you have to calculate something with a `push_back`),
+            # but if the variable was already calculated, we want to make sure we are at least
+            # in the same scope as the tree fill.
+            assert isinstance(e_rep, crep.cpp_value)
+            set_scope(e_rep.scope(), scope_fill)
+
+            # If the variable is something we are iterating over, then fill it, otherwise,
+            # just set it.
+            # if rep_is_collection(e_rep):
+            #     self._gc.add_statement(statement.push_back(e_name, e_rep.sequence_value()))
+            # else:
+            self._gc.add_statement(statement.set_var(e_name, e_rep))
+            cs = self._gc.current_scope()
+            if cs.starts_with(scope_fill):
+                scope_fill = cs
+
+        return scope_fill
 
     def call_ResultTTree(self, node: ast.Call, args: List[ast.AST]):
         '''This AST means we are taking an iterable and converting it to a ROOT file.
@@ -722,25 +827,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # Make sure that it happens at the proper scope, where what we are after is defined!
         s_orig = self._gc.current_scope()
         for e_rep, e_name in zip(seq_values.values(), var_names):
-            # Set the scope. Normally we want to do it where the variable was calculated
-            # (think of cases when you have to calculate something with a `push_back`),
-            # but if the variable was already calculated, we want to make sure we are at least
-            # in the same scope as the tree fill.
-            e_rep_scope = e_rep.scope() if not isinstance(e_rep, crep.cpp_sequence) else e_rep.sequence_value().scope()
-            if e_rep_scope.starts_with(scope_fill):
-                self._gc.set_scope(e_rep_scope)
-            else:
-                self._gc.set_scope(scope_fill)
-
-            # If the variable is something we are iterating over, then fill it, otherwise,
-            # just set it.
-            if rep_is_collection(e_rep):
-                self._gc.add_statement(statement.push_back(e_name[1], e_rep.sequence_value()))
-            else:
-                self._gc.add_statement(statement.set_var(e_name[1], e_rep))
-                cs = self._gc.current_scope()
-                if cs.starts_with(scope_fill):
-                    scope_fill = cs
+            scope_fill = self.code_fill_ttree(e_rep, e_name[1], scope_fill)
 
         # The fill statement. This should happen at the scope where the tuple was defined.
         # The scope where this should be done is a bit tricky (note the update above):
@@ -784,8 +871,17 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         ttree = function_call('ResultTTree', [source, column_names, ast.parse('"pandatree"').body[0].value, ast.parse('"output.root"').body[0].value])
         r = self.get_rep(ttree)
+
+        # Make sure what we are asking for make sense in a pandas world
         if not isinstance(r, rh.cpp_ttree_rep):
             raise Exception("Can't deal with different return type from tree!")
+        if hasattr(source, 'rep'):
+            source_rep = source.rep
+            if isinstance(source_rep, crep.cpp_sequence):
+                if (rep_is_collection(source_rep.sequence_value())):
+                    raise Exception("Unable to render arrays of ararys in a pandas dataframe")
+
+        # Ok - push it out up higher
         node.rep = rh.cpp_pandas_rep(r.filename, r.treename, self._gc.current_scope())
         self._result = node.rep
 
@@ -806,7 +902,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         new_sequence_value = self.get_rep(c)
 
         # We need to build a new sequence.
-        rep = crep.cpp_sequence(new_sequence_value, seq.iterator_value())
+        rep = crep.cpp_sequence(new_sequence_value, seq.iterator_value(), self._gc.current_scope())
 
         node.rep = rep
         self._result = rep
@@ -864,9 +960,9 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # Protect against sequence of sequences (LOVE type checkers, which caught this as a possibility)
         w_val = seq.sequence_value()
         if isinstance(w_val, crep.cpp_sequence):
-            raise Exception("Internal error: don't know how to look at a sequence")
+            raise Exception("Error: A Where clause must evaluate to a value, not a sequence")
         new_sequence_var = w_val.copy_with_new_scope(self._gc.current_scope())
-        node.rep = crep.cpp_sequence(new_sequence_var, seq.iterator_value())
+        node.rep = crep.cpp_sequence(new_sequence_var, seq.iterator_value(), self._gc.current_scope())
 
         self._result = node.rep
 

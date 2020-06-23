@@ -311,7 +311,8 @@ class WalkFuncADLAST(ast.NodeTransformer):
 
 
 async def use_exe_servicex(a: ast.AST,
-                           endpoint: str = 'http://localhost:5000/servicex'
+                           endpoint: str = 'http://localhost:5000/servicex',
+                           cached_results_OK: bool = True,
                            ) -> pd.DataFrame:
     r'''
     Run a query against a func-adl server backend. The appropriate part of the AST is shipped there, and it is interpreted.
@@ -320,6 +321,8 @@ async def use_exe_servicex(a: ast.AST,
 
         a:                  The ast that we should evaluate
         endpoint:           The ServiceX node/port endpoint where we can make the query. Defaults to the local thing.
+        cached_results_OK:  If true, then pull the result from a cache if possible. Otherwise run the servicex
+                            query.
 
     Returns:
         dataframe           A Pandas DataFrame object that contains the result of the query.
@@ -352,5 +355,8 @@ async def use_exe_servicex(a: ast.AST,
     # Parse out the dataset components, which will drive the servicex call.
     q_str = python_ast_to_text_ast(top_level_ast)
     datasets = _resolve_dataset(a)
+    assert len(datasets) > 0, 'Zero length dataset list not possible'
+    assert len(datasets) == 1, 'Can only deal with a single dataset atm'
 
-    return await servicex.get_data_async(q_str, datasets, servicex_endpoint=endpoint, data_type=return_type)
+    return await servicex.get_data_async(q_str, datasets[0], servicex_endpoint=endpoint, data_type=return_type,
+                                         use_cache=cached_results_OK)

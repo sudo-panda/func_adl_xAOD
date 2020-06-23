@@ -26,8 +26,8 @@ setup(name="func_adl_xAOD",
           "pandas~=1.0",
           "uproot~=3.7",
           "retry~=0.9",
-          "func_adl.ast==1.0.0a22",
-          "qastle==0.6",
+          "func_adl.ast==1.0.0b1",
+          "qastle==0.7",
           "servicex"
       ],
       classifiers=[
