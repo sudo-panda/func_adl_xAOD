@@ -311,8 +311,7 @@ class WalkFuncADLAST(ast.NodeTransformer):
 
 
 async def use_exe_servicex(a: ast.AST,
-                           endpoint: str = 'http://localhost:5000/servicex',
-                           cached_results_OK: bool = True,
+                           endpoint: str = 'http://localhost:5000/servicex'
                            ) -> pd.DataFrame:
     r'''
     Run a query against a func-adl server backend. The appropriate part of the AST is shipped there, and it is interpreted.
@@ -321,8 +320,6 @@ async def use_exe_servicex(a: ast.AST,
 
         a:                  The ast that we should evaluate
         endpoint:           The ServiceX node/port endpoint where we can make the query. Defaults to the local thing.
-        cached_results_OK:  If true, then pull the result from a cache if possible. Otherwise run the servicex
-                            query.
 
     Returns:
         dataframe           A Pandas DataFrame object that contains the result of the query.
@@ -334,29 +331,25 @@ async def use_exe_servicex(a: ast.AST,
     if not isinstance(a_func, ast.Name):
         raise FuncADLServerException(f'Unable to use ServiceX to fetch a call from {a_func}')
 
+    # Parse out the dataset components, which will drive the servicex call.
+    datasets = _resolve_dataset(a)
+    assert len(datasets) == 1
+    sa_adaptor = servicex.ServiceXAdaptor(endpoint)
+    se = servicex.ServiceXDataset(datasets[0], servicex_adaptor=sa_adaptor)
+
     # Make the servicex call, asking for the appropriate return type. Depending on the return-type
     # alter it so it can return something that ServiceX can understand.
-    return_type = ''
-    top_level_ast = a
-
     if a_func.id == 'ResultPandasDF':
-        return_type = 'pandas'
         source = a.args[0]
         cols = a.args[1]
         top_level_ast = ast.Call(func=ast.Name('ResultTTree'), args=[source, cols, ast.Str('treeme'), ast.Str('file.root')])
+        q_str = python_ast_to_text_ast(top_level_ast)
+        return await se.get_data_pandas_df_async(q_str)
     elif a_func.id == 'ResultAwkwardArray':
-        return_type = 'awkward'
         source = a.args[0]
         cols = a.args[1]
         top_level_ast = ast.Call(func=ast.Name('ResultTTree'), args=[source, cols, ast.Str('treeme'), ast.Str('file.root')])
+        q_str = python_ast_to_text_ast(top_level_ast)
+        return await se.get_data_awkward_async(q_str)
     else:
         raise FuncADLServerException(f'Unable to use ServiceX to fetch a result in the form {a_func.id}')
-
-    # Parse out the dataset components, which will drive the servicex call.
-    q_str = python_ast_to_text_ast(top_level_ast)
-    datasets = _resolve_dataset(a)
-    assert len(datasets) > 0, 'Zero length dataset list not possible'
-    assert len(datasets) == 1, 'Can only deal with a single dataset atm'
-
-    return await servicex.get_data_async(q_str, datasets[0], servicex_endpoint=endpoint, data_type=return_type,
-                                         use_cache=cached_results_OK)

@@ -2,6 +2,7 @@
 from setuptools import find_packages  # noqa: F401
 from distutils.core import setup
 from os import listdir
+from version_info import version_servicex
 
 # Use the readme as the long description.
 with open("README.md", "r") as fh:
@@ -28,9 +29,9 @@ setup(name="func_adl_xAOD",
           "uproot~=3.7",
           "retry~=0.9",
           "jinja2",
-          "func_adl.ast==1.0.0b1",
+          "func_adl.ast==1.1.0b1",
           "qastle==0.7",
-          "servicex",
+          f"servicex=={version_servicex}"
       ],
       extras_require={
           'test': [
@@ -44,7 +45,8 @@ setup(name="func_adl_xAOD",
               'autopep8',
               'twine',
               'testfixtures',
-              'wheel'
+              'wheel',
+              'asyncmock'
           ],
       },
       classifiers=[
