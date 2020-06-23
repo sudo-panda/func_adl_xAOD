@@ -45,7 +45,7 @@ async def exe_for_test(a: ast.AST, qastle_roundtrip=False):
     # Setup the rep for this filter
     file = find_dataset(a)
     iterator = cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
-    file.rep = cpp_sequence(iterator, iterator, top_level_scope())
+    file.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
     # Use the dummy executor to process this, and return it.
     exe = dummy_executor()
@@ -62,7 +62,7 @@ async def exe_from_qastle(q: str):
     # Setup the rep for this filter
     file = find_dataset(a)
     iterator = cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
-    file.rep = cpp_sequence(iterator, iterator, top_level_scope())
+    file.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
     # Use the dummy executor to process this, and return it.
     exe = dummy_executor()

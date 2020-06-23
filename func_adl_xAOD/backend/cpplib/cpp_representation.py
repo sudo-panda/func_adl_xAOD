@@ -57,29 +57,30 @@ import copy
 from typing import Union, Optional
 
 
-def dereference_var(v):
+def dereference_var(v: cpp_value):
     '''
     If this is a pointer, return the object with the proper type (and a * to dereference it). Otherwise
     just return the object itself.
     '''
-    if not isinstance(v, cpp_value):
-        raise Exception("Internal Error: Makes no sense to dereference anything but a C++ value")
-
     if not v.cpp_type().is_pointer():
         return v
 
     # We will go under the covers and "fix" this.
     new_v = copy.copy(v)
     new_v._expression = "*" + new_v._expression
-    new_v._cpp_type = new_v._cpp_type.dereference()
+
+    # There is only one type we current support here.
+    # Eventually this is going to get us into trouble.
+    new_v._cpp_type = new_v._cpp_type.dereference()  # type: ignore
     return new_v
 
 
 class dummy_ast(ast.AST):
     'A dummy ast'
+    _fields = tuple()
+
     def __init__(self, rep=None):
         self.rep = rep
-        self._fields = tuple()
 
 
 class cpp_rep_base:
@@ -188,6 +189,7 @@ class cpp_collection(cpp_value):
 
     def get_element_type(self):
         'Return the type of the element of the sequence'
+        assert False
         return self.cpp_type().element_type()
 
 

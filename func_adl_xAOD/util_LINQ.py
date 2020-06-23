@@ -48,6 +48,7 @@ def extract_dataset_info(ds_call: ast.Call) -> List[str]:
     assert func_name == 'EventDataset'
 
     # List should be strings
+    assert args is not None
     assert len(args) == 1
     urls = ast.literal_eval(args[0])
 

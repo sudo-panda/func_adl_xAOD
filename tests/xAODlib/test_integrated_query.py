@@ -18,7 +18,7 @@ from .control_tests import f, run_long_running_tests
 pytestmark = run_long_running_tests
 
 if os.name == 'nt':
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())  # type: ignore
 
 @pytest.fixture(autouse=True)
 def turn_on_logging():

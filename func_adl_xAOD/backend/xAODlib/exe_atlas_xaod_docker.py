@@ -30,8 +30,8 @@ result_handlers = {
 
 
 def dump_split_string(s: str, dump: Callable[[str], None]):
-    for l in s.split('\n'):
-        dump(l)
+    for ll in s.split('\n'):
+        dump(ll)
 
 
 async def use_executor_xaod_docker(a: ast.AST):
@@ -75,8 +75,8 @@ async def use_executor_xaod_docker(a: ast.AST):
         datafile_mount = "" if datafile_dir is None else f'-v {datafile_dir}:/data'
         docker_cmd = f'docker run --rm -v {f_spec.output_path}:/scripts -v {f_spec.output_path}:/results {datafile_mount} atlas/analysisbase:latest /scripts/{f_spec.main_script}'
         proc = await asyncio.create_subprocess_shell(docker_cmd,
-                                                     stdout=asyncio.subprocess.PIPE,
-                                                     stderr=asyncio.subprocess.PIPE)
+                                                     stdout=asyncio.subprocess.PIPE,  # type: ignore
+                                                     stderr=asyncio.subprocess.PIPE)  # type: ignore
         p_stdout, p_stderr = await proc.communicate()
         if proc.returncode != 0 or dump_running_log:
             lg = logging.getLogger(__name__)

@@ -112,7 +112,7 @@ def test_event_dataset_not_in_ast(already_present_ds):
     url = 'localds://bogus2'
     eds = EventDataset(url)
     try:
-        resolve_dataset(eds)
+        resolve_dataset(eds)  # type: ignore
         assert False
     except GridDsException:
         pass

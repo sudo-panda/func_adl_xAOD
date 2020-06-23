@@ -28,7 +28,7 @@ class FuncADLServerException (Exception):
 
 def _uri_exists(uri):
     'Look to see if a file:// uri exists'
-    r = urllib.parse.urlparse(uri)
+    r = urllib.parse.urlparse(uri)  # type: ignore
     if r.scheme != 'file':
         return False
     if os.path.exists(r.path):
@@ -55,7 +55,7 @@ def _make_request(node: str, ast_data):
 def _best_access(files):
     'Given a list of ways to a file, determine which one is best'
     for uri, t_name in files:
-        r = urllib.parse.urlparse(uri)
+        r = urllib.parse.urlparse(uri)  # type: ignore
         if r.scheme == 'file':
             if os.path.exists(r.path):
                 return [uri, t_name]
@@ -73,7 +73,7 @@ def _clean_url(ds: str) -> str:
         return ds
 
     # Strip off the scheme name
-    url_p = urllib.parse.urlparse(ds)
+    url_p = urllib.parse.urlparse(ds)  # type: ignore
     ds_name = ds[len(url_p.scheme) + 3:]
     return ds_name
 
@@ -191,8 +191,8 @@ class WalkFuncADLAST(ast.NodeTransformer):
                             print(f'  Message: {dr["message"]}', file=s)
                         if 'log' in dr:
                             print('  Log lines:', file=s)
-                            for l in dr['log']:
-                                print(f'    {l}', file=s)
+                            for ll in dr['log']:
+                                print(f'    {ll}', file=s)
                         raise FuncADLServerException(s.getvalue())
 
                 r = {'files': self.extract_filespec(dr)}
@@ -216,7 +216,7 @@ class WalkFuncADLAST(ast.NodeTransformer):
 
     def _clean_name(self, url):
         'Clean up a name. Mostly dealing with URIs, uproot, and windows.'
-        p = urllib.parse.urlparse(url)
+        p = urllib.parse.urlparse(url)  # type: ignore
         if p.scheme != 'file':
             return url
         if os.path.exists(p.path):
@@ -225,13 +225,13 @@ class WalkFuncADLAST(ast.NodeTransformer):
 
     def _load_df(self, f_name, t_name):
         data_file = uproot.open(self._clean_name(f_name))
-        df_new = data_file[t_name].pandas.df()
+        df_new = data_file[t_name].pandas.df()  # type: ignore
         data_file._context.source.close()
         return df_new
 
     def _load_awkward(self, f_name, t_name):
         data_file = uproot.open(self._clean_name(f_name))
-        df_new = data_file[t_name].arrays()
+        df_new = data_file[t_name].arrays()  # type: ignore
         data_file._context.source.close()
         return df_new
 

@@ -231,8 +231,8 @@ class query_ast_visitor(FuncADLNodeVisitor):
         it comes time for a new type, this is where it should go.
         '''
         element_type = rep.cpp_type().element_type()
-        iterator_value = crep.cpp_value(unique_name("i_obj"), None, element_type)
-        l_statement = statement.loop(iterator_value, crep.dereference_var(rep))
+        iterator_value = crep.cpp_value(unique_name("i_obj"), None, element_type)  # type: ignore
+        l_statement = statement.loop(iterator_value, crep.dereference_var(rep))  # type: ignore
         self._gc.add_statement(l_statement)
         iterator_value.reset_scope(self._gc.current_scope())
 
@@ -393,7 +393,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         self._gc.set_scope(accumulator_scope)
 
         # Cache the results in our result in case we are skipping nodes in the AST.
-        node.rep = accumulator
+        node.rep = accumulator  # type: ignore
         self._result = accumulator
 
     def visit_call_Aggregate_initial_func(self, node: ast.Call, args: List[ast.AST]):
@@ -526,8 +526,8 @@ class query_ast_visitor(FuncADLNodeVisitor):
     def call_EventDataset(self, node: ast.Call, args: List[ast.AST]):
         'This has already been resolved, so return it.'
         assert hasattr(node, 'rep')
-        self._result = node.rep
-        return node.rep
+        self._result = node.rep  # type: ignore
+        return node.rep  # type: ignore
 
     def visit_Call(self, call_node: ast.Call):
         r'''
@@ -549,13 +549,13 @@ class query_ast_visitor(FuncADLNodeVisitor):
                 raise Exception("Do not know how to call '{0}'".format(ast.dump(call_node.func, annotate_fields=False)))
             if r is not None:
                 self._result = r
-        call_node.rep = self._result
+        call_node.rep = self._result  # type: ignore
 
     def visit_Name(self, name_node: ast.Name):
         'Visiting a name - which should represent something'
         id = self.resolve_id(name_node.id)
         if isinstance(id, ast.AST):
-            name_node.rep = self.get_rep(id)
+            name_node.rep = self.get_rep(id)  # type: ignore
 
     def visit_Subscript(self, node):
         'Index into an array. Check types, as tuple indexing can be very bad for us'
@@ -565,7 +565,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
             raise Exception("Do not know how to take the index of type '{0}'".format(v.cpp_type()))
 
         index = self.get_rep(node.slice)
-        node.rep = crep.cpp_value("{0}.at({1})".format(v.as_cpp(), index.as_cpp()), self._gc.current_scope(), cpp_type=v.get_element_type())
+        node.rep = crep.cpp_value("{0}.at({1})".format(v.as_cpp(), index.as_cpp()), self._gc.current_scope(), cpp_type=v.get_element_type())  # type: ignore
         self._result = node.rep
 
     def visit_Index(self, node):
@@ -621,7 +621,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         s = operand.scope()
         r = crep.cpp_value(f"({_known_unary_operators[type(node.op)]}({operand.as_cpp()}))",
                            s, operand.cpp_type())
-        node.rep = r
+        node.rep = r  # type: ignore
         self._result = r
 
     def visit_IfExp(self, node):
@@ -821,7 +821,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # To allow it to be different we have to modify that template too, and pass the
         # information there. If more than one tree is written, the current code would
         # lead to a bug.
-        node.rep = rh.cpp_ttree_rep("ANALYSIS.root", tree_name, self._gc.current_scope())
+        node.rep = rh.cpp_ttree_rep("ANALYSIS.root", tree_name, self._gc.current_scope())  # type: ignore
 
         # For each varable we need to save, cache it or push it back, depending.
         # Make sure that it happens at the proper scope, where what we are after is defined!
@@ -842,7 +842,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # And we are a terminal, so pop off the block.
         self._gc.set_scope(s_orig)
         self._gc.pop_scope()
-        return node.rep
+        return node.rep  # type: ignore
 
     def call_ResultAwkwardArray(self, node: ast.Call, args: List[ast.AST]):
         '''
@@ -857,8 +857,8 @@ class query_ast_visitor(FuncADLNodeVisitor):
         r = self.get_rep(ttree)
         if not isinstance(r, rh.cpp_ttree_rep):
             raise Exception("Can't deal with different return type from tree!")
-        node.rep = rh.cpp_awkward_rep(r.filename, r.treename, self._gc.current_scope())
-        self._result = node.rep
+        node.rep = rh.cpp_awkward_rep(r.filename, r.treename, self._gc.current_scope())  # type: ignore
+        self._result = node.rep  # type: ignore
 
     def call_ResultPandasDF(self, node: ast.Call, args: List[ast.AST]):
         '''
@@ -869,29 +869,28 @@ class query_ast_visitor(FuncADLNodeVisitor):
         source = args[0]
         column_names = args[1]
 
-        ttree = function_call('ResultTTree', [source, column_names, ast.parse('"pandatree"').body[0].value, ast.parse('"output.root"').body[0].value])
+        ttree = function_call('ResultTTree', [source, column_names, ast.parse('"pandatree"').body[0].value, ast.parse('"output.root"').body[0].value])  # type: ignore
         r = self.get_rep(ttree)
 
         # Make sure what we are asking for make sense in a pandas world
         if not isinstance(r, rh.cpp_ttree_rep):
             raise Exception("Can't deal with different return type from tree!")
         if hasattr(source, 'rep'):
-            source_rep = source.rep
+            source_rep = source.rep  # type: ignore
             if isinstance(source_rep, crep.cpp_sequence):
                 if (rep_is_collection(source_rep.sequence_value())):
-                    raise Exception("Unable to render arrays of ararys in a pandas dataframe")
+                    raise Exception("Unable to render arrays of arrays in a pandas dataframe")
 
         # Ok - push it out up higher
-        node.rep = rh.cpp_pandas_rep(r.filename, r.treename, self._gc.current_scope())
-        self._result = node.rep
+        node.rep = rh.cpp_pandas_rep(r.filename, r.treename, self._gc.current_scope())  # type: ignore
+        self._result = node.rep  # type: ignore
 
     def call_Select(self, node: ast.Call, args: List[ast.arg]):
         'Transform the iterable from one form to another'
 
         assert len(args) == 2
         source = args[0]
-        selection = args[1]
-        assert isinstance(selection, ast.Lambda)
+        selection = cast(ast.Lambda, args[1])
 
         # Make sure we are in a loop
         seq = self.as_sequence(source)
@@ -904,7 +903,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # We need to build a new sequence.
         rep = crep.cpp_sequence(new_sequence_value, seq.iterator_value(), self._gc.current_scope())
 
-        node.rep = rep
+        node.rep = rep  # type: ignore
         self._result = rep
         return rep
 
@@ -933,7 +932,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # in which case we are already looping.
         seq = self.as_sequence(c)
 
-        node.rep = seq
+        node.rep = seq  # type: ignore
         self._result = seq
         return seq
 
@@ -962,9 +961,9 @@ class query_ast_visitor(FuncADLNodeVisitor):
         if isinstance(w_val, crep.cpp_sequence):
             raise Exception("Error: A Where clause must evaluate to a value, not a sequence")
         new_sequence_var = w_val.copy_with_new_scope(self._gc.current_scope())
-        node.rep = crep.cpp_sequence(new_sequence_var, seq.iterator_value(), self._gc.current_scope())
+        node.rep = crep.cpp_sequence(new_sequence_var, seq.iterator_value(), self._gc.current_scope())  # type: ignore
 
-        self._result = node.rep
+        self._result = node.rep  # type: ignore
 
     def call_First(self, node: ast.AST, args: List[ast.AST]) -> Any:
         'We are in a sequence. Take the first element of the sequence and use that for future things.'
@@ -1006,5 +1005,5 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # Otherwise return a new version of the value.
         first_value = sv if isinstance(sv, crep.cpp_sequence) else sv.copy_with_new_scope(self._gc.current_scope())
 
-        node.rep = first_value
+        node.rep = first_value  # type: ignore
         self._result = first_value
