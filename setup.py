@@ -11,7 +11,7 @@ with open("README.md", "r") as fh:
 xaod_template_files = listdir('func_adl_xAOD/backend/R21Code')
 setup(name="func_adl_xAOD",
       version='0.0.0-alpha.10',
-      packages=['func_adl_xAOD'] + ['func_adl_xAOD/backend'] + [f'func_adl_xAOD/backend.{f}' for f in ['cpplib', 'dataset_resolvers', 'xAODlib']],
+      packages=['func_adl_xAOD'] + ['func_adl_xAOD/backend'] + [f'func_adl_xAOD/backend.{f}' for f in ['cpplib', 'datasets', 'xAODlib']],
       scripts=[],
       description="Functional Analysis Description Language for accessing ATLAS xAOD files.",
       long_description=long_description,
