@@ -1,7 +1,6 @@
 # Python code to help with working with a grid dataset
 # that should be downloaded locally to be run on.False
 import ast
-import asyncio
 import errno
 import os
 from typing import List, Optional
@@ -12,11 +11,8 @@ from func_adl.ast.func_adl_ast_utils import (
 from func_adl.util_ast import as_ast
 import requests
 
-from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_docker import (
-    use_executor_xaod_docker)
-
-
 # TODO: update this to run "properly" locally.
+
 
 # Resolvers:
 def resolve_file(parsed_url, url: str):
@@ -142,15 +138,15 @@ def resolve_dataset(ast_request: ast.AST) -> Optional[ast.AST]:
     return updated_request
 
 
-async def use_executor_dataset_resolver(a: ast.AST, chained_executor=use_executor_xaod_docker):
-    'Run - keep re-doing query until we crash or we can run'
-    am = None
-    while am is None:
-        am = resolve_dataset(a)
-        if am is None:
-            await asyncio.sleep(5 * 60)
+# async def use_executor_dataset_resolver(a: ast.AST, chained_executor=use_executor_xaod_docker):
+#     'Run - keep re-doing query until we crash or we can run'
+#     am = None
+#     while am is None:
+#         am = resolve_dataset(a)
+#         if am is None:
+#             await asyncio.sleep(5 * 60)
 
-    # Ok, we have a modified AST and we can now get it processed.
-    if am is None:
-        raise Exception("internal programming error - resolved AST should not be null")
-    return await chained_executor(am)
+#     # Ok, we have a modified AST and we can now get it processed.
+#     if am is None:
+#         raise Exception("internal programming error - resolved AST should not be null")
+#     return await chained_executor(am)
