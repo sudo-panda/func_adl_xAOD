@@ -39,6 +39,11 @@ class dataset_for_testing(EventDataset):
         EventDataset.__init__(self)
         self._q_roundtrip = qastle_roundtrip
 
+    def __repr__(self) -> str:
+        # When we need to move into a representation, use
+        # this as a place holder for now.
+        return "'sx_placeholder'"
+
     async def execute_result_async(self, a: ast.AST) -> Any:
         'Dummy executor that will return the ast properly rendered. If qastle_roundtrip is true, then we will round trip the ast via qastle first.'
         # Round trip qastle if requested.
@@ -49,9 +54,11 @@ class dataset_for_testing(EventDataset):
             a = qastle.text_ast_to_python_ast(a_text).body[0].value
             print(f'after: {ast.dump(a)}')
 
-        # Setup the rep for this filter
+        # Setup the rep for this dataset
+        from func_adl.EventDataset import _find_ED
+        file = _find_ED(a)
         iterator = cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
-        self._ast.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
+        file.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
         # Use the dummy executor to process this, and return it.
         exe = dummy_executor()
@@ -60,15 +67,17 @@ class dataset_for_testing(EventDataset):
         return exe
 
 
-async def exe_from_qastle(file: EventDataset, q: str):
+async def exe_from_qastle(q: str):
     'Dummy executor that will return the ast properly rendered. If qastle_roundtrip is true, then we will round trip the ast via qastle first.'
     # Round trip qastle if requested.
     import qastle
     a = qastle.text_ast_to_python_ast(q).body[0].value
 
     # Setup the rep for this filter
+    from func_adl.EventDataset import _find_ED
+    file = _find_ED(a)
     iterator = cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
-    file._ast.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
+    file.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
     # Use the dummy executor to process this, and return it.
     exe = dummy_executor()
