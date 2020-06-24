@@ -13,7 +13,6 @@ import jinja2
 import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
 from func_adl_xAOD.backend.cpplib.cpp_functions import find_known_functions
 import func_adl_xAOD.backend.cpplib.cpp_representation as crep
-from func_adl_xAOD.util_LINQ import extract_dataset_info
 
 from .ast_to_cpp_translator import query_ast_visitor
 from .util_scope import top_level_scope
@@ -94,7 +93,7 @@ class atlas_xaod_executor:
         """
 
         # Find the base file dataset and mark it.
-        from func_adl_xAOD.util_LINQ import find_dataset
+        assert False
         file = find_dataset(ast)
         iterator = crep.cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
         file.rep = crep.cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore

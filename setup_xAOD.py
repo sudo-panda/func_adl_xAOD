@@ -1,7 +1,7 @@
 # setuptools loads some plugins necessary for use here.
 from setuptools import find_packages  # noqa: F401
 from distutils.core import setup
-from version_info import version_func_adl_xaod, version_servicex
+from version_info import version_func_adl_xaod, version_servicex, version_func_adl
 
 # Use the readme as the long description.
 with open("README.md", "r") as fh:
@@ -26,7 +26,7 @@ setup(name="func_adl_xAOD",
           "pandas~=1.0",
           "uproot~=3.7",
           "retry~=0.9",
-          "func_adl.ast==1.1.0b1",
+          f"func_adl.ast=={version_func_adl}",
           "qastle==0.7",
           f"servicex=={version_servicex}"
       ],

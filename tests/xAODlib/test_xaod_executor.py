@@ -6,7 +6,6 @@ from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
 from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import (
     atlas_xaod_executor)
 from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
-from func_adl_xAOD.util_LINQ import find_dataset
 from tests.xAODlib.utils_for_testing import *
 
 class Atlas_xAOD_File_Type:

@@ -7,3 +7,4 @@ version_func_adl_xaod_backend = linked_version
 
 # Some common dependend items - helps keep the various setup files by putting it in here.
 version_servicex = "2.0.0b2"
+version_func_adl = "1.1.0b3"

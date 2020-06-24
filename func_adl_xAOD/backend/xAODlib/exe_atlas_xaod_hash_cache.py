@@ -8,7 +8,6 @@ from typing import Iterable
 from func_adl.ast import ast_hash
 from func_adl.ast.func_adl_ast_utils import is_call_of
 
-from ...util_LINQ import extract_dataset_info, find_dataset
 from .atlas_xaod_executor import atlas_xaod_executor
 
 

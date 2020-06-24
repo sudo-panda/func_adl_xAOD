@@ -11,5 +11,6 @@ run_long_running_tests = pytest.mark.skipif(True, reason='Long running tests, sk
 # The file we can use in our test. It has only 10 events...
 local_path = 'tests/xAODlib/jets_10_events.root'
 f_location = f'file:///{os.path.abspath(local_path)}'
-f = EventDataset(f_location)
-f_multiple = EventDataset([f_location, f_location])
+# f = EventDataset(f_location)
+# f_multiple = EventDataset([f_location, f_location])
+f = None

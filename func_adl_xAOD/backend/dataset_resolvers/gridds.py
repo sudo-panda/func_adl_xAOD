@@ -14,8 +14,9 @@ import requests
 
 from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_docker import (
     use_executor_xaod_docker)
-from func_adl_xAOD.util_LINQ import extract_dataset_info
 
+
+# TODO: update this to run "properly" locally.
 
 # Resolvers:
 def resolve_file(parsed_url, url: str):

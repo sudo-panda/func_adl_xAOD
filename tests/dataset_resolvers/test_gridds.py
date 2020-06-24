@@ -10,7 +10,6 @@ import pytest
 
 from func_adl_xAOD.backend.dataset_resolvers.gridds import (
     GridDsException, resolve_dataset, resolve_local_ds_url)
-from func_adl_xAOD.util_LINQ import extract_dataset_info
 
 # Local files
 def test_local_ds_good():
@@ -102,28 +101,28 @@ def test_ds_no_exist(no_exist_present_ds):
     except GridDsException:
         pass
 
-def test_event_dataset_not_ready(downloading_present_ds):
-    url = 'localds://bogus2'
-    eds = EventDataset(url)
-    r = resolve_dataset(eds._ast)
-    assert r is None
+# def test_event_dataset_not_ready(downloading_present_ds):
+#     url = 'localds://bogus2'
+#     eds = EventDataset(url)
+#     r = resolve_dataset(eds._ast)
+#     assert r is None
 
-def test_event_dataset_not_in_ast(already_present_ds):
-    url = 'localds://bogus2'
-    eds = EventDataset(url)
-    try:
-        resolve_dataset(eds)  # type: ignore
-        assert False
-    except GridDsException:
-        pass
+# def test_event_dataset_not_in_ast(already_present_ds):
+#     url = 'localds://bogus2'
+#     eds = EventDataset(url)
+#     try:
+#         resolve_dataset(eds)  # type: ignore
+#         assert False
+#     except GridDsException:
+#         pass
 
-def test_event_dataset_ready(already_present_ds):
-    url = 'localds://bogus2'
-    eds = EventDataset(url)
-    r = resolve_dataset(eds._ast)
-    assert r is not None
-    assert r is not eds
-    assert len(extract_dataset_info(cast(ast.Call, r))) == 7
+# def test_event_dataset_ready(already_present_ds):
+#     url = 'localds://bogus2'
+#     eds = EventDataset(url)
+#     r = resolve_dataset(eds._ast)
+#     assert r is not None
+#     assert r is not eds
+#     assert len(extract_dataset_info(cast(ast.Call, r))) == 7
 
 # Weird schemes
 def test_weird_url_scheme():

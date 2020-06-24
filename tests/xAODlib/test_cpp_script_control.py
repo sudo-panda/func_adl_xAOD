@@ -11,7 +11,6 @@ import pytest
 
 from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_hash_cache import (
     use_executor_xaod_hash_cache)
-from func_adl_xAOD.util_LINQ import extract_dataset_info
 
 from .control_tests import f, run_long_running_tests
 pytestmark = run_long_running_tests
