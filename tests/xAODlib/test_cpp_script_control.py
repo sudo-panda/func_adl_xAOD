@@ -12,7 +12,7 @@ import pytest
 from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_hash_cache import (
     use_executor_xaod_hash_cache)
 
-from .control_tests import f, run_long_running_tests
+from .control_tests import f_single, run_long_running_tests
 pytestmark = run_long_running_tests
 
 
@@ -27,20 +27,9 @@ def generate_test_jet_fetch(cache_dir: str):
     '''
     Generate an expression and C++ files, etc., that contains code for a valid C++ run
     '''
-    return f \
+    return f_single \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
         .Select('lambda j: j.pt()/1000.0') \
-        .AsROOTTTree('file.root', "analysis", 'JetPt') \
-        .value(executor=lambda a: use_executor_xaod_hash_cache(a, cache_path=cache_dir, no_hash_subdir=True))
-
-
-def generate_test_jet_fetch_bad(cache_dir: str):
-    '''
-    Generate an expression and C++ files, etc., that contains code for a invalid C++ run
-    '''
-    return f \
-        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
-        .Select('lambda j: j.ptt()/1000.0') \
         .AsROOTTTree('file.root', "analysis", 'JetPt') \
         .value(executor=lambda a: use_executor_xaod_hash_cache(a, cache_path=cache_dir, no_hash_subdir=True))
 

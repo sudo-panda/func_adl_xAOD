@@ -17,7 +17,7 @@ import func_adl_xAOD.backend.cpplib.cpp_representation as crep
 from .ast_to_cpp_translator import query_ast_visitor
 from .util_scope import top_level_scope
 
-xAODExecutionInfo = namedtuple('xAODExecutionInfo', 'input_urls result_rep output_path main_script all_filenames')
+xAODExecutionInfo = namedtuple('xAODExecutionInfo', 'result_rep output_path main_script all_filenames')
 
 
 class cpp_source_emitter:
@@ -93,8 +93,8 @@ class atlas_xaod_executor:
         """
 
         # Find the base file dataset and mark it.
-        assert False
-        file = find_dataset(ast)
+        from func_adl.EventDataset import _find_ED
+        file = _find_ED(ast)
         iterator = crep.cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
         file.rep = crep.cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
@@ -133,5 +133,4 @@ class atlas_xaod_executor:
         os.chmod(os.path.join(str(output_path), 'runner.sh'), 0o755)
 
         # Build the return object.
-        file_info = extract_dataset_info(file)
-        return xAODExecutionInfo(file_info, result_rep, output_path, 'runner.sh', ['ATestRun_eljob.py', 'package_CMakeLists.txt', 'query.cxx', 'query.h', 'runner.sh'])
+        return xAODExecutionInfo(result_rep, output_path, 'runner.sh', ['ATestRun_eljob.py', 'package_CMakeLists.txt', 'query.cxx', 'query.h', 'runner.sh'])

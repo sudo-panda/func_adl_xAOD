@@ -36,6 +36,7 @@ def use_executor_xaod_hash_cache(a: ast.AST, cache_path: str, no_hash_subdir: bo
     Returns:
         HashXAODExecutorInfo    Named tuple with the hash and the list of files in it.
     '''
+    assert False
     # We can only do this if the result is going to be a ROOT file(s). So make sure.
     if not is_call_of(a, 'ResultTTree'):
         raise CacheExeException(f'Can only cache results for a ROOT tree, not for {type(a).__name__} - {ast.dump(a)} (that should have been a call to ResultTTree).')

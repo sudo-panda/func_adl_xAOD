@@ -16,22 +16,12 @@ dump_running_log = True
 dump_cpp = False
 
 
-class AtlasXAODDockerException(Exception):
-    def __init__(self, message):
-        Exception.__init__(self, message)
-
-
 # Result handlers - for each return type representation, add a handler that can process it
 result_handlers = {
     rh.cpp_ttree_rep: rh.extract_result_TTree,
     rh.cpp_awkward_rep: rh.extract_awkward_result,
     rh.cpp_pandas_rep: rh.extract_pandas_result,
 }
-
-
-def dump_split_string(s: str, dump: Callable[[str], None]):
-    for ll in s.split('\n'):
-        dump(ll)
 
 
 async def use_executor_xaod_docker(a: ast.AST):
