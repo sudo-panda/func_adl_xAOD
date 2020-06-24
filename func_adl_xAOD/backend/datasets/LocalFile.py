@@ -1,15 +1,14 @@
-from pathlib import Path
-from typing import List, Union, Any, Callable
 import ast
-import tempfile
-import os
 import asyncio
 import logging
+import os
+from pathlib import Path
+import tempfile
+from typing import Any, Callable, List, Union, Optional
 
 from func_adl import EventDataset
-from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import (
-    atlas_xaod_executor)
-from urllib.parse import urlparse
+
+from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import atlas_xaod_executor
 import func_adl_xAOD.backend.xAODlib.result_handlers as rh
 
 
@@ -62,7 +61,7 @@ class LocalFile(EventDataset):
             # Write out a file with the mapped in directories.
             # Until we better figure out how to deal with this, there are some restrictions
             # on file locations.
-            datafile_dir: Path = None
+            datafile_dir: Optional[Path] = None
             with open(f'{local_run_dir}/filelist.txt', 'w') as flist_out:
                 for u in self._files:
                     if not u.exists():
