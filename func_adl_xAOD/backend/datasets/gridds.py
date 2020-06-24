@@ -113,7 +113,7 @@ def resolve_dataset(ast_request: ast.AST) -> Optional[ast.AST]:
             files that have been downloaded locally, if we can.
             '''
             # Resolve all the url's
-            urls = extract_dataset_info(node)
+            urls = []  # extract_dataset_info(node)
             resolved_urls = [resolve_local_ds_url(u) for u in urls]
 
             # If any None's, then we aren't ready to go.
