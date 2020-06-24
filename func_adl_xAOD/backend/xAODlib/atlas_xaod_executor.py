@@ -3,6 +3,7 @@
 import ast
 from collections import namedtuple
 import os
+from pathlib import Path
 import sys
 
 from func_adl.ast.aggregate_shortcuts import aggregate_node_transformer
@@ -64,9 +65,9 @@ def find_dir(path):
 
 
 class atlas_xaod_executor:
-    def copy_template_file(self, j2_env, info, template_file, final_dir):
+    def copy_template_file(self, j2_env, info, template_file, final_dir: Path):
         'Copy a file to a final directory'
-        j2_env.get_template(template_file).stream(info).dump(final_dir + '/' + template_file)
+        j2_env.get_template(template_file).stream(info).dump(str(final_dir / template_file))
 
     def apply_ast_transformations(self, a: ast.AST):
         r'''
@@ -86,7 +87,7 @@ class atlas_xaod_executor:
         # And return the modified ast
         return a
 
-    def write_cpp_files(self, ast: ast.AST, output_path: str) -> xAODExecutionInfo:
+    def write_cpp_files(self, ast: ast.AST, output_path: Path) -> xAODExecutionInfo:
         r"""
         Given the AST generate the C++ files that need to run. Return them along with
         the input files.
@@ -130,7 +131,7 @@ class atlas_xaod_executor:
         self.copy_template_file(j2_env, info, 'query.h', output_path)
         self.copy_template_file(j2_env, info, 'runner.sh', output_path)
 
-        os.chmod(os.path.join(str(output_path), 'runner.sh'), 0o755)
+        (output_path / 'runner.sh').chmod(0o755)
 
         # Build the return object.
         return xAODExecutionInfo(result_rep, output_path, 'runner.sh', ['ATestRun_eljob.py', 'package_CMakeLists.txt', 'query.cxx', 'query.h', 'runner.sh'])

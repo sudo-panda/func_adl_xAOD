@@ -8,8 +8,8 @@ from unittest.mock import Mock
 from func_adl import EventDataset
 import pytest
 
-from func_adl_xAOD.backend.dataset_resolvers.gridds import (
-    GridDsException, resolve_dataset, resolve_local_ds_url)
+from func_adl_xAOD.backend.datasets.gridds import (
+    GridDsException, resolve_local_ds_url)
 
 # Local files
 def test_local_ds_good():

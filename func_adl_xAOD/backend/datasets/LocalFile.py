@@ -52,8 +52,9 @@ class LocalFile(EventDataset):
         Run the file locally with docker
         '''
         # Construct the files we will run.
-        with tempfile.TemporaryDirectory() as local_run_dir:
-            os.chmod(local_run_dir, 0o777)
+        with tempfile.TemporaryDirectory() as local_run_dir_p:
+            local_run_dir = Path(local_run_dir_p)
+            local_run_dir.chmod(0o777)
 
             exe = atlas_xaod_executor()
             f_spec = exe.write_cpp_files(exe.apply_ast_transformations(a), local_run_dir)
