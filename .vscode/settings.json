@@ -47,6 +47,7 @@
         "servicex",
         "setuptools",
         "skipif",
+        "treeme",
         "ttree",
         "ttreetfile",
         "ulist",
