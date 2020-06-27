@@ -37,6 +37,13 @@ def test_find_EventDataSet_good():
     assert isinstance(a, ast.Call)
 
 
+def test_as_qastle():
+    a = ServiceXDatasetSource("file://junk.root")
+    from qastle import python_ast_to_text_ast
+    q = python_ast_to_text_ast(a._ast)
+    assert q.startswith("(call EventDataset ServiceXDatasetSource_")
+
+
 @pytest.mark.asyncio
 async def test_pandas_query(simple_Servicex_fe_watcher):
     'Simple pandas based query'
