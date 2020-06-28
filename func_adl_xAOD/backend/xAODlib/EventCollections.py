@@ -121,6 +121,5 @@ for info in collections:
 
 
 # Configure some info about the types.
-# TODO: Make a way to do this in client programs, or automate the parsing of types
 ctyp.add_method_type_info("xAOD::TruthParticle", "prodVtx", ctyp.terminal('xAODTruth::TruthVertex', is_pointer=True))
 ctyp.add_method_type_info("xAOD::TruthParticle", "decayVtx", ctyp.terminal('xAODTruth::TruthVertex', is_pointer=True))
