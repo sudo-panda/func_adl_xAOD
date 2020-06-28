@@ -26,9 +26,9 @@ setup(name="func_adl_xAOD",
           "pandas~=1.0",
           "uproot~=3.7",
           "retry~=0.9",
-          f"func_adl.ast=={version_func_adl}",
+          f"func_adl.ast{version_func_adl}",
           "qastle==0.7",
-          f"servicex=={version_servicex}"
+          f"servicex{version_servicex}"
       ],
       classifiers=[
           "Development Status :: 3 - Alpha",
