@@ -28,6 +28,9 @@ class ServiceXDatasetSource (EventDataset):
         else:
             self._ds = sx
 
+    # TODO: Add a __repr__ that has the dataset name. Need a dataset accessor for
+    # ServiceX data set in order to do that, however.
+
     async def execute_result_async(self, a: ast.AST) -> Any:
         r'''
         Run a query against a func-adl ServiceX backend. The appropriate part of the AST is
