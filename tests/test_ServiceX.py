@@ -41,7 +41,7 @@ def test_as_qastle():
     a = ServiceXDatasetSource("file://junk.root")
     from qastle import python_ast_to_text_ast
     q = python_ast_to_text_ast(a._ast)
-    assert q.startswith("(call EventDataset ServiceXDatasetSource_")
+    assert q.startswith("(call EventDataset 'ServiceXDatasetSource_")
 
 
 @pytest.mark.asyncio
