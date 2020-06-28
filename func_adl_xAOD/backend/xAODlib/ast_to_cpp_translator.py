@@ -165,14 +165,11 @@ class query_ast_visitor(FuncADLNodeVisitor):
             self._result = node.rep
         return r
 
-    def get_rep(self, node, use_generic_visit=False, reset_result=None, retain_scope=False) -> Union[crep.cpp_value, crep.cpp_sequence]:
+    def get_rep(self, node: ast.AST, retain_scope: bool = False) -> Union[crep.cpp_value, crep.cpp_sequence]:
         r'''Return the rep for the node. If it isn't set yet, then run our visit on it.
 
         node - The ast node to generate a representation for.
-        use_generic_visit - if true do generic_visit rather than visit.
-        reset_result - Reset the _result variable to this value if requested.
         retain_scope - If true, then the scope level will remain the same before and after the call.
-        TODO: Make sure all these special options are needed
 
         RULES for .rep: NEVER access it without using get_rep. It is fine, of course, if you are setting it as a result
         of visiting. BUT ALWAYS GO THROUGH get_rep to get the rep for a node you aren't handling directly. If you ever find yourself
@@ -181,7 +178,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # If the rep is present, make sure it is still valid by checking the scope.
         result = None
         if hasattr(node, 'rep'):
-            result = node.rep
+            result = node.rep  # type: ignore
             if not self._gc.current_scope().starts_with(result.scope()):
                 # if type(node) is crep.dummy_ast:
                 #     raise Exception("Internal Error - out of scope dummy ast!")
@@ -191,31 +188,24 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # processed and we do not need to do it again.
         if result is None:
             s = self._gc.current_scope() if retain_scope else None
-            self.generic_visit(node) if use_generic_visit else self.visit(node)
+            self.visit(node)
             if s is not None:
                 self._gc.set_scope(s)
 
         # If it still didn't work, this is an internal error. But make the error message a bit nicer.
         if not hasattr(node, 'rep'):
             raise Exception('Internal Error: attempted to get C++ representation for AST node "{0}", but failed.'.format(ast.dump(node)))
-        self._result = node.rep
+        self._result = node.rep  # type: ignore
 
-        # Reset the result
-        if reset_result is not None:
-            self._result = reset_result
+        return node.rep  # type: ignore
 
-        return node.rep
-
-    def get_rep_value(self, node, use_generic_visit=False, reset_result=None, retain_scope=False) -> crep.cpp_value:
+    def get_rep_value(self, node, retain_scope=False) -> crep.cpp_value:
         r'''Return the rep for the node. If it isn't set yet, then run our visit on it. Assure we are returning a value
 
         node - The ast node to generate a representation for.
-        use_generic_visit - if true do generic_visit rather than visit.
-        reset_result - Reset the _result variable to this value if requested.
         retain_scope - If true, then the scope level will remain the same before and after the call.
-        TODO: Make sure all these special options are needed
         '''
-        v = self.get_rep(node, use_generic_visit, reset_result, retain_scope)
+        v = self.get_rep(node, retain_scope)
         if not isinstance(v, crep.cpp_value):
             raise Exception("Expected a cpp value! Internal error")
         return v
@@ -488,7 +478,6 @@ class query_ast_visitor(FuncADLNodeVisitor):
         'Method call on an object'
 
         # Visit everything down a level.
-        # TODO: Support arguments to functions like this.
         self.generic_visit(call_node)
 
         # figure out what we are calling against, and the
@@ -501,8 +490,6 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         # We support member calls that directly translate only. Here, for example, this is only for
         # obj.pt() or similar. The translation is direct.
-        # TODO: The iterator might be in an argument, so passing calling_against here may not be ok.
-        # TODO: We have no type system, who knows what type this function returns. Assume double.
         c_stub = calling_against.as_cpp() + ("->" if calling_against.is_pointer() else ".")
         result_type = determine_type_mf(calling_against.cpp_type(), function_name)
         self._result = crep.cpp_value(c_stub + function_name + "()", calling_against.scope(), result_type)
@@ -514,7 +501,6 @@ class query_ast_visitor(FuncADLNodeVisitor):
         arg_reps = [self.get_rep_value(a) for a in call_node.args]
 
         # Code up a call
-        # TODO: The iterator might not be Note.
         r = crep.cpp_value('{0}({1})'.format(cpp_func.cpp_name, ','.join(a.as_cpp() for a in arg_reps)), self._gc.current_scope(), cpp_type=cpp_func.cpp_return_type)
 
         # Include files and return the resulting expression
@@ -603,7 +589,6 @@ class query_ast_visitor(FuncADLNodeVisitor):
         if type(node.op) is ast.Div:
             best_type = ctyp.terminal('double', False)
 
-        # TODO: Turn this into a table lookup rather than the same thing repeated over and over
         s = deepest_scope(left, right).scope()
         r = crep.cpp_value(f"({left.as_cpp()}{_known_binary_operators[type(node.op)]}{right.as_cpp()})",
                            s, best_type)
