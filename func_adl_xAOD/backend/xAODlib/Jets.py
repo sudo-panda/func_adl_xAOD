@@ -19,13 +19,13 @@ def getAttributeFloatAst(call_node: ast.Call):
     r = cpp_ast.CPPCodeValue()
     # We don't need include files for this - just quick access
     r.args = ['moment_name', ]
-    r.replacement_instance_obj = ('obj_j', call_node.func.value.id)
+    r.replacement_instance_obj = ('obj_j', call_node.func.value.id)  # type: ignore
     r.running_code += ['float result = obj_j->getAttribute<float>(moment_name);']
     r.result = 'result'
     r.result_rep = lambda sc: crep.cpp_variable(unique_name("jet_attrib"), scope=sc, cpp_type=ctyp.terminal('float'))
 
     # Replace it as the function that is going to get called.
-    call_node.func = r
+    call_node.func = r  # type: ignore
 
     return call_node
 
@@ -43,13 +43,13 @@ def getAttributeVectorFloatAst(call_node: ast.Call):
     r = cpp_ast.CPPCodeValue()
     r.include_files += ['vector']
     r.args = ['moment_name', ]
-    r.replacement_instance_obj = ('obj_j', call_node.func.value.id)
+    r.replacement_instance_obj = ('obj_j', call_node.func.value.id)  # type: ignore
     r.running_code += ['auto result = obj_j->getAttribute<std::vector<double>>(moment_name);']
     r.result = 'result'
-    r.result_rep = lambda sc: crep.cpp_collection(unique_name("jet_vec_attrib_"), scope=sc, collection_type=ctyp.collection(ctyp.terminal('double')))
+    r.result_rep = lambda sc: crep.cpp_collection(unique_name("jet_vec_attrib_"), scope=sc, collection_type=ctyp.collection(ctyp.terminal('double')))  # type: ignore
 
     # Replace it as the function that is going to get called.
-    call_node.func = r
+    call_node.func = r  # type: ignore
 
     return call_node
 

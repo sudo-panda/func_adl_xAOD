@@ -1,44 +1,44 @@
 # Code to do the testing starts here.
 from math import sin
-from tests.xAODlib.utils_for_testing import exe_for_test, get_lines_of_code, print_lines, find_line_with, find_open_blocks
+from tests.xAODlib.utils_for_testing import get_lines_of_code, print_lines, find_line_with, find_open_blocks, dataset_for_testing
 from func_adl import EventDataset
 
 def test_first_jet_in_event():
-    EventDataset("file://root.root") \
+    dataset_for_testing() \
         .Select('lambda e: e.Jets("bogus").Select(lambda j: j.pt()).First()') \
         .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
-        .value(executor=exe_for_test)
+        .value()
 
 def test_first_after_selectmany():
-    EventDataset("file://root.root") \
+    dataset_for_testing() \
         .Select('lambda e: e.Jets("jets").SelectMany(lambda j: e.Tracks("InnerTracks")).First()') \
         .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
-        .value(executor=exe_for_test)
+        .value()
 
 def test_first_after_where():
     # Part of testing that First puts its outer settings in the right place.
     # This also tests First on a collection of objects that hasn't been pulled a part
     # in a select.
-    EventDataset("file://root.root") \
+    dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Where(lambda j: j.pt() > 10).First().pt()') \
         .AsPandasDF('FirstJetPt') \
-        .value(executor=exe_for_test)
+        .value()
 
 def test_first_object_in_each_event():
     # Part of testing that First puts its outer settings in the right place.
     # This also tests First on a collection of objects that hasn't been pulled a part
     # in a select.
-    EventDataset("file://root.root") \
+    dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").First().pt()/1000.0') \
         .AsPandasDF('FirstJetPt') \
-        .value(executor=exe_for_test)
+        .value()
 
 def test_First_Of_Select_is_not_array():
     # The following statement should be a straight sequence, not an array.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0).Where(lambda jpt: jpt > 10.0).First()') \
         .AsPandasDF('FirstJetPt') \
-        .value(executor=exe_for_test)
+        .value()
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -56,10 +56,10 @@ def test_First_Of_Select_is_not_array():
 
 def test_First_Of_Select_After_Where_is_in_right_place():
     # Make sure that we have the "First" predicate after if Where's if statement.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0).Where(lambda jpt: jpt > 10.0).First()') \
         .AsPandasDF('FirstJetPt') \
-        .value(executor=exe_for_test)
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     l = find_line_with(">10.0", lines)

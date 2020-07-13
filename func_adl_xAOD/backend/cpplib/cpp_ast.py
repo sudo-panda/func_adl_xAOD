@@ -2,7 +2,10 @@
 #
 # This is one mechanism to allow for a leaky abstraction.
 import ast
-from func_adl_xAOD.backend.cpplib.cpp_representation import cpp_value
+from func_adl_xAOD.backend.xAODlib.util_scope import gc_scope
+from typing import cast, Callable, Optional
+
+from func_adl_xAOD.backend.cpplib.cpp_representation import cpp_value, cpp_variable
 import func_adl_xAOD.backend.xAODlib.statement as statements
 
 # The list of methods and the re-write functions for them. Each rewrite function
@@ -41,11 +44,11 @@ class CPPCodeValue (ast.AST):
 
         # A string representing the result value. This must be a simple variable. It will get replaced
         # in all the code lines above.
-        self.result = None
+        self.result: Optional[str] = None
 
         # Representation to use for the resulting variable. Includes C++ type information.
         # A lambda that takes teh scope as an argument and returns a cpp variable to hold things.
-        self.result_rep = None
+        self.result_rep: Optional[Callable[[gc_scope], cpp_variable]] = None
 
         # We have no further fields for the ast machinery to explore, so this is empty for now.
         self.fields = []
@@ -103,7 +106,7 @@ def process_ast_node(visitor, gc, call_node: ast.Call):
     '''
 
     # We write everything into a new scope to prevent conflicts. So we have to declare the result ahead of time.
-    cpp_ast_node = call_node.func
+    cpp_ast_node = cast(CPPCodeValue, call_node.func)
     result_rep = cpp_ast_node.result_rep(gc.current_scope())
 
     gc.declare_variable(result_rep)
@@ -134,6 +137,7 @@ def process_ast_node(visitor, gc, call_node: ast.Call):
         blk.add_statement(statements.arbitrary_statement(l_s))
 
     # Set the result and close the scope
+    assert cpp_ast_node.result is not None
     blk.add_statement(statements.set_var(result_rep, cpp_value(cpp_ast_node.result, gc.current_scope(), result_rep.cpp_type())))
     gc.pop_scope()
 

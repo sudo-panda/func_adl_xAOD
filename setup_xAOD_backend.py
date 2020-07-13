@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 
 setup(name="func_adl_xAOD.backend",
       version=version_func_adl_xaod_backend,
-      packages=['func_adl_xAOD/backend'] + [f'func_adl_xAOD/backend.{f}' for f in ['cpplib', 'dataset_resolvers', 'xAODlib']],
+      packages=['func_adl_xAOD/backend'] + [f'func_adl_xAOD/backend.{f}' for f in ['cpplib', 'datasets', 'xAODlib']],
       scripts=[],
       description="Backend to generate and run C++ files for Functional Analysis Description Language for accessing ATLAS xAOD files.",
       long_description=long_description,
@@ -39,7 +39,7 @@ setup(name="func_adl_xAOD.backend",
           "Topic :: Utilities",
       ],
       package_data={
-          'func_adl_xAOD/backend': [f'R21Code/*'],
+          'func_adl_xAOD/backend': ['R21Code/*'],
       },
       platforms="Any",
       )
