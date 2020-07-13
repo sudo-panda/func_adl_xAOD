@@ -15,7 +15,7 @@ class event_collection_container:
 
     def is_pointer(self):
         'All ATLAS event collections are pointers'
-        return True
+        return self._is_pointer
 
     def __str__(self):
         return "const {0}*".format(self._type_name)
@@ -33,7 +33,7 @@ class event_collection_collection(event_collection_container):
     def dereference(self):
         'Return a new version of us that is not a pointer'
         new_us = copy.copy(self)
-        new_us.is_pointer = False
+        new_us._is_pointer = False
         return new_us
 
 
@@ -100,7 +100,7 @@ def getCollection(info, call_node):
 
     is_collection = info['is_collection'] if 'is_collection' in info else True
     if is_collection:
-        r.result_rep = lambda scope: crep.cpp_collection(unique_name(info['function_name'].lower()), scope=scope, collection_type=info['container_type'])
+        r.result_rep = lambda scope: crep.cpp_collection(unique_name(info['function_name'].lower()), scope=scope, collection_type=info['container_type'])  # type: ignore
     else:
         r.result_rep = lambda scope: crep.cpp_variable(unique_name(info['function_name'].lower()), scope=scope, cpp_type=info['container_type'])
 
@@ -121,6 +121,5 @@ for info in collections:
 
 
 # Configure some info about the types.
-# TODO: Make a way to do this in client programs, or automate the parsing of types
 ctyp.add_method_type_info("xAOD::TruthParticle", "prodVtx", ctyp.terminal('xAODTruth::TruthVertex', is_pointer=True))
 ctyp.add_method_type_info("xAOD::TruthParticle", "decayVtx", ctyp.terminal('xAODTruth::TruthVertex', is_pointer=True))

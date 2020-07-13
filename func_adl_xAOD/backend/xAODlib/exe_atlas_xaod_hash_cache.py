@@ -3,12 +3,10 @@ import ast
 from collections import namedtuple
 import os
 import pickle
-from typing import Iterable
+from pathlib import Path
 
-from func_adl.ast import ast_hash
 from func_adl.ast.func_adl_ast_utils import is_call_of
 
-from ...util_LINQ import extract_dataset_info, find_dataset
 from .atlas_xaod_executor import atlas_xaod_executor
 
 
@@ -18,15 +16,15 @@ class CacheExeException(Exception):
 
 
 # Return info
-HashXAODExecutorInfo = namedtuple('HashXAODExecutorInfo', 'hash main_script treename output_filename, filelist')
+HashXAODExecutorInfo = namedtuple('HashXAODExecutorInfo', 'hash main_script treename output_filename')
 
 
-def _build_result(cache: tuple, url_list: Iterable[str]) -> HashXAODExecutorInfo:
+def _build_result(cache: tuple) -> HashXAODExecutorInfo:
     'Helper routine to build out a full result'
-    return HashXAODExecutorInfo(cache[0], cache[1], cache[2], cache[3], url_list)
+    return HashXAODExecutorInfo(cache[0], cache[1], cache[2], cache[3])
 
 
-def use_executor_xaod_hash_cache(a: ast.AST, cache_path: str, no_hash_subdir: bool = False) -> HashXAODExecutorInfo:
+def use_executor_xaod_hash_cache(a: ast.AST, query_file_path: Path) -> HashXAODExecutorInfo:
     r'''Write out the C++ code and supporting files to a cache
 
     Arguments:
@@ -41,19 +39,6 @@ def use_executor_xaod_hash_cache(a: ast.AST, cache_path: str, no_hash_subdir: bo
     if not is_call_of(a, 'ResultTTree'):
         raise CacheExeException(f'Can only cache results for a ROOT tree, not for {type(a).__name__} - {ast.dump(a)} (that should have been a call to ResultTTree).')
 
-    # Calculate the AST hash. If this is already around then we don't need to do very much!
-    hash = ast_hash.calc_ast_hash(a)
-
-    # Next, see if the hash file is there.
-    query_file_path = os.path.join(cache_path, hash) if not no_hash_subdir else cache_path
-    cache_file = os.path.join(query_file_path, 'rep_cache.pickle')
-    if os.path.isfile(cache_file):
-        # We have a cache hit. Look it up.
-        file = find_dataset(a)
-        with open(cache_file, 'rb') as f:
-            result_cache = pickle.load(f)
-            return _build_result(result_cache, extract_dataset_info(file))
-
     # Create the files to run in that location.
     if not os.path.exists(query_file_path):
         os.makedirs(query_file_path)
@@ -65,4 +50,4 @@ def use_executor_xaod_hash_cache(a: ast.AST, cache_path: str, no_hash_subdir: bo
     with open(os.path.join(query_file_path, 'rep_cache.pickle'), 'wb') as f:
         pickle.dump(result_cache, f)
 
-    return _build_result(result_cache, f_spec.input_urls)
+    return _build_result(result_cache)
