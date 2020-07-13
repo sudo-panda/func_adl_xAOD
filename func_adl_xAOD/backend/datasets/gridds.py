@@ -11,6 +11,7 @@ from func_adl.ast.func_adl_ast_utils import (
 from func_adl.util_ast import as_ast
 import requests
 
+
 # Resolvers:
 def resolve_file(parsed_url, url: str):
     if len(parsed_url.netloc) != 0:
