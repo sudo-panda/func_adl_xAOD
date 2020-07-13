@@ -42,6 +42,7 @@
         "pytestmark",
         "qastle",
         "rucio",
+        "servicex",
         "setuptools",
         "skipif",
         "ttree",

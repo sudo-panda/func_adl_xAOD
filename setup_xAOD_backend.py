@@ -39,7 +39,7 @@ setup(name="func_adl_xAOD.backend",
           "Topic :: Utilities",
       ],
       package_data={
-          'func_adl_xAOD/backend': [f'R21Code/*'],
+          'func_adl_xAOD/backend': ['R21Code/*'],
       },
       platforms="Any",
       )

@@ -72,10 +72,11 @@ def simple_Servicex_fe_watcher(mocker):
     return m
     
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_pandas_query(simple_query_ast_Pandas, simple_Servicex_fe_watcher):
     'Simple pandas based query'
-    r = await(use_exe_servicex(simple_query_ast_Pandas))
+    r = await use_exe_servicex(simple_query_ast_Pandas)
     assert r is not None
     assert isinstance(r, pd.DataFrame)
     assert len(r) == 0
@@ -90,6 +91,7 @@ async def test_pandas_query(simple_query_ast_Pandas, simple_Servicex_fe_watcher)
     assert kwargs['data_type'] == 'pandas'
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_awkward_query(simple_query_ast_Awkward, simple_Servicex_fe_watcher):
     'Simple pandas based query'
@@ -119,6 +121,7 @@ async def test_awkward_query(simple_query_ast_Awkward, simple_Servicex_fe_watche
 #     assert "array" in str(e.value)
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_scoped_dataset_name(simple_scoped_query_ast_Pandas, simple_Servicex_fe_watcher):
     'Simple pandas based query'
@@ -137,6 +140,7 @@ async def test_scoped_dataset_name(simple_scoped_query_ast_Pandas, simple_Servic
     assert kwargs['data_type'] == 'pandas'
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_custom_servicex_endpoint(simple_query_ast_Pandas, simple_Servicex_fe_watcher):
     'Make sure that the end point gets passed properly through'
