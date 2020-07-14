@@ -722,7 +722,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         if rep_is_collection(e_rep):
             assert isinstance(e_rep, crep.cpp_sequence), 'Internal error'
 
-            def fill_colection_levels(seq: crep.cpp_sequence, accumulator: crep.cpp_value):
+            def fill_collection_levels(seq: crep.cpp_sequence, accumulator: crep.cpp_value):
                 inner = seq.sequence_value()
                 scope = seq.scope()
                 if isinstance(inner, crep.cpp_sequence):
@@ -730,13 +730,13 @@ class query_ast_visitor(FuncADLNodeVisitor):
                     storage = crep.cpp_variable(unique_name('ntuple'), scope, cpp_type=inner.cpp_type())
                     assert not isinstance(scope, gc_scope_top_level)
                     scope.declare_variable(storage)
-                    fill_colection_levels(inner, storage)
+                    fill_collection_levels(inner, storage)
                     inner = storage
 
                 set_scope(scope, scope_fill)
                 self._gc.add_statement(statement.push_back(accumulator, inner))
 
-            fill_colection_levels(e_rep, e_name)
+            fill_collection_levels(e_rep, e_name)
 
         else:
             # Set the scope. Normally we want to do it where the variable was calculated

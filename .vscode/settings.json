@@ -66,8 +66,5 @@
     "python.pythonPath": ".venv\\Scripts\\python.exe",
     "pyright.openFilesOnly": false,
     "python.analysis.openFilesOnly": false,
-    "python.dataScience.debugJustMyCode": false,
-    "python.testing.pytestArgs": [
-        "--no-cov"
-    ]
+    "python.dataScience.debugJustMyCode": false
 }

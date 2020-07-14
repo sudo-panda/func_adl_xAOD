@@ -1,19 +1,12 @@
 # Tests that make sure the xaod executor is working correctly
-from func_adl import EventDataset
 import pytest
 
-from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
-from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import atlas_xaod_executor
-from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
-from tests.xAODlib.utils_for_testing import (
-    dataset_for_testing,
-    find_line_numbers_with,
-    find_line_with,
-    find_open_blocks,
-    get_lines_of_code,
-    print_lines,
-    exe_from_qastle
-)
+from tests.xAODlib.utils_for_testing import (dataset_for_testing,
+                                             exe_from_qastle,
+                                             find_line_numbers_with,
+                                             find_line_with, find_open_blocks,
+                                             get_lines_of_code, print_lines)
+
 
 class Atlas_xAOD_File_Type:
     def __init__(self):
