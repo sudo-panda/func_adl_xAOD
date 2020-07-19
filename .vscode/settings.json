@@ -98,8 +98,5 @@
     "pyright.openFilesOnly": false,
     "python.analysis.openFilesOnly": false,
     "python.dataScience.debugJustMyCode": false,
-    "python.analysis.typeCheckingMode": "basic",
-    "python.testing.pytestArgs": [
-        "--no-cov"
-    ]
+    "python.analysis.typeCheckingMode": "basic"
 }
