@@ -14,6 +14,24 @@ This code allows you to query that.
 
 ## Features
 
+### xAOD Functions
+
+You can call the functions that are supported by the C++ objects as long as the required arguments are primitive types.
+
+#### The Event
+
+The event object has the following special functions to access collections:
+
+- `Jets`, `Tracks`, `EventInfo`, `TruthParticles`, `Electrons`, `Muons`, and `MissingET`. Each function takes a single argument, the name of the bank in the xAOD. For example, for the electrons one can pass `"Electrons"`.
+
+#### The Jet Object
+
+Template functions don't make sense yet in python.
+
+- `getAttribute` - this function is templated, so must be called as either `getAttributeFloat` or `getAttributeVectorFloat`.
+
+### Math
+
 - Math Operators: +, -, *, /, %
 - Comparison Operators: <, <=, >, >=, ==, !=
 - Unary Operators: +, -, not
