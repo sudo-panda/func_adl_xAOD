@@ -1,31 +1,37 @@
 # Tests that will make sure the runner.sh script can do everything it is supposed to do,
 # as we are now asking a fair amount from it.
+import ast
+from collections import namedtuple
+
+from func_adl.EventDataset import EventDataset
+from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import atlas_xaod_executor
 import os
 import sys
-import ast
 import tempfile
-from tempfile import TemporaryDirectory
-from typing import Optional, Union, cast, Any, List
-from urllib import parse
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from typing import Any, List, Optional, Union, cast
+from urllib import parse
 
 import pytest
 
-from func_adl_xAOD.backend.xAODlib.exe_atlas_xaod_hash_cache import (
-    HashXAODExecutorInfo, use_executor_xaod_hash_cache)
-from func_adl import EventDataset
-
 from .control_tests import local_path, run_long_running_tests
+
 pytestmark = run_long_running_tests
 
+ExecutorInfo = namedtuple('ExecutorInfo', 'main_script output_filename')
 
 class hash_event_dataset(EventDataset):
-    def __init__(self, cache_dir: Path):
-        EventDataset.__init__(self)
-        self._cache = cache_dir
+    def __init__(self, output_dir: Path):
+        super().__init__()
+        self._dir = output_dir
 
     async def execute_result_async(self, a: ast.AST) -> Any:
-        return use_executor_xaod_hash_cache(a, query_file_path=self._cache)
+        if self._dir.exists():
+            self._dir.mkdir(parents=True, exist_ok=True)
+        exe = atlas_xaod_executor()
+        f_spec = exe.write_cpp_files(exe.apply_ast_transformations(a), self._dir)
+        return ExecutorInfo(f_spec.main_script, f_spec.result_rep.filename)
 
 
 @pytest.yield_fixture()
@@ -78,7 +84,7 @@ class docker_runner:
             raise docker_run_error(f"nope, that didn't work {result}!")
         return results_dir
 
-    def run(self, info: HashXAODExecutorInfo, files: List[Path]):
+    def run(self, info: ExecutorInfo, files: List[Path]):
         'Run the docker command'
 
         # Unravel the file path. How we do this depends on how we are doing this work.
@@ -127,7 +133,7 @@ class docker_running_container:
                 raise Exception(f'Unable to stop docker container: {r}')
 
 
-def run_docker(info: HashXAODExecutorInfo, code_dir: str, files: List[str],
+def run_docker(info: ExecutorInfo, code_dir: str, files: List[str],
                data_file_on_cmd_line:bool = False,
                compile_only:bool = False, run_only:bool = False,
                add_position_argument_at_start:Optional[str] = None,
