@@ -4,7 +4,7 @@
 import ast
 from typing import List, Any
 
-from func_adl.EventDataset import EventDataset
+from func_adl import EventDataset
 
 from func_adl_xAOD.backend.cpplib.cpp_representation import (
     cpp_sequence, cpp_variable)
@@ -55,8 +55,8 @@ class dataset_for_testing(EventDataset):
             print(f'after: {ast.dump(a)}')
 
         # Setup the rep for this dataset
-        from func_adl.EventDataset import _find_ED
-        file = _find_ED(a)
+        from func_adl import find_EventDataset
+        file = find_EventDataset(a)
         iterator = cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
         file.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
@@ -74,8 +74,8 @@ async def exe_from_qastle(q: str):
     a = qastle.text_ast_to_python_ast(q).body[0].value
 
     # Setup the rep for this filter
-    from func_adl.EventDataset import _find_ED
-    file = _find_ED(a)
+    from func_adl import find_EventDataset
+    file = find_EventDataset(a)
     iterator = cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
     file.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
