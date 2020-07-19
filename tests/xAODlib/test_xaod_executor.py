@@ -35,7 +35,7 @@ def test_per_jet_item():
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 1==["for" in a for a in active_blocks].count(True)
 
-def test_abs_function():
+def test_builtin_abs_function():
     # The following statement should be a straight sequence, not an array.
     r = dataset_for_testing() \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: abs(j.pt()))') \
@@ -46,6 +46,33 @@ def test_abs_function():
     print_lines(lines)
     l_abs = find_line_with("std::abs", lines)
     assert "->pt()" in lines[l_abs]
+
+def test_builtin_sin_function_no_math_import():
+    # The following statement should be a straight sequence, not an array.
+    r = dataset_for_testing() \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: sin(j.pt()))') \
+        .AsPandasDF('JetPts') \
+        .value()
+    # Check to see if there mention of push_back anywhere.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_abs = find_line_with("std::sin", lines)
+    assert "->pt()" in lines[l_abs]
+
+
+def test_builtin_sin_function_math_import():
+    # The following statement should be a straight sequence, not an array.
+    from math import sin
+    r = dataset_for_testing() \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: sin(j.pt()))') \
+        .AsPandasDF('JetPts') \
+        .value()
+    # Check to see if there mention of push_back anywhere.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_abs = find_line_with("std::sin", lines)
+    assert "->pt()" in lines[l_abs]
+
 
 def test_ifexpr():
     r = dataset_for_testing(qastle_roundtrip=True) \
