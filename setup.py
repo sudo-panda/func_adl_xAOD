@@ -26,7 +26,7 @@ setup(name="func_adl_xAOD",
       install_requires=[
           "requests~=2.0",
           "pandas~=1.0",
-          "uproot~=3.7",
+          "uproot~=3.0",
           "retry~=0.9",
           "jinja2",
           f"func_adl.ast{version_func_adl}",
