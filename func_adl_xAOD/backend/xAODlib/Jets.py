@@ -12,9 +12,9 @@ def getAttributeFloatAst(call_node: ast.Call):
     '''
     # Get the name of the moment out
     if len(call_node.args) != 1:
-        raise Exception("Calling getMomentFloat - only one argument is allowed")
+        raise Exception("Calling getAttributeFloat - only one argument is allowed")
     if not isinstance(call_node.args[0], ast.Str):
-        raise Exception("Calling getMomentFloat - only acceptable argument is a string")
+        raise Exception("Calling getAttributeFloat - only acceptable argument is a string")
 
     r = cpp_ast.CPPCodeValue()
     # We don't need include files for this - just quick access
@@ -36,9 +36,9 @@ def getAttributeVectorFloatAst(call_node: ast.Call):
     '''
     # Get the name of the moment out
     if len(call_node.args) != 1:
-        raise Exception("Calling getMomentFloat - only one argument is allowed")
+        raise Exception("Calling getAttributeVectorFloat - only one argument is allowed")
     if not isinstance(call_node.args[0], ast.Str):
-        raise Exception("Calling getMomentFloat - only acceptable argument is a string")
+        raise Exception("Calling getAttributeVectorFloat - only acceptable argument is a string")
 
     r = cpp_ast.CPPCodeValue()
     r.include_files += ['vector']
@@ -54,6 +54,15 @@ def getAttributeVectorFloatAst(call_node: ast.Call):
     return call_node
 
 
+def getAttribute(call_node: ast.Call):
+    '''
+    This is a common mistake as this is how it is written in C++. However, because we do
+    not do templates, we need to do something more explicit. So, bomb out here.
+    '''
+    raise Exception("Do not call `getAttribute` - instead call `getAttributeFloat` or `getAttributeVectorFloat`.")
+
+
 # Config everything.
+cpp_ast.method_names['getAttribute'] = getAttribute
 cpp_ast.method_names['getAttributeFloat'] = getAttributeFloatAst
 cpp_ast.method_names['getAttributeVectorFloat'] = getAttributeVectorFloatAst

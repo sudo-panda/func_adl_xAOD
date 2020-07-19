@@ -720,7 +720,8 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         # If this is a sequence of a sequence (or deeper) then we need to setup the proper variables.
         if rep_is_collection(e_rep):
-            assert isinstance(e_rep, crep.cpp_sequence), 'Internal error'
+            assert isinstance(e_rep, crep.cpp_sequence), \
+                f'Do not know how to loop over a {type(e_rep)}'
 
             def fill_collection_levels(seq: crep.cpp_sequence, accumulator: crep.cpp_value):
                 inner = seq.sequence_value()
