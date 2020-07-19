@@ -1,4 +1,5 @@
 # func_adl_xAOD
+
  Client interface to send a hierarchical SQL-like query to an xAOD backend
 
 [![GitHub Actions Status](https://github.com/iris-hep/func_adl_xAOD/workflows/CI/CD/badge.svg)](https://github.com/iris-hep/func_adl_xAOD/actions?branch=master)
