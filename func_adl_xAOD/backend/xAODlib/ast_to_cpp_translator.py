@@ -2,6 +2,7 @@
 # Python AST code.
 
 import ast
+import logging
 from typing import Any, Dict, List, Type, Union, cast
 
 from func_adl.ast.call_stack import argument_stack, stack_frame
@@ -113,7 +114,7 @@ def determine_type_mf(parent_type, function_name):
         raise xAODTranslationError(f'Unable to call method {function_name} on type {str(parent_type)}.')
 
     # Ok - we give up. Return a double.
-    print(f"Warning: assumping that the method '{str(s_parent_type)}.{function_name}(...)' has return type 'double'. Use cpp_types.add_method_type_info to suppress (or correct) this warning.")
+    logging.getLogger(__name__).warning(f"Warning: assumping that the method '{str(s_parent_type)}.{function_name}(...)' has return type 'double'. Use cpp_types.add_method_type_info to suppress (or correct) this warning.")
     return ctyp.terminal('double')
 
 
@@ -546,7 +547,6 @@ class query_ast_visitor(FuncADLNodeVisitor):
     def visit_Subscript(self, node):
         'Index into an array. Check types, as tuple indexing can be very bad for us'
         v = self.get_rep(node.value)
-        print(ast.dump(node.slice))
         if not isinstance(v, crep.cpp_collection):
             raise Exception("Do not know how to take the index of type '{0}'".format(v.cpp_type()))
 
