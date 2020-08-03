@@ -94,8 +94,8 @@ class atlas_xaod_executor:
         """
 
         # Find the base file dataset and mark it.
-        from func_adl.EventDataset import _find_ED
-        file = _find_ED(ast)
+        from func_adl import find_EventDataset
+        file = find_EventDataset(ast)
         iterator = crep.cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
         file.rep = crep.cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
