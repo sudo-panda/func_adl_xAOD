@@ -100,6 +100,8 @@
     "python.dataScience.debugJustMyCode": false,
     "python.analysis.typeCheckingMode": "basic",
     "python.testing.pytestArgs": [
-        "--no-cov"
+        "--no-cov",
+        "-m",
+        " not xaod_runner"
     ]
 }
