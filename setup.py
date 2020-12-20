@@ -2,7 +2,7 @@
 from setuptools import find_packages  # noqa: F401
 from distutils.core import setup
 from os import listdir
-from version_info import version_func_adl, version_servicex
+from version_info import version_func_adl
 
 # Use the readme as the long description.
 with open("README.md", "r") as fh:
@@ -31,7 +31,6 @@ setup(name="func_adl_xAOD",
           "jinja2",
           f"func_adl.ast{version_func_adl}",
           "qastle==0.7",
-          f"servicex{version_servicex}"
       ],
       extras_require={
           'test': [
