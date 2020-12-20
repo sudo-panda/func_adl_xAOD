@@ -58,3 +58,21 @@ Template functions don't make sense yet in python.
 - Math functions are pulled from the C++ [`cmath` library](http://www.cplusplus.com/reference/cmath/): `sin`, `cos`, `tan`, `acos`, `asin`, `atan`, `atan2`, `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `exp`, `ldexp`, `log`, `ln`, `log10`, `exp2`, `expm1`, `ilogb`, `log1p`, `log2`, `scalbn`, `scalbln`, `pow`, `sqrt`, `cbrt`, `hypot`, `erf`, `erfc`, `tgamma`, `lgamma`, `ceil`, `floor`, `fmod`, `trunc`, `round`, `rint`, `nearbyint`, `remainder`, `remquo`, `copysign`, `nan`, `nextafter`, `nexttoward`, `fdim`, `fmax`, `fmin`, `fabs`, `abs`, `fma`.
 - Do not use `math.sin` in a call. However `sin` is just fine. If you do, you'll get an exception during resolution that it doesn't know how to translate `math`.
 - for things like `sum`, `min`, `max`, etc., use the `Sum`, `Min`, `Max` LINQ predicates.
+
+## Testing and Development
+
+Setting up the development environment:
+
+- After creating a virtual environment, do a setup-in-place: `pip install -e .[test]`
+
+To run tests:
+
+- `pytest -m "not xaod_runner"` will run the _fast_ tests.
+- `pytest -m "xaod_runner"` will run the slow tests that require docker installed on your command line. `docker` is involved via pythons `os.system` - so it needs to be available to the test runner.
+
+Contributing:
+
+- Develop in another repo or on a branch
+- Submit a PR against the `master` branch.
+
+In general, the `master` branch should pass all tests all the time. Releases are made by tagging on the master branch.
