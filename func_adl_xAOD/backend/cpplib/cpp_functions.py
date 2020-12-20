@@ -67,7 +67,88 @@ functions_to_replace = {}
 # The named tuple that stores the replacement info.
 cpp_function = namedtuple('cpp_function', ['cpp_name', 'include_files', 'cpp_return_type'])
 
-
-# A few simple functions:
-add_function_mapping('builtins.abs', 'std::abs', 'cmath', 'double')
+# CMATH functions - the catalog was pulled from
+# http://www.cplusplus.com/reference/cmath/
+# Trig
 add_function_mapping('sin', 'std::sin', 'cmath', 'double')
+add_function_mapping('cos', 'std::cos', 'cmath', 'double')
+add_function_mapping('tan', 'std::tan', 'cmath', 'double')
+add_function_mapping('acos', 'std::acos', 'cmath', 'double')
+add_function_mapping('asin', 'std::asin', 'cmath', 'double')
+add_function_mapping('atan', 'std::atan', 'cmath', 'double')
+add_function_mapping('atan2', 'std::atan2', 'cmath', 'double')
+
+# Hyperbolic
+add_function_mapping('sinh', 'std::sinh', 'cmath', 'double')
+add_function_mapping('cosh', 'std::cosh', 'cmath', 'double')
+add_function_mapping('tanh', 'std::tanh', 'cmath', 'double')
+add_function_mapping('asinh', 'std::asinh', 'cmath', 'double')
+add_function_mapping('acosh', 'std::acosh', 'cmath', 'double')
+add_function_mapping('atanh', 'std::atanh', 'cmath', 'double')
+
+# Exponential and Log functions
+add_function_mapping('exp', 'std::exp', 'cmath', 'double')
+# add_function_mapping('frexp', 'std::frexp', 'cmath', 'double')  # By value parameter
+add_function_mapping('ldexp', 'std::ldexp', 'cmath', 'double')
+add_function_mapping('log', 'std::log', 'cmath', 'double')
+add_function_mapping('ln', 'std::log', 'cmath', 'double')
+add_function_mapping('log10', 'std::log10', 'cmath', 'double')
+# add_function_mapping('modf', 'std::modf', 'cmath', 'double')  # By value parameter
+add_function_mapping('exp2', 'std::exp2', 'cmath', 'double')
+add_function_mapping('expm1', 'std::expm1', 'cmath', 'double')
+add_function_mapping('ilogb', 'std::ilogb', 'cmath', 'double')
+add_function_mapping('log1p', 'std::log1p', 'cmath', 'double')
+add_function_mapping('log2', 'std::log2', 'cmath', 'double')
+add_function_mapping('scalbn', 'std::scalbn', 'cmath', 'double')
+add_function_mapping('scalbln', 'std::scalbln', 'cmath', 'double')
+
+# Power Functions
+add_function_mapping('pow', 'std::pow', 'cmath', 'double')
+add_function_mapping('sqrt', 'std::sqrt', 'cmath', 'double')
+add_function_mapping('cbrt', 'std::cbrt', 'cmath', 'double')
+add_function_mapping('hypot', 'std::hypot', 'cmath', 'double')
+
+# Error and Gamma Functions
+add_function_mapping('erf', 'std::erf', 'cmath', 'double')
+add_function_mapping('erfc', 'std::erfc', 'cmath', 'double')
+add_function_mapping('tgamma', 'std::tgamma', 'cmath', 'double')
+add_function_mapping('lgamma', 'std::lgamma', 'cmath', 'double')
+
+# Rounding and remainder functions
+add_function_mapping('ceil', 'std::ceil', 'cmath', 'double')
+add_function_mapping('floor', 'std::ceil', 'cmath', 'double')
+add_function_mapping('fmod', 'std::ceil', 'cmath', 'double')
+add_function_mapping('trunc', 'std::ceil', 'cmath', 'double')
+add_function_mapping('round', 'std::ceil', 'cmath', 'double')
+# add_function_mapping('lround', 'std::ceil', 'cmath', 'double')  # Long int
+# add_function_mapping('llround', 'std::ceil', 'cmath', 'double')  # Long int
+add_function_mapping('rint', 'std::ceil', 'cmath', 'double')
+# add_function_mapping('lrint', 'std::ceil', 'cmath', 'double')  # Long int
+# add_function_mapping('llrint', 'std::ceil', 'cmath', 'double')  # Long int
+add_function_mapping('nearbyint', 'std::ceil', 'cmath', 'double')
+add_function_mapping('remainder', 'std::ceil', 'cmath', 'double')
+add_function_mapping('remquo', 'std::ceil', 'cmath', 'double')
+
+# Floating-point manipulation functions
+add_function_mapping('copysign', 'std::copysign', 'cmath', 'double')
+add_function_mapping('nan', 'std::nan', 'cmath', 'double')
+add_function_mapping('nextafter', 'std::nextafter', 'cmath', 'double')
+add_function_mapping('nexttoward', 'std::nexttoward', 'cmath', 'double')
+
+# Minimum, maximum, difference functions
+add_function_mapping('fdim', 'std::fdim', 'cmath', 'double')
+add_function_mapping('fmax', 'std::fmax', 'cmath', 'double')
+add_function_mapping('fmin', 'std::fmin', 'cmath', 'double')
+
+# Other functions
+add_function_mapping('fabs', 'std::fabs', 'cmath', 'double')
+add_function_mapping('abs', 'std::fabs', 'cmath', 'double')
+add_function_mapping('fma', 'std::fma', 'cmath', 'double')
+
+# Python built-in functions. These are weird as they get a different name, and
+# don't really come in as a function.
+add_function_mapping('builtins.abs', 'std::abs', 'cmath', 'double')
+add_function_mapping('builtins.pow', 'std::pow', 'cmath', 'double')  # Not the 3 arg version!
+
+# add_function_mapping('builtins.max', 'std::abs', 'cmath', 'double')  # Do not use to do a sequence
+# add_function_mapping('builtins.min', 'std::abs', 'cmath', 'double')  # Do not use to do a sequence

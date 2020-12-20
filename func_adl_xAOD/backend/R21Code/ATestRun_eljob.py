@@ -2,9 +2,9 @@
 # Read the submission directory as a command line argument. You can
 # extend the list of arguments with your private ones later on.
 # Set up (Py)ROOT.
-import ROOT
+import ROOT  # type: ignore
 import optparse
-from AnaAlgorithm.DualUseConfig import createAlgorithm
+from AnaAlgorithm.DualUseConfig import createAlgorithm  # type: ignore
 
 parser = optparse.OptionParser()
 

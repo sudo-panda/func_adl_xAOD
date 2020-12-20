@@ -13,7 +13,7 @@ class terminal:
         self._is_pointer = is_pointer
 
     def __str__(self):
-        return self._type
+        return self.type
 
     def is_pointer(self):
         return self._is_pointer
@@ -28,8 +28,12 @@ class terminal:
         else:
             raise Exception("Do not know a default value for the type '{0}'.".format(self._type))
 
+    @property
+    def type(self) -> str:
+        return self._type
 
-class collection:
+
+class collection (terminal):
     'Represents a collection/list/vector of the same type'
     def __init__(self, t, is_pointer=False):
         '''
@@ -37,11 +41,9 @@ class collection:
 
         t:      The type of each element in the collection
         '''
+        array_type = f"std::vector<{t}>"
+        terminal.__init__(self, array_type, is_pointer)
         self._element_type = t
-        self._is_pointer = is_pointer
-
-    def __str__(self):
-        return "std::vector<" + str(self._element_type) + ">"
 
     def element_type(self):
         return self._element_type

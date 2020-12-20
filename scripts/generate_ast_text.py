@@ -3,39 +3,44 @@ import sys
 from func_adl import EventDataset
 from qastle import python_ast_to_text_ast
 import ast
+from typing import Any
 
 
-async def translate_to_ast_language(a: ast.AST) -> str:
-    return python_ast_to_text_ast(a)
+class ast_translator_ds(EventDataset):
+    def __init__(self):
+        EventDataset.__init__(self)
+
+    async def execute_result_async(self, a: ast.AST) -> Any:
+        return python_ast_to_text_ast(a)
 
 
 def as_ast_lang_query_0():
     'Extract jet pt of all jets'
-    r = EventDataset("localds://did_01") \
+    r = ast_translator_ds() \
         .SelectMany("lambda e: e.Jets('')") \
         .Select("lambda j: j.pt()") \
         .AsROOTTTree("junk.root", 'analysis', ['jet_pt']) \
-        .value(executor=translate_to_ast_language)
+        .value()
     return r
 
 
 def as_ast_lang_query_1():
     'Generate a real query that works on our 10 event root file'
-    r = EventDataset("localds:bogus") \
+    r = ast_translator_ds() \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
         .Select('lambda j: j.pt()/1000.0') \
         .AsROOTTTree("junk.root", "analysis", ['JetPt']) \
-        .value(executor=translate_to_ast_language)
+        .value()
     return r
 
 
 def as_ast_lang_query_2():
     'Marc needed this to run some performance tests.'
-    r = EventDataset('localds:bogus') \
+    r = ast_translator_ds() \
         .Select('lambda e: (e.Electrons("Electrons"), e.Muons("Muons"))') \
         .Select('lambda e: (e[0].Select(lambda ele: ele.e()), e[0].Select(lambda ele: ele.pt()), e[0].Select(lambda ele: ele.phi()), e[0].Select(lambda ele: ele.eta()), e[1].Select(lambda mu: mu.e()), e[1].Select(lambda mu: mu.pt()), e[1].Select(lambda mu: mu.phi()), e[1].Select(lambda mu: mu.eta()))') \
         .AsROOTTTree('dude.root', 'forkme', ['e_E', 'e_pt', 'e_phi', 'e_eta', 'mu_E', 'mu_pt', 'mu_phi', 'mu_eta']) \
-        .value(executor=translate_to_ast_language)
+        .value()
     return r
 
 

@@ -2,7 +2,9 @@
 # xaod executor.
 #
 import ast
-from typing import List
+from typing import List, Any
+
+from func_adl import EventDataset
 
 from func_adl_xAOD.backend.cpplib.cpp_representation import (
     cpp_sequence, cpp_variable)
@@ -11,7 +13,6 @@ from func_adl_xAOD.backend.xAODlib.ast_to_cpp_translator import (
 from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import (
     atlas_xaod_executor)
 from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
-from func_adl_xAOD.util_LINQ import find_dataset
 
 
 class dummy_executor:
@@ -32,26 +33,39 @@ class dummy_executor:
         self.ResultRep = result_rep
         return self
 
-async def exe_for_test(a: ast.AST, qastle_roundtrip=False):
-    'Dummy executor that will return the ast properly rendered. If qastle_roundtrip is true, then we will round trip the ast via qastle first.'
-    # Round trip qastle if requested.
-    if qastle_roundtrip:
-        import qastle
-        print(f'before: {ast.dump(a)}')
-        a_text = qastle.python_ast_to_text_ast(a)
-        a = qastle.text_ast_to_python_ast(a_text).body[0].value
-        print(f'after: {ast.dump(a)}')
 
-    # Setup the rep for this filter
-    file = find_dataset(a)
-    iterator = cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
-    file.rep = cpp_sequence(iterator, iterator)
+class dataset_for_testing(EventDataset):
+    def __init__(self, qastle_roundtrip=False):
+        EventDataset.__init__(self)
+        self._q_roundtrip = qastle_roundtrip
 
-    # Use the dummy executor to process this, and return it.
-    exe = dummy_executor()
-    rnr = atlas_xaod_executor()
-    exe.evaluate(a)
-    return exe
+    def __repr__(self) -> str:
+        # When we need to move into a representation, use
+        # this as a place holder for now.
+        return "'sx_placeholder'"
+
+    async def execute_result_async(self, a: ast.AST) -> Any:
+        'Dummy executor that will return the ast properly rendered. If qastle_roundtrip is true, then we will round trip the ast via qastle first.'
+        # Round trip qastle if requested.
+        if self._q_roundtrip:
+            import qastle
+            print(f'before: {ast.dump(a)}')
+            a_text = qastle.python_ast_to_text_ast(a)
+            a = qastle.text_ast_to_python_ast(a_text).body[0].value
+            print(f'after: {ast.dump(a)}')
+
+        # Setup the rep for this dataset
+        from func_adl import find_EventDataset
+        file = find_EventDataset(a)
+        iterator = cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
+        file.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
+
+        # Use the dummy executor to process this, and return it.
+        exe = dummy_executor()
+        rnr = atlas_xaod_executor()
+        exe.evaluate(a)
+        return exe
+
 
 async def exe_from_qastle(q: str):
     'Dummy executor that will return the ast properly rendered. If qastle_roundtrip is true, then we will round trip the ast via qastle first.'
@@ -60,9 +74,10 @@ async def exe_from_qastle(q: str):
     a = qastle.text_ast_to_python_ast(q).body[0].value
 
     # Setup the rep for this filter
-    file = find_dataset(a)
+    from func_adl import find_EventDataset
+    file = find_EventDataset(a)
     iterator = cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
-    file.rep = cpp_sequence(iterator, iterator)
+    file.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
     # Use the dummy executor to process this, and return it.
     exe = dummy_executor()

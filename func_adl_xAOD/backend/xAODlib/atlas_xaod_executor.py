@@ -3,6 +3,7 @@
 import ast
 from collections import namedtuple
 import os
+from pathlib import Path
 import sys
 
 from func_adl.ast.aggregate_shortcuts import aggregate_node_transformer
@@ -13,12 +14,11 @@ import jinja2
 import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
 from func_adl_xAOD.backend.cpplib.cpp_functions import find_known_functions
 import func_adl_xAOD.backend.cpplib.cpp_representation as crep
-from func_adl_xAOD.util_LINQ import extract_dataset_info
 
 from .ast_to_cpp_translator import query_ast_visitor
 from .util_scope import top_level_scope
 
-xAODExecutionInfo = namedtuple('xAODExecutionInfo', 'input_urls result_rep output_path main_script all_filenames')
+xAODExecutionInfo = namedtuple('xAODExecutionInfo', 'result_rep output_path main_script all_filenames')
 
 
 class cpp_source_emitter:
@@ -65,9 +65,9 @@ def find_dir(path):
 
 
 class atlas_xaod_executor:
-    def copy_template_file(self, j2_env, info, template_file, final_dir):
+    def copy_template_file(self, j2_env, info, template_file, final_dir: Path):
         'Copy a file to a final directory'
-        j2_env.get_template(template_file).stream(info).dump(final_dir + '/' + template_file)
+        j2_env.get_template(template_file).stream(info).dump(str(final_dir / template_file))
 
     def apply_ast_transformations(self, a: ast.AST):
         r'''
@@ -87,17 +87,17 @@ class atlas_xaod_executor:
         # And return the modified ast
         return a
 
-    def write_cpp_files(self, ast: ast.AST, output_path: str) -> xAODExecutionInfo:
+    def write_cpp_files(self, ast: ast.AST, output_path: Path) -> xAODExecutionInfo:
         r"""
         Given the AST generate the C++ files that need to run. Return them along with
         the input files.
         """
 
         # Find the base file dataset and mark it.
-        from func_adl_xAOD.util_LINQ import find_dataset
-        file = find_dataset(ast)
+        from func_adl import find_EventDataset
+        file = find_EventDataset(ast)
         iterator = crep.cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
-        file.rep = crep.cpp_sequence(iterator, iterator)
+        file.rep = crep.cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
         # Visit the AST to generate the code structure and find out what the
         # result is going to be.
@@ -131,8 +131,7 @@ class atlas_xaod_executor:
         self.copy_template_file(j2_env, info, 'query.h', output_path)
         self.copy_template_file(j2_env, info, 'runner.sh', output_path)
 
-        os.chmod(os.path.join(str(output_path), 'runner.sh'), 0o755)
+        (output_path / 'runner.sh').chmod(0o755)
 
         # Build the return object.
-        file_info = extract_dataset_info(file)
-        return xAODExecutionInfo(file_info, result_rep, output_path, 'runner.sh', ['ATestRun_eljob.py', 'package_CMakeLists.txt', 'query.cxx', 'query.h', 'runner.sh'])
+        return xAODExecutionInfo(result_rep, output_path, 'runner.sh', ['ATestRun_eljob.py', 'package_CMakeLists.txt', 'query.cxx', 'query.h', 'runner.sh'])

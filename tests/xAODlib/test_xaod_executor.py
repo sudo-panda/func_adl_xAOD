@@ -1,30 +1,32 @@
 # Tests that make sure the xaod executor is working correctly
-from func_adl import EventDataset
 import pytest
 
-from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
-from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import (
-    atlas_xaod_executor)
-from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
-from func_adl_xAOD.util_LINQ import find_dataset
-from tests.xAODlib.utils_for_testing import *
+from tests.xAODlib.utils_for_testing import (dataset_for_testing,
+                                             exe_from_qastle,
+                                             find_line_numbers_with,
+                                             find_line_with, find_open_blocks,
+                                             get_lines_of_code, print_lines)
+
 
 class Atlas_xAOD_File_Type:
     def __init__(self):
         pass
 
 def test_per_event_item():
-    r=EventDataset("file://root.root").Select('lambda e: e.EventInfo("EventInfo").runNumber()').AsROOTTTree('root.root', 'analysis', 'RunNumber').value(executor=exe_for_test)
+    r=dataset_for_testing() \
+        .Select('lambda e: e.EventInfo("EventInfo").runNumber()') \
+        .AsROOTTTree('root.root', 'analysis', 'RunNumber') \
+        .value()
     vs = r.QueryVisitor._gc._class_vars
     assert 1 == len(vs)
     assert "double" == str(vs[0].cpp_type())
 
 def test_per_jet_item():
     # The following statement should be a straight sequence, not an array.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt())') \
         .AsPandasDF('JetPts') \
-        .value(executor=exe_for_test)
+        .value()
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -33,11 +35,50 @@ def test_per_jet_item():
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 1==["for" in a for a in active_blocks].count(True)
 
+def test_builtin_abs_function():
+    # The following statement should be a straight sequence, not an array.
+    r = dataset_for_testing() \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: abs(j.pt()))') \
+        .AsPandasDF('JetPts') \
+        .value()
+    # Check to see if there mention of push_back anywhere.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_abs = find_line_with("std::abs", lines)
+    assert "->pt()" in lines[l_abs]
+
+def test_builtin_sin_function_no_math_import():
+    # The following statement should be a straight sequence, not an array.
+    r = dataset_for_testing() \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: sin(j.pt()))') \
+        .AsPandasDF('JetPts') \
+        .value()
+    # Check to see if there mention of push_back anywhere.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_abs = find_line_with("std::sin", lines)
+    assert "->pt()" in lines[l_abs]
+
+
+def test_builtin_sin_function_math_import():
+    # The following statement should be a straight sequence, not an array.
+    from math import sin
+    r = dataset_for_testing() \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: sin(j.pt()))') \
+        .AsPandasDF('JetPts') \
+        .value()
+    # Check to see if there mention of push_back anywhere.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_abs = find_line_with("std::sin", lines)
+    assert "->pt()" in lines[l_abs]
+
+
 def test_ifexpr():
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing(qastle_roundtrip=True) \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: 1.0 if j.pt() > 10.0 else 2.0)') \
         .AsPandasDF('JetPts') \
-        .value(executor=lambda a: exe_for_test(a, qastle_roundtrip=True))
+        .value()
     # Make sure that a test around 10.0 occurs.
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -47,12 +88,12 @@ def test_ifexpr():
 
 def test_per_jet_item_with_where():
     # The following statement should be a straight sequence, not an array.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
         .Where("lambda j: j.pt()>40.0") \
         .Select("lambda j: j.pt()") \
         .AsPandasDF('JetPts') \
-        .value(executor=exe_for_test)
+        .value()
     # Make sure that the tree Fill is at the same level as the _JetPts2 getting set.
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -60,13 +101,58 @@ def test_per_jet_item_with_where():
     assert "Fill()" in lines[l_jetpt+1]
 
 
+def test_and_clause_in_where():
+    # The following statement should be a straight sequence, not an array.
+    r = dataset_for_testing() \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
+        .Where("lambda j: j.pt()>40.0 and j.eta()<2.5") \
+        .Select("lambda j: j.pt()") \
+        .AsPandasDF('JetPts') \
+        .value()
+    # Make sure that the tree Fill is at the same level as the _JetPts2 getting set.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_if = [l for l in lines if "if (" in l]
+    assert len(l_if) == 2
+    assert l_if[0] == l_if[1]
+
+
+def test_or_clause_in_where():
+    # The following statement should be a straight sequence, not an array.
+    r = dataset_for_testing() \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
+        .Where("lambda j: j.pt()>40.0 or j.eta()<2.5") \
+        .Select("lambda j: j.pt()") \
+        .AsPandasDF('JetPts') \
+        .value()
+    # Make sure that the tree Fill is at the same level as the _JetPts2 getting set.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_if = [l for l in lines if "if (" in l]
+    assert len(l_if) == 2
+    assert l_if[0] != l_if[1]
+    assert l_if[0].replace("!", "") == l_if[1]
+
+
+def test_nested_lambda_argument_name_with_monad():
+    # Need both the monad and the "e" reused to get this error!
+    r = dataset_for_testing() \
+        .Select('lambda e: (e.Electrons("Electrons"), e.Muons("Muons"))') \
+        .Select('lambda e: e[0].Select(lambda e: e.E())') \
+        .AsROOTTTree('dude.root', 'forkme', ['e_E']) \
+        .value()
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_push = find_line_with('push_back', lines)
+    assert "->E()" in lines[l_push]
+
 def test_result_awkward():
     # The following statement should be a straight sequence, not an array.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
         .Select("lambda j: j.pt()") \
         .AsAwkwardArray('JetPts') \
-        .value(executor=exe_for_test)
+        .value()
     # Make sure that the tree Fill is at the same level as the _JetPts2 getting set.
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -75,11 +161,11 @@ def test_result_awkward():
 
 
 def test_per_jet_item_with_event_level():
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: (e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()), e.EventInfo("EventInfo").runNumber())') \
         .SelectMany('lambda ji: ji[0].Select(lambda pt: (pt, ji[1]))') \
         .AsPandasDF(('JetPts', 'RunNumber')) \
-        .value(executor=exe_for_test)
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     l_jetpt = find_line_with("_JetPts", lines)
@@ -89,17 +175,17 @@ def test_per_jet_item_with_event_level():
     assert l_runnum+1 == l_fill
 
 def test_func_sin_call():
-    EventDataset("file://root.root").Select('lambda e: sin(e.EventInfo("EventInfo").runNumber())').AsROOTTTree('file.root', 'analysis', 'RunNumber').value(executor=exe_for_test)
+    dataset_for_testing().Select('lambda e: sin(e.EventInfo("EventInfo").runNumber())').AsROOTTTree('file.root', 'analysis', 'RunNumber').value()
 
 def test_per_jet_item_as_call():
-    EventDataset("file://root.root").SelectMany('lambda e: e.Jets("bogus")').Select('lambda j: j.pt()').AsROOTTTree('file.root', 'analysis', 'dude').value(executor=exe_for_test)
+    dataset_for_testing().SelectMany('lambda e: e.Jets("bogus")').Select('lambda j: j.pt()').AsROOTTTree('file.root', 'analysis', 'dude').value()
 
 def test_Select_is_an_array_with_where():
     # The following statement should be a straight sequence, not an array.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0).Where(lambda jpt: jpt > 10.0)') \
-        .AsPandasDF('JetPts') \
-        .value(executor=exe_for_test)
+        .AsAwkwardArray('JetPts') \
+        .value()
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -110,10 +196,10 @@ def test_Select_is_an_array_with_where():
 
 def test_Select_is_an_array():
     # The following statement should be a straight sequence, not an array.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt())') \
-        .AsPandasDF('JetPts') \
-        .value(executor=exe_for_test)
+        .AsAwkwardArray('JetPts') \
+        .value()
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -122,12 +208,30 @@ def test_Select_is_an_array():
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 0==["for" in a for a in active_blocks].count(True)
 
+def test_Select_1D_array_with_Where():
+    # The following statement should be a straight sequence, not an array.
+    r = dataset_for_testing() \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Where(lambda j1: j1.pt() > 10).Select(lambda j: j.pt())') \
+        .AsAwkwardArray('JetPts') \
+        .value()
+    # Check to see if there mention of push_back anywhere.
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    assert 1==["push_back" in l for l in lines].count(True)
+    l_push_back = find_line_with("Fill()", lines)
+    active_blocks = find_open_blocks(lines[:l_push_back])
+    assert 0==["for" in a for a in active_blocks].count(True)
+
+    push_back = find_line_with("push_back", lines)
+    active_blocks = find_open_blocks(lines[:push_back])
+    assert 1==['if' in a for a in active_blocks].count(True)
+
 def test_Select_is_not_an_array():
     # The following statement should be a straight sequence, not an array.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt())') \
         .AsPandasDF('JetPts') \
-        .value(executor=exe_for_test)
+        .value()
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -138,10 +242,10 @@ def test_Select_is_not_an_array():
 
 def test_Select_Multiple_arrays():
     # The following statement should be a straight sequence, not an array.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: (e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0),e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.eta()))') \
         .AsPandasDF(('JetPts','JetEta')) \
-        .value(executor=exe_for_test)
+        .value()
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -152,11 +256,11 @@ def test_Select_Multiple_arrays():
 
 def test_Select_Multiple_arrays_2_step():
     # The following statement should be a straight sequence, not an array.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets")') \
         .Select('lambda jets: (jets.Select(lambda j: j.pt()/1000.0),jets.Select(lambda j: j.eta()))') \
         .AsPandasDF(('JetPts','JetEta')) \
-        .value(executor=exe_for_test)
+        .value()
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -167,24 +271,87 @@ def test_Select_Multiple_arrays_2_step():
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 0==["for" in a for a in active_blocks].count(True)
 
-def test_Select_of_2D_array_fails():
-    # The following statement should be a straight sequence, not an array.
-    msg = ""
-    try:
-        EventDataset("file://root.root") \
+def test_Select_of_2D_array():
+    # This should generate a 2D array.
+    r = dataset_for_testing() \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Electrons("Electrons").Select(lambda e: e.pt()))') \
+        .AsAwkwardArray(['JetInfo']) \
+        .value()
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+
+    l_vector_decl = find_line_with("vector<double>", lines)
+    l_vector_active = len(find_open_blocks(lines[:l_vector_decl]))
+
+    l_first_push = find_line_numbers_with("push_back", lines)
+    assert len(l_first_push) == 2
+    l_first_push_active = len(find_open_blocks(lines[:l_first_push[0]]))
+    assert (l_vector_active+1) == l_first_push_active
+
+    # Now, make sure the second push_back is at the right level.
+    l_second_push_active = len(find_open_blocks(lines[:l_first_push[1]]))
+    assert (l_second_push_active+1) == l_first_push_active
+
+def test_Select_of_2D_with_where():
+    # This should generate a 2D array.
+    r = dataset_for_testing() \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Electrons("Electrons").Where(lambda ele: ele.pt() > 10).Select(lambda e: e.pt()))') \
+        .AsAwkwardArray(['JetInfo']) \
+        .value()
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+
+    l_vector_decl = find_line_with("vector<double>", lines)
+    l_vector_active = len(find_open_blocks(lines[:l_vector_decl]))
+
+    l_first_push = find_line_with("push_back", lines)
+    l_first_push_active = len(find_open_blocks(lines[:l_first_push]))
+    assert (l_vector_active+2) == l_first_push_active  # +2 because it is inside the for loop and the if block
+
+def test_Select_of_3D_array():
+    # This should generate a 2D array.
+    r = dataset_for_testing() \
+        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Electrons("Electrons").Select(lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt())))') \
+        .AsAwkwardArray(['JetInfo']) \
+        .value()
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+
+    l_vector_decl = find_line_with("vector<double> ", lines)
+    l_vector_active = len(find_open_blocks(lines[:l_vector_decl]))
+
+    l_vector_double_decl = find_line_with("vector<std::vector<double>>", lines)
+    l_vector_double_active = len(find_open_blocks(lines[:l_vector_double_decl]))
+
+    assert l_vector_active == (l_vector_double_active+1)
+
+def test_Select_of_2D_array_pandas():
+    # We can't do funny things in pandas, so bomb it early
+    with pytest.raises(Exception) as e:
+        dataset_for_testing() \
+            .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Electrons("Electrons").Select(lambda e: e.pt()))') \
+            .AsPandasDF(['JetInfo']) \
+            .value()
+
+    assert "pandas" in str(e.value)
+
+def test_Select_of_2D_array_with_tuple():
+    # We do not support structured output - so array or array(array), but not array(array, array),
+    # at least not yet. Make sure error is reasonable.
+    with pytest.raises(Exception) as e:
+        dataset_for_testing() \
             .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: (j.pt()/1000.0, j.eta()))') \
             .AsPandasDF(['JetInfo']) \
-            .value(executor=exe_for_test)
-    except Exception as e:
-        msg = str(e)
-    assert "Nested data structures" in msg
+            .value()
+
+    assert "data structures" in str(e.value)
 
 def test_SelectMany_of_tuple_is_not_array():
     # The following statement should be a straight sequence, not an array.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
             .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: (j.pt()/1000.0, j.eta()))') \
             .AsPandasDF(['JetPts', 'JetEta']) \
-            .value(executor=exe_for_test)
+            .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     assert 0==["push_back" in l for l in lines].count(True)
@@ -194,24 +361,45 @@ def test_SelectMany_of_tuple_is_not_array():
 
 def test_generate_binary_operators():
     # Make sure the binary operators work correctly - that they don't cause a crash in generation.
-    ops = ['+','-','*','/']
+    ops = ['+','-','*','/', '%']
     for o in ops:
-        r = EventDataset("file://root.root") \
+        r = dataset_for_testing() \
             .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt(){0}1)'.format(o)) \
             .AsPandasDF(['JetInfo']) \
-            .value(executor=exe_for_test)
+            .value()
         lines = get_lines_of_code(r)
         print_lines(lines)
         _ = find_line_with(f"pt(){o}1", lines)
 
+def test_generate_unary_operations():
+    ops = ['+', '-']
+    for o in ops:
+        r = dataset_for_testing() \
+            .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()+({0}1))'.format(o)) \
+            .AsPandasDF(['JetInfo']) \
+            .value()
+        lines = get_lines_of_code(r)
+        print_lines(lines)
+        _ = find_line_with(f"pt()+({o}(1))", lines)
+
+def test_generate_unary_not():
+    r = dataset_for_testing() \
+        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: not (j.pt() > 50.0))') \
+        .AsPandasDF(['JetInfo']) \
+        .value()
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    _ = find_line_with(f"!(", lines)
+
+
 def test_per_jet_with_matching():
     # Trying to repro a bug we saw in the wild
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: (e.Jets("AntiKt4EMTopoJets"),e.TruthParticles("TruthParticles").Where(lambda tp1: tp1.pdgId() == 35))') \
         .SelectMany('lambda ev: ev[0].Select(lambda j1: (j1, ev[1].Where(lambda tp2: DeltaR(tp2.eta(), tp2.phi(), j1.eta(), j1.phi()) < 0.4)))') \
         .Select('lambda ji: (ji[0].pt(), ji[1].Count())') \
         .AsPandasDF(('JetPts', 'NumLLPs')) \
-        .value(executor=exe_for_test)
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     l_jetpt = find_line_with("_JetPts", lines)
@@ -222,12 +410,12 @@ def test_per_jet_with_matching():
 
 def test_per_jet_with_matching_and_zeros():
     # Trying to repro a bug we saw in the wild
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: (e.Jets("AntiKt4EMTopoJets"),e.TruthParticles("TruthParticles").Where(lambda tp1: tp1.pdgId() == 35))') \
         .SelectMany('lambda ev: ev[0].Select(lambda j1: (j1, ev[1].Where(lambda tp2: DeltaR(tp2.eta(), tp2.phi(), j1.eta(), j1.phi()) < 0.4)))') \
         .Select('lambda ji: (ji[0].pt(), 0 if ji[1].Count() == 0 else (ji[1].First().pt()-ji[1].First().pt()))') \
         .AsPandasDF(('JetPts', 'NumLLPs')) \
-        .value(executor=exe_for_test)
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     l_jetpt = find_line_with("_JetPts", lines)
@@ -244,13 +432,13 @@ def test_per_jet_with_Count_matching():
     # be in the function simplifier.
     # Also, if the "else" doesn't include a "first" thing, then things seem to work just fine too.
     #    .Where('lambda jall: jall[0].pt() > 40.0') \
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: (e.Jets("AntiKt4EMTopoJets"),e.TruthParticles("TruthParticles").Where(lambda tp1: tp1.pdgId() == 35))') \
         .SelectMany('lambda ev: ev[0].Select(lambda j1: (j1, ev[1].Where(lambda tp2: DeltaR(tp2.eta(), tp2.phi(), j1.eta(), j1.phi()) < 0.4)))') \
         .Select('lambda ji: (ji[0].pt(), 0 if ji[1].Count()==0 else ji[1].First().prodVtx().y())') \
         .Where('lambda jall: jall[0] > 40.0') \
         .AsPandasDF(('JetPts', 'y')) \
-        .value(executor=exe_for_test)
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     l = find_line_numbers_with("if (0)", lines)
@@ -258,13 +446,13 @@ def test_per_jet_with_Count_matching():
 
 def test_per_jet_with_delta():
     # Trying to repro a bug we saw in the wild
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: (e.Jets("AntiKt4EMTopoJets"),e.TruthParticles("TruthParticles").Where(lambda tp1: tp1.pdgId() == 35))') \
         .SelectMany('lambda ev: ev[0].Select(lambda j1: (j1, ev[1].Where(lambda tp2: DeltaR(tp2.eta(), tp2.phi(), j1.eta(), j1.phi()) < 0.4)))') \
         .Select('lambda ji: (ji[0].pt(), 0 if ji[1].Count()==0 else abs(ji[1].First().prodVtx().x()-ji[1].First().decayVtx().x()))') \
         .Where('lambda jall: jall[0] > 40.0') \
         .AsPandasDF(('JetPts', 'y')) \
-        .value(executor=exe_for_test)
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     l_numbers = find_line_numbers_with("if (i_obj", lines)
@@ -273,12 +461,12 @@ def test_per_jet_with_delta():
 
 def test_per_jet_with_matching_and_zeros_and_sum():
     # Trying to repro a bug we saw in the wild
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: (e.Jets("AntiKt4EMTopoJets"),e.TruthParticles("TruthParticles").Where(lambda tp1: tp1.pdgId() == 35))') \
         .SelectMany('lambda ev: ev[0].Select(lambda j1: (j1, ev[1].Where(lambda tp2: DeltaR(tp2.eta(), tp2.phi(), j1.eta(), j1.phi()) < 0.4)))') \
         .Select('lambda ji: (ji[0].pt(), 0 if ji[1].Count() == 0 else (ji[1].First().pt()-ji[1].First().pt()), ji[0].getAttributeVectorFloat("EnergyPerSampling").Sum())') \
         .AsPandasDF(('JetPts', 'NumLLPs', 'sums')) \
-        .value(executor=exe_for_test)
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     l_jetpt = find_line_with("_JetPts", lines)
@@ -290,11 +478,11 @@ def test_per_jet_with_matching_and_zeros_and_sum():
 def test_electron_and_muon_with_tuple():
     # See if we can re-create a bug we are seeing with
     # Marc's long query.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: (e.Electrons("Electrons"), e.Muons("Muons"))') \
         .Select('lambda e: (e[0].Select(lambda ele: ele.E()), e[0].Select(lambda ele: ele.pt()), e[0].Select(lambda ele: ele.phi()), e[0].Select(lambda ele: ele.eta()), e[1].Select(lambda mu: mu.E()), e[1].Select(lambda mu: mu.pt()), e[1].Select(lambda mu: mu.phi()), e[1].Select(lambda mu: mu.eta()))') \
         .AsROOTTTree('dude.root', 'forkme', ['e_E', 'e_pt', 'e_phi', 'e_eta', 'mu_E', 'mu_pt', 'mu_phi', 'mu_eta']) \
-        .value(executor=exe_for_test)
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     assert find_line_with("->Fill()", lines) != 0
@@ -302,11 +490,11 @@ def test_electron_and_muon_with_tuple():
 def test_electron_and_muon_with_tuple_qastle():
     # See if we can re-create a bug we are seeing with
     # Marc's long query.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing(qastle_roundtrip=True) \
         .Select('lambda e: (e.Electrons("Electrons"), e.Muons("Muons"))') \
         .Select('lambda e: (e[0].Select(lambda ele: ele.E()), e[0].Select(lambda ele: ele.pt()), e[0].Select(lambda ele: ele.phi()), e[0].Select(lambda ele: ele.eta()), e[1].Select(lambda mu: mu.E()), e[1].Select(lambda mu: mu.pt()), e[1].Select(lambda mu: mu.phi()), e[1].Select(lambda mu: mu.eta()))') \
         .AsROOTTTree('dude.root', 'forkme', ['e_E', 'e_pt', 'e_phi', 'e_eta', 'mu_E', 'mu_pt', 'mu_phi', 'mu_eta']) \
-        .value(executor=lambda a: exe_for_test(a, qastle_roundtrip=True))
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     assert find_line_with("->Fill()", lines) != 0
@@ -314,11 +502,11 @@ def test_electron_and_muon_with_tuple_qastle():
 def test_electron_and_muon_with_list():
     # See if we can re-create a bug we are seeing with
     # Marc's long query.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing() \
         .Select('lambda e: [e.Electrons("Electrons"), e.Muons("Muons")]') \
         .Select('lambda e: [e[0].Select(lambda ele: ele.E()), e[0].Select(lambda ele: ele.pt()), e[0].Select(lambda ele: ele.phi()), e[0].Select(lambda ele: ele.eta()), e[1].Select(lambda mu: mu.E()), e[1].Select(lambda mu: mu.pt()), e[1].Select(lambda mu: mu.phi()), e[1].Select(lambda mu: mu.eta())]') \
         .AsROOTTTree('dude.root', 'forkme', ['e_E', 'e_pt', 'e_phi', 'e_eta', 'mu_E', 'mu_pt', 'mu_phi', 'mu_eta']) \
-        .value(executor=exe_for_test)
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     assert find_line_with("->Fill()", lines) != 0
@@ -326,11 +514,11 @@ def test_electron_and_muon_with_list():
 def test_electron_and_muon_with_list_qastle():
     # See if we can re-create a bug we are seeing with
     # Marc's long query.
-    r = EventDataset("file://root.root") \
+    r = dataset_for_testing(qastle_roundtrip=True) \
         .Select('lambda e: [e.Electrons("Electrons"), e.Muons("Muons")]') \
         .Select('lambda e: [e[0].Select(lambda ele: ele.E()), e[0].Select(lambda ele: ele.pt()), e[0].Select(lambda ele: ele.phi()), e[0].Select(lambda ele: ele.eta()), e[1].Select(lambda mu: mu.E()), e[1].Select(lambda mu: mu.pt()), e[1].Select(lambda mu: mu.phi()), e[1].Select(lambda mu: mu.eta())]') \
         .AsROOTTTree('dude.root', 'forkme', ['e_E', 'e_pt', 'e_phi', 'e_eta', 'mu_E', 'mu_pt', 'mu_phi', 'mu_eta']) \
-        .value(executor=lambda a: exe_for_test(a, qastle_roundtrip=True))
+        .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
     assert find_line_with("->Fill()", lines) != 0

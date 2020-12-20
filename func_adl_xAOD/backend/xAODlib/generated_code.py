@@ -77,7 +77,8 @@ class generated_code:
             return
 
         # Restore it to whatever it was.
-        self._scope_stack = scope_info._scope_stack
+        assert isinstance(scope_info, gc_scope)
+        self._scope_stack = scope_info._scope_stack  # type: ignore
 
     def add_book_statement(self, st, below=None):
         self._book_block.add_statement(st)

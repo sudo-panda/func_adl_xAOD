@@ -66,7 +66,7 @@ def extract_awkward_result(rep, run_dir):
     '''
     output_file = "file://{0}/{1}".format(run_dir, rep.filename)
     data_file = uproot.open(output_file)
-    df = data_file[rep.treename].arrays()
+    df = data_file[rep.treename].arrays()  # type: ignore
     data_file._context.source.close()
     return df
 
@@ -94,6 +94,6 @@ def extract_pandas_result(rep, run_dir):
     '''
     output_file = "file://{0}/{1}".format(run_dir, rep.filename)
     data_file = uproot.open(output_file)
-    df = data_file[rep.treename].pandas.df()
+    df = data_file[rep.treename].pandas.df()  # type: ignore
     data_file._context.source.close()
     return df
