@@ -6,13 +6,13 @@ from typing import List, Any
 
 from func_adl import EventDataset
 
-from func_adl_xAOD.backend.cpplib.cpp_representation import (
+from func_adl_xAOD.cpplib.cpp_representation import (
     cpp_sequence, cpp_variable)
-from func_adl_xAOD.backend.xAODlib.ast_to_cpp_translator import (
+from func_adl_xAOD.xAODlib.ast_to_cpp_translator import (
     query_ast_visitor)
-from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import (
+from func_adl_xAOD.xAODlib.atlas_xaod_executor import (
     atlas_xaod_executor)
-from func_adl_xAOD.backend.xAODlib.util_scope import top_level_scope
+from func_adl_xAOD.xAODlib.util_scope import top_level_scope
 
 
 class dummy_executor:

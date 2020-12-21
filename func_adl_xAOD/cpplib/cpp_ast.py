@@ -2,11 +2,11 @@
 #
 # This is one mechanism to allow for a leaky abstraction.
 import ast
-from func_adl_xAOD.backend.xAODlib.util_scope import gc_scope
+from func_adl_xAOD.xAODlib.util_scope import gc_scope
 from typing import cast, Callable, Optional
 
-from func_adl_xAOD.backend.cpplib.cpp_representation import cpp_value, cpp_variable
-import func_adl_xAOD.backend.xAODlib.statement as statements
+from func_adl_xAOD.cpplib.cpp_representation import cpp_value, cpp_variable
+import func_adl_xAOD.xAODlib.statement as statements
 
 # The list of methods and the re-write functions for them. Each rewrite function
 # is called with the Call node, which includes arguments, names, etc. It should return

@@ -1,7 +1,7 @@
 # Some math utilities
-import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
-from func_adl_xAOD.backend.cpplib.cpp_representation import cpp_variable
-from func_adl_xAOD.backend.cpplib.cpp_vars import unique_name
+import func_adl_xAOD.cpplib.cpp_ast as cpp_ast
+from func_adl_xAOD.cpplib.cpp_representation import cpp_variable
+from func_adl_xAOD.cpplib.cpp_vars import unique_name
 
 
 def DeltaRAst(call_node):

@@ -1,11 +1,11 @@
 # Test the scope utilities
 
 
-from func_adl_xAOD.backend.xAODlib.generated_code import generated_code
-import func_adl_xAOD.backend.xAODlib.statement as statement
-import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
-import func_adl_xAOD.backend.cpplib.cpp_representation as crep
-from func_adl_xAOD.backend.xAODlib.util_scope import deepest_scope, gc_scope_top_level
+from func_adl_xAOD.xAODlib.generated_code import generated_code
+import func_adl_xAOD.xAODlib.statement as statement
+import func_adl_xAOD.cpplib.cpp_types as ctyp
+import func_adl_xAOD.cpplib.cpp_representation as crep
+from func_adl_xAOD.xAODlib.util_scope import deepest_scope, gc_scope_top_level
 
 def test_deepest_scope_one_greater():
     g = generated_code()

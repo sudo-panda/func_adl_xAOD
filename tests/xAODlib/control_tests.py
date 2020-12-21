@@ -1,5 +1,5 @@
 import pytest
-from func_adl_xAOD.backend import LocalFile
+from func_adl_xAOD import LocalFile
 from pathlib import Path
 import os
 

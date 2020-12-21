@@ -11,9 +11,9 @@ from func_adl.ast.func_adl_ast_utils import change_extension_functions_to_calls
 from func_adl.ast.function_simplifier import simplify_chained_calls
 import jinja2
 
-import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
-from func_adl_xAOD.backend.cpplib.cpp_functions import find_known_functions
-import func_adl_xAOD.backend.cpplib.cpp_representation as crep
+import func_adl_xAOD.cpplib.cpp_ast as cpp_ast
+from func_adl_xAOD.cpplib.cpp_functions import find_known_functions
+import func_adl_xAOD.cpplib.cpp_representation as crep
 
 from .ast_to_cpp_translator import query_ast_visitor
 from .util_scope import top_level_scope
@@ -120,7 +120,7 @@ class atlas_xaod_executor:
         info['include_files'] = includes
 
         # We use jinja2 templates. Write out everything.
-        template_dir = find_dir("func_adl_xAOD/backend/R21Code")
+        template_dir = find_dir("func_adl_xAOD/R21Code")
         j2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(template_dir))
         self.copy_template_file(

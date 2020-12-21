@@ -7,7 +7,7 @@ import os
 from func_adl import EventDataset
 import pytest
 
-from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
+from func_adl_xAOD.cpplib.math_utils import DeltaR
 from testfixtures import LogCapture
 
 from .control_tests import f_single, run_long_running_tests

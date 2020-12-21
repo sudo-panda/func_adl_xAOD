@@ -1,9 +1,9 @@
 # Collected code to get collections from the event object
-import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
+import func_adl_xAOD.cpplib.cpp_ast as cpp_ast
 import ast
-from func_adl_xAOD.backend.cpplib.cpp_vars import unique_name
-import func_adl_xAOD.backend.cpplib.cpp_representation as crep
-import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
+from func_adl_xAOD.cpplib.cpp_vars import unique_name
+import func_adl_xAOD.cpplib.cpp_representation as crep
+import func_adl_xAOD.cpplib.cpp_types as ctyp
 import copy
 
 

@@ -1,5 +1,5 @@
 from typing import List, Dict
-import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
+import func_adl_xAOD.cpplib.cpp_types as ctyp
 
 
 _type_priority: Dict[str, int] = {

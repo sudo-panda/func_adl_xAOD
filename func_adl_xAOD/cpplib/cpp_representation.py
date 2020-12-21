@@ -47,8 +47,8 @@ from __future__ import annotations
 #  - seq is a sequence -> return the sequence value
 #
 # Others follow a similar line of reasoning.
-from func_adl_xAOD.backend.xAODlib.util_scope import gc_scope, gc_scope_top_level
-import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
+from func_adl_xAOD.xAODlib.util_scope import gc_scope, gc_scope_top_level
+import func_adl_xAOD.cpplib.cpp_types as ctyp
 import ast
 import copy
 from typing import Union, Optional

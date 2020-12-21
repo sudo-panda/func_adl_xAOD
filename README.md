@@ -1,6 +1,6 @@
 # func_adl_xAOD
 
- Client interface to send a hierarchical SQL-like query to an xAOD backend
+ Backend that converts `qastle` to run on an ATLAS xAOD backend.
 
 [![GitHub Actions Status](https://github.com/iris-hep/func_adl_xAOD/workflows/CI/CD/badge.svg)](https://github.com/iris-hep/func_adl_xAOD/actions?branch=master)
 [![Code Coverage](https://codecov.io/gh/iris-hep/func_adl_xAOD/graph/badge.svg)](https://codecov.io/gh/iris-hep/func_adl_xAOD)

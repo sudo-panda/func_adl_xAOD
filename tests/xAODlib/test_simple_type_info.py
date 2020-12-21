@@ -6,8 +6,8 @@ import sys
 # Code to do the testing starts here.
 from tests.xAODlib.utils_for_testing import dataset_for_testing
 from func_adl import EventDataset
-import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
-from func_adl_xAOD.backend.xAODlib.ast_to_cpp_translator import xAODTranslationError
+import func_adl_xAOD.cpplib.cpp_types as ctyp
+from func_adl_xAOD.xAODlib.ast_to_cpp_translator import xAODTranslationError
 
 
 def test_cant_call_double():

@@ -1,5 +1,5 @@
 # Test the statement objects
-from func_adl_xAOD.backend.xAODlib.statement import block, BlockException
+from func_adl_xAOD.xAODlib.statement import block, BlockException
 # Looking up representations in blocks
 
 def test_create_top_level_block():

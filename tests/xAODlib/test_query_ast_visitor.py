@@ -1,8 +1,8 @@
 # Some very direct white box testing
 import ast
-from func_adl_xAOD.backend.xAODlib.ast_to_cpp_translator import query_ast_visitor
-import func_adl_xAOD.backend.cpplib.cpp_representation as crep
-import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
+from func_adl_xAOD.xAODlib.ast_to_cpp_translator import query_ast_visitor
+import func_adl_xAOD.cpplib.cpp_representation as crep
+import func_adl_xAOD.cpplib.cpp_types as ctyp
 
 
 def test_binary_plus_return_type_1():

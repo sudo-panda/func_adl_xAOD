@@ -8,8 +8,8 @@ from typing import Any, Callable, List, Union, Optional
 
 from func_adl import EventDataset
 
-from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import atlas_xaod_executor
-import func_adl_xAOD.backend.xAODlib.result_handlers as rh
+from func_adl_xAOD.xAODlib.atlas_xaod_executor import atlas_xaod_executor
+import func_adl_xAOD.xAODlib.result_handlers as rh
 
 
 # Use this to turn on dumping of output and C++

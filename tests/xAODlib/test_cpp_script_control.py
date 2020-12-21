@@ -4,7 +4,7 @@ import ast
 from collections import namedtuple
 
 from func_adl import EventDataset
-from func_adl_xAOD.backend.xAODlib.atlas_xaod_executor import atlas_xaod_executor
+from func_adl_xAOD.xAODlib.atlas_xaod_executor import atlas_xaod_executor
 import os
 import sys
 import tempfile

@@ -10,18 +10,18 @@ from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
 from func_adl.util_ast import lambda_unwrap
 from .utils import most_accurate_type
 
-import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
-from func_adl_xAOD.backend.cpplib.cpp_functions import FunctionAST
-import func_adl_xAOD.backend.cpplib.cpp_representation as crep
-import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
-from func_adl_xAOD.backend.cpplib.cpp_vars import unique_name
-import func_adl_xAOD.backend.cpplib.math_utils
-import func_adl_xAOD.backend.xAODlib.EventCollections
-import func_adl_xAOD.backend.xAODlib.Jets  # NOQA
-from func_adl_xAOD.backend.xAODlib.generated_code import generated_code
-import func_adl_xAOD.backend.xAODlib.result_handlers as rh
-import func_adl_xAOD.backend.xAODlib.statement as statement
-from func_adl_xAOD.backend.xAODlib.util_scope import (
+import func_adl_xAOD.cpplib.cpp_ast as cpp_ast
+from func_adl_xAOD.cpplib.cpp_functions import FunctionAST
+import func_adl_xAOD.cpplib.cpp_representation as crep
+import func_adl_xAOD.cpplib.cpp_types as ctyp
+from func_adl_xAOD.cpplib.cpp_vars import unique_name
+import func_adl_xAOD.cpplib.math_utils
+import func_adl_xAOD.xAODlib.EventCollections
+import func_adl_xAOD.xAODlib.Jets  # NOQA
+from func_adl_xAOD.xAODlib.generated_code import generated_code
+import func_adl_xAOD.xAODlib.result_handlers as rh
+import func_adl_xAOD.xAODlib.statement as statement
+from func_adl_xAOD.xAODlib.util_scope import (
     deepest_scope, gc_scope, gc_scope_top_level, top_level_scope)
 
 

@@ -8,12 +8,12 @@ from version_info import version_func_adl
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-xaod_template_files = listdir('func_adl_xAOD/backend/R21Code')
+xaod_template_files = listdir('func_adl_xAOD/R21Code')
 setup(name="func_adl_xAOD",
       version='0.0.0-alpha.10',
-      packages=['func_adl_xAOD'] + ['func_adl_xAOD/backend'] + [f'func_adl_xAOD/backend.{f}' for f in ['cpplib', 'datasets', 'xAODlib']],
+      packages=['func_adl_xAOD'] + [f'func_adl_xAOD.{f}' for f in ['cpplib', 'datasets', 'xAODlib']],
       scripts=[],
-      description="Functional Analysis Description Language for accessing ATLAS xAOD files.",
+      description="Functional Analysis Description Language backend for accessing ATLAS xAOD files.",
       long_description=long_description,
       long_description_content_type="text/markdown",
       author="G. Watts (IRIS-HEP/UW Seattle)",
@@ -26,11 +26,11 @@ setup(name="func_adl_xAOD",
       install_requires=[
           "requests~=2.0",
           "pandas~=1.0",
-          "uproot~=3.0",
+          "uproot~=3.7",
           "retry~=0.9",
           "jinja2",
+          "qastle",
           f"func_adl.ast{version_func_adl}",
-          "qastle==0.7",
       ],
       extras_require={
           'test': [
@@ -60,7 +60,7 @@ setup(name="func_adl_xAOD",
           "Topic :: Utilities",
       ],
       package_data={
-          'func_adl_xAOD/backend': ['R21Code/*'],
+          'func_adl_xAOD': ['R21Code/*'],
       },
       platforms="Any",
       )

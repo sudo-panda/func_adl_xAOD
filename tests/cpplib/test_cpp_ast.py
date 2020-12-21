@@ -1,6 +1,6 @@
 # Test out substituting in routines of various types
 
-from func_adl_xAOD.backend.cpplib.math_utils import DeltaR
+from func_adl_xAOD.cpplib.math_utils import DeltaR
 from func_adl import EventDataset
 from tests.xAODlib.utils_for_testing import dataset_for_testing
 

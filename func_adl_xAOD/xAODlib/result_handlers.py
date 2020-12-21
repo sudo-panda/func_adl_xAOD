@@ -1,9 +1,9 @@
 # Code to work with the various types of data the executor is going to have to
 # return to the front end.
 
-from func_adl_xAOD.backend.cpplib.cpp_representation import cpp_value
-import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
-from func_adl_xAOD.backend.cpplib.cpp_vars import unique_name
+from func_adl_xAOD.cpplib.cpp_representation import cpp_value
+import func_adl_xAOD.cpplib.cpp_types as ctyp
+from func_adl_xAOD.cpplib.cpp_vars import unique_name
 import uproot
 
 

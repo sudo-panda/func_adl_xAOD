@@ -1,8 +1,8 @@
 # Code to aid with accessing jet collections
-import func_adl_xAOD.backend.cpplib.cpp_ast as cpp_ast
-import func_adl_xAOD.backend.cpplib.cpp_representation as crep
-import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
-from func_adl_xAOD.backend.cpplib.cpp_vars import unique_name
+import func_adl_xAOD.cpplib.cpp_ast as cpp_ast
+import func_adl_xAOD.cpplib.cpp_representation as crep
+import func_adl_xAOD.cpplib.cpp_types as ctyp
+from func_adl_xAOD.cpplib.cpp_vars import unique_name
 import ast
 
 

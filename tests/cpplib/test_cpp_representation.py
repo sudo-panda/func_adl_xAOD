@@ -1,9 +1,9 @@
 # Test the cpp representations. These objects are quite simple, so there
 # aren't that many tests. Mostly when bugs are found something gets added here.
 
-import func_adl_xAOD.backend.cpplib.cpp_representation as crep
-import func_adl_xAOD.backend.cpplib.cpp_types as ctyp
-from func_adl_xAOD.backend.xAODlib.util_scope import gc_scope_top_level, top_level_scope
+import func_adl_xAOD.cpplib.cpp_representation as crep
+import func_adl_xAOD.cpplib.cpp_types as ctyp
+from func_adl_xAOD.xAODlib.util_scope import gc_scope_top_level, top_level_scope
 
 def test_expression_pointer_decl():
     e2 = crep.cpp_value("dude", top_level_scope(), ctyp.terminal("int"))
