@@ -1,16 +1,25 @@
 # setuptools loads some plugins necessary for use here.
-from setuptools import find_packages  # noqa: F401
 from distutils.core import setup
-from os import listdir
 from version_info import version_func_adl
+import os
 
 # Use the readme as the long description.
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-xaod_template_files = listdir('func_adl_xAOD/R21Code')
+# Get the version number right
+version = os.getenv('func_adl_xaod_version')
+if version is None:
+    version = '0.0.0-alpha.10'
+else:
+    version = version.split('/')[-1]
+
+# Template files for running on ATLAS.
+xaod_template_files = os.listdir('func_adl_xAOD/R21Code')
+
+# Finally, the setup.
 setup(name="func_adl_xAOD",
-      version='0.0.0-alpha.10',
+      version=version,
       packages=['func_adl_xAOD'] + [f'func_adl_xAOD.{f}' for f in ['cpplib', 'datasets', 'xAODlib']],
       scripts=[],
       description="Functional Analysis Description Language backend for accessing ATLAS xAOD files.",

@@ -69,6 +69,7 @@ To run tests:
 
 - `pytest -m "not xaod_runner"` will run the _fast_ tests.
 - `pytest -m "xaod_runner"` will run the slow tests that require docker installed on your command line. `docker` is involved via pythons `os.system` - so it needs to be available to the test runner.
+- The CI on github is setup to run tests against python `3.7`, `3.8`, and `3.9` (only the non-xaod-runner tests).
 
 Contributing:
 
@@ -76,3 +77,7 @@ Contributing:
 - Submit a PR against the `master` branch.
 
 In general, the `master` branch should pass all tests all the time. Releases are made by tagging on the master branch.
+
+Publishing to PyPi:
+
+- Automated by declaring a new release (or pre-release) in github's web interface
