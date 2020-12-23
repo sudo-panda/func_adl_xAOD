@@ -2,6 +2,17 @@
 # That code is more complex than I'd like it!
 from tests.xAODlib.utils_for_testing import *
 
+def test_tree_name():
+    r = dataset_for_testing() \
+        .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()/1000).Sum()") \
+        .AsROOTTTree('dude.root', 'analysis', 'jetPT') \
+        .value()
+    lines = get_lines_of_code(r)
+    print_lines(lines)
+    l_sets = find_line_numbers_with('tree("analysis")', lines)
+    assert 1 == len(l_sets)
+
+
 def test_Aggregate_not_initial_const_SUM():
     r = dataset_for_testing() \
         .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()/1000).Sum()") \

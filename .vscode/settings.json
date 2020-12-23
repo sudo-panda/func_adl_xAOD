@@ -103,7 +103,6 @@
     "python.analysis.typeCheckingMode": "basic",
     "python.testing.pytestArgs": [
         "--no-cov",
-        "-m",
-        " not xaod_runner"
+        "-m not xaod_runner"
     ]
 }

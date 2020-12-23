@@ -799,7 +799,6 @@ class query_ast_visitor(FuncADLNodeVisitor):
             self._gc.declare_class_variable(cv[1])
 
         # Next, emit the booking code
-        tree_name = unique_name(tree_name)
         self._gc.add_book_statement(statement.book_ttree(tree_name, var_names))
 
         # Note that the output file and tree are what we are going to return.
