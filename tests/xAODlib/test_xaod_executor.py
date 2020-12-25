@@ -21,6 +21,27 @@ def test_per_event_item():
     assert 1 == len(vs)
     assert "double" == str(vs[0].cpp_type())
 
+
+def test_dict_output():
+    'This is integration testing - making sure the dict to root conversion works'
+    r=dataset_for_testing(root_result_only=True) \
+        .Select(lambda e: e.EventInfo("EventInfo").runNumber()) \
+        .Select(lambda e: {'run_number': e}) \
+        .value()
+    vs = r.QueryVisitor._gc._class_vars
+    assert 1 == len(vs)
+    assert "double" == str(vs[0].cpp_type())
+
+
+def test_dict_output_fail_expansion():
+    my_old_dict = {1: 'hi'}
+    with pytest.raises(ValueError):
+        r=dataset_for_testing() \
+            .Select(lambda e: e.EventInfo("EventInfo").runNumber()) \
+            .Select(lambda e: {'run_number': e, **my_old_dict}) \
+            .value()
+
+
 def test_per_jet_item():
     # The following statement should be a straight sequence, not an array.
     r = dataset_for_testing() \

@@ -3,9 +3,11 @@ import asyncio
 from enum import auto
 import logging
 import os
+from pathlib import Path
 
 from func_adl import EventDataset
 import pytest
+import uproot
 
 from func_adl_xAOD.cpplib.math_utils import DeltaR
 from testfixtures import LogCapture
@@ -69,6 +71,24 @@ def test_flatten_array():
         .value()
     assert int(training_df.iloc[0]['JetPt']) == 257
     assert int(training_df.iloc[0]['JetPt']) != int(training_df.iloc[1]['JetPt'])
+
+def test_simple_dict_output():
+    # A very simple flattening of arrays
+    training_df = f_single \
+        .SelectMany(lambda e: e.Jets("AntiKt4EMTopoJets")) \
+        .Select(lambda j: {
+            'JetPt': j.pt()/1000.0
+            }) \
+        .value()
+    assert isinstance(training_df, Path)
+    assert training_df.exists()
+
+    with uproot.open(training_df) as input:
+        pd = input['xaod_tree'].pandas.df()  # type: ignore
+    print(pd)
+    assert int(pd.iloc[0]['JetPt']) == 257
+    assert int(pd.iloc[0]['JetPt']) != int(pd.iloc[1]['JetPt'])
+
 
 def test_First_two_outer_loops():
     # THis is a little tricky because the First there is actually running over one jet in the event. Further, the Where

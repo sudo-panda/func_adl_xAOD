@@ -5,25 +5,25 @@ import ast
 import logging
 from typing import Any, Dict, List, Type, Union, cast
 
+import func_adl_xAOD.cpplib.cpp_ast as cpp_ast
+import func_adl_xAOD.cpplib.cpp_representation as crep
+import func_adl_xAOD.cpplib.cpp_types as ctyp
+import func_adl_xAOD.cpplib.math_utils  # (needed for math function injection)
+import func_adl_xAOD.xAODlib.EventCollections
+import func_adl_xAOD.xAODlib.Jets  # NOQA
+import func_adl_xAOD.xAODlib.result_handlers as rh
+import func_adl_xAOD.xAODlib.statement as statement
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
 from func_adl.util_ast import lambda_unwrap
-from .utils import most_accurate_type
-
-import func_adl_xAOD.cpplib.cpp_ast as cpp_ast
 from func_adl_xAOD.cpplib.cpp_functions import FunctionAST
-import func_adl_xAOD.cpplib.cpp_representation as crep
-import func_adl_xAOD.cpplib.cpp_types as ctyp
 from func_adl_xAOD.cpplib.cpp_vars import unique_name
-import func_adl_xAOD.cpplib.math_utils
-import func_adl_xAOD.xAODlib.EventCollections
-import func_adl_xAOD.xAODlib.Jets  # NOQA
 from func_adl_xAOD.xAODlib.generated_code import generated_code
-import func_adl_xAOD.xAODlib.result_handlers as rh
-import func_adl_xAOD.xAODlib.statement as statement
-from func_adl_xAOD.xAODlib.util_scope import (
-    deepest_scope, gc_scope, gc_scope_top_level, top_level_scope)
+from func_adl_xAOD.xAODlib.util_scope import (deepest_scope, gc_scope,
+                                              gc_scope_top_level,
+                                              top_level_scope)
 
+from .utils import most_accurate_type
 
 # Convert between Python comparisons and C++.
 compare_operations = {
@@ -181,8 +181,6 @@ class query_ast_visitor(FuncADLNodeVisitor):
         if hasattr(node, 'rep'):
             result = node.rep  # type: ignore
             if not self._gc.current_scope().starts_with(result.scope()):
-                # if type(node) is crep.dummy_ast:
-                #     raise Exception("Internal Error - out of scope dummy ast!")
                 result = None
 
         # If this node already has a representation, then it has been
@@ -199,6 +197,61 @@ class query_ast_visitor(FuncADLNodeVisitor):
         self._result = node.rep  # type: ignore
 
         return node.rep  # type: ignore
+
+    def get_as_ROOT(self, node: ast.AST) -> rh.cpp_ttree_rep:
+        '''For a given node, return a root ttree rep.
+
+        This is used to make sure whatever the sequence is, that it returns a RootTTree. Use this
+        when the user may not have explicitly requested an output format. For example, if they end
+        with a tuple or a dict request, but not a AsAwkwardArray.
+
+        1. If the top level ast node already requests an ROOTTTree, the representation is returned.
+        1. If the node is a sequence of dict's, a ttree is created that uses the dictionary
+           key's as column names.
+        1. Anything else causes an exception to be raised.
+
+        Args:
+            node (ast.AST): Top level `func_adl` expression that is to be renered as a ROOT file.
+
+        Returns:
+            rh.cpp_ttree_rep: The resulting node that will generate a root file.
+
+        Exceptions:
+            ValueError: If we end with something other than above, we raise `ValueError` to
+                        indicate that we can't figure out how to convert something into a ROOT
+                        file.
+        '''
+        r = self.get_rep(node)
+        if isinstance(r, rh.cpp_ttree_rep):
+            return r
+
+        # If this isn't a sequence, then we are totally blown here.
+        if not isinstance(r, crep.cpp_sequence):
+            raise ValueError(f'Do not know how to convert {r} into a ROOT file')
+
+        # If this is a dict, then pull out each item and re-assemble into a tuple
+        # which we can feed to the root guy.
+        values = r.sequence_value()
+        if isinstance(values, crep.cpp_dict):
+            values = cast(crep.cpp_dict, values)
+            col_values = values.value_dict.values()
+            col_names = ast.List(elts=list(values.value_dict.keys()))
+            s_tuple = crep.cpp_tuple(tuple(col_values), values.scope())
+            tuple_sequence = crep.cpp_sequence(s_tuple, r.iterator_value(), r.scope())  # type: ignore
+            ast_dummy_source = ast.Constant(value=1)
+            ast_dummy_source.rep = tuple_sequence  # type: ignore
+            ast_ttree = function_call('ResultTTree',
+                                      [ast_dummy_source,
+                                       col_names,
+                                       ast.parse('"xaod_tree"').body[0].value,  # type: ignore
+                                       ast.parse('"xaod_output"').body[0].value])  # type: ignore
+            result = self.get_rep(ast_ttree)
+            assert isinstance(result, rh.cpp_ttree_rep)
+            return result
+        else:
+            raise ValueError(f'Do not know how to convert a sequence of {r.sequence_value} into a ROOT file.')
+
+        raise NotImplementedError()
 
     def get_rep_value(self, node, retain_scope=False) -> crep.cpp_value:
         r'''Return the rep for the node. If it isn't set yet, then run our visit on it. Assure we are returning a value
@@ -568,6 +621,21 @@ class query_ast_visitor(FuncADLNodeVisitor):
         '''
         tuple_node.rep = crep.cpp_tuple(tuple(self.get_rep(e, retain_scope=True) for e in tuple_node.elts), self._gc.current_scope())
         self._result = tuple_node.rep
+
+    def visit_Dict(self, node: ast.Dict):
+        '''Process a dictionary. We create a C++ representation of this. The
+        dict, as things currently stand, will not make its way into C++, but it might
+        help us sort out some sort of output or similar.
+
+        Args:
+            node (ast.Dict): The dictionary node for us to process
+        '''
+        if not all(v is not None for v in node.keys):
+            raise ValueError('The python construction of adding a dictionary into another dictionary is not supported ({1: 10, **old_dict})')
+
+        values = {k: self.get_rep(v, retain_scope=True) for k, v in zip(node.keys, node.values)}
+        node.rep = crep.cpp_dict(values, self._gc.current_scope())  # type: ignore
+        self._result = node.rep  # type: ignore
 
     def visit_List(self, list_node):
         r'''

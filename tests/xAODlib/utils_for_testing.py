@@ -21,10 +21,13 @@ class dummy_executor:
         self.QueryVisitor = None
         self.ResultRep = None
 
-    def evaluate(self, a: ast.AST):
+    def evaluate(self, a: ast.AST, get_root: bool = False):
         rnr = atlas_xaod_executor()
         self.QueryVisitor = query_ast_visitor()
-        self.ResultRep = self.QueryVisitor.get_rep(rnr.apply_ast_transformations(a))
+        a_transformed = rnr.apply_ast_transformations(a)
+        self.ResultRep = \
+            self.QueryVisitor.get_as_ROOT(a_transformed) if get_root \
+            else self.QueryVisitor.get_rep(a_transformed)
         
 
     def get_result(self, q_visitor, result_rep):
@@ -35,9 +38,10 @@ class dummy_executor:
 
 
 class dataset_for_testing(EventDataset):
-    def __init__(self, qastle_roundtrip=False):
+    def __init__(self, qastle_roundtrip=False, root_result_only=False):
         EventDataset.__init__(self)
         self._q_roundtrip = qastle_roundtrip
+        self._force_root_result = root_result_only
 
     def __repr__(self) -> str:
         # When we need to move into a representation, use
@@ -63,7 +67,7 @@ class dataset_for_testing(EventDataset):
         # Use the dummy executor to process this, and return it.
         exe = dummy_executor()
         rnr = atlas_xaod_executor()
-        exe.evaluate(a)
+        exe.evaluate(a, self._force_root_result)
         return exe
 
 

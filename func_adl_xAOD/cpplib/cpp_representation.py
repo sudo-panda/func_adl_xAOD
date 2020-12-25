@@ -215,6 +215,24 @@ class cpp_tuple(cpp_rep_base):
         return self._scope
 
 
+class cpp_dict(cpp_rep_base):
+    '''Represents a special kind of value = a dict, which is just a keyed container of other values.
+    This isn't a regular cpp_value in the sense it can't directly be put into C++ code. It must
+    be specially handled by the interpreter.
+    '''
+    def __init__(self, value: dict, scope: Union[gc_scope, gc_scope_top_level]):
+        super().__init__()
+        self._values = value
+        self._scope = scope
+
+    @property
+    def value_dict(self) -> dict:
+        return self._values
+
+    def scope(self) -> Union[gc_scope, gc_scope_top_level]:
+        return self._scope
+
+
 class cpp_sequence(cpp_rep_base):
     '''
     Represents a sequence of data. The `sequence_value` points to value of the item in the stream, and
@@ -230,7 +248,7 @@ class cpp_sequence(cpp_rep_base):
 
         sequence_value:         The value of the sequence - of the data items that are in sequence.
         iterator_value:         The iterator that is incremented to get the next value in the sequence. The
-                                iterator's scope is defined where it was created.
+                                iterators scope is defined where it was created.
         scope:                  The scope at which this sequence is declared. Note that this may be different
                                 from the of the interator if we are, for example, inside an if statement caused
                                 by a Where (or similar). If the `sequence_value` is an actual value, it will have

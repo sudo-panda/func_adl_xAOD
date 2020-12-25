@@ -1,10 +1,10 @@
-# Code to work with the various types of data the executor is going to have to
-# return to the front end.
+import shutil
+from pathlib import Path
 
-from func_adl_xAOD.cpplib.cpp_representation import cpp_value
 import func_adl_xAOD.cpplib.cpp_types as ctyp
-from func_adl_xAOD.cpplib.cpp_vars import unique_name
 import uproot
+from func_adl_xAOD.cpplib.cpp_representation import cpp_value
+from func_adl_xAOD.cpplib.cpp_vars import unique_name
 
 
 ##################
@@ -17,30 +17,22 @@ class cpp_ttree_rep(cpp_value):
         self.treename = treename
 
 
-def extract_result_TTree(rep, run_dir):
+def extract_result_TTree(rep: cpp_ttree_rep, run_dir):
+    '''Copy the final file into a place that is "safe", and return that as a path.
+
+    The reason for this is that the temp directory we are using is about to be deleted!
+
+    Args:
+        rep (cpp_base_rep): The representation of the final result
+        run_dir ([type]): Directory where it ran
+
+    Raises:
+        Exception: [description]
     '''
-    Given the tree info, return the appropriate data to the client. In this case it is just
-    a full filename along with a tree name which the client can then use to open the tree.
-
-    rep: the cpp_tree_rep of the file that is going to come back.
-    run_dir: location where run wrote all the files
-
-    returns:
-    path_to_root_file: Full path to the file, copied into the local directory
-    tree_name: the name of the tree.
-    '''
-    raise Exception("extract_result_TTree is not yet implemented.")
-    # # This would be trivial other than the directory is about to be deleted. So in this case we are going to
-    # # need to copy the file over somewhere else!
-    # df_name = os.path.join(os.getcwd(), unique_name("datafile") + ".root")
-    # df_current = os.path.join(run_dir, 'data.root')
-
-    # if not os.path.exists(df_current):
-    #     raise Exception("Unable to find ROOT file '{0}' which contains the data we need!".format(df_current))
-
-    # shutil.copyfile(df_current, df_name)
-
-    # return ROOTTreeResult(True, [ROOTTreeFileInfo(df_name, rep.treename)])
+    current_path = run_dir / rep.filename
+    new_path = Path('.') / rep.filename
+    shutil.copy(current_path, new_path)
+    return new_path
 
 
 #############

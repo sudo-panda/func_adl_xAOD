@@ -64,6 +64,22 @@ def find_dir(path):
     return _find(path, matchFunc=os.path.isdir)
 
 
+def is_format_request(a: ast.AST) -> bool:
+    '''Return true if we end with one of the AsPandas or AsAwkward guys, otherwise false.
+
+    Args:
+        ast (ast.AST): AST to check at the top level
+
+    Returns:
+        bool: True if the ast is not format agnostic.
+    '''
+    if not isinstance(a, ast.Call):
+        return False
+    if not isinstance(a.func, ast.Name):
+        return False
+    return a.func.id in ['ResultPandasDF', 'ResultAwkwardArray', 'ResultTTree']
+
+
 class atlas_xaod_executor:
     def copy_template_file(self, j2_env, info, template_file, final_dir: Path):
         'Copy a file to a final directory'
@@ -102,7 +118,8 @@ class atlas_xaod_executor:
         # Visit the AST to generate the code structure and find out what the
         # result is going to be.
         qv = query_ast_visitor()
-        result_rep = qv.get_rep(ast)
+        result_rep = qv.get_rep(ast) if is_format_request(ast) \
+            else qv.get_as_ROOT(ast)
 
         # Emit the C++ code into our dictionaries to be used in template generation below.
         query_code = cpp_source_emitter()
