@@ -114,6 +114,9 @@ class cpp_value(cpp_rep_base):
         self._expression = cpp_expression
         self._cpp_type = cpp_type
 
+    def __str__(self) -> str:
+        return f'{str(self._cpp_type)} value (expression {self._expression})'
+
     def is_pointer(self):
         'Return true if this type is a pointer'
         if self._cpp_type is None:

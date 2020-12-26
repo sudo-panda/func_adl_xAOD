@@ -81,9 +81,36 @@ def test_as_root_rep_already_set():
 def test_as_root_as_dict():
     q = query_ast_visitor()
     node = ast.parse('1/1')
-    dict_obj = crep.cpp_dict({ast.Constant(value='hi'): crep.cpp_value('i', gc_scope_top_level(), ctyp.terminal(int))}, gc_scope_top_level())
+    dict_obj = crep.cpp_dict({ast.Constant(value='hi'): crep.cpp_value('i', gc_scope_top_level(), ctyp.terminal('int'))}, gc_scope_top_level())
     sequence = crep.cpp_sequence(dict_obj,  # type: ignore
-                                 crep.cpp_value('i', gc_scope_top_level(), ctyp.terminal(int)),
+                                 crep.cpp_value('i', gc_scope_top_level(), ctyp.terminal('int')),
+                                 gc_scope_top_level())
+    node.rep = sequence  # type: ignore
+    as_root = q.get_as_ROOT(node)
+
+    assert isinstance(as_root, rh.cpp_ttree_rep)
+
+
+def test_as_root_as_single_column():
+    q = query_ast_visitor()
+    node = ast.parse('1/1')
+    value_obj = crep.cpp_value('i', gc_scope_top_level(), ctyp.terminal('int'))
+    sequence = crep.cpp_sequence(value_obj,
+                                 crep.cpp_value('i', gc_scope_top_level(), ctyp.terminal('int')),
+                                 gc_scope_top_level())
+    node.rep = sequence  # type: ignore
+    as_root = q.get_as_ROOT(node)
+
+    assert isinstance(as_root, rh.cpp_ttree_rep)
+
+
+def test_as_root_as_tuple():
+    q = query_ast_visitor()
+    node = ast.parse('1/1')
+    value_obj = crep.cpp_tuple((crep.cpp_value('i', gc_scope_top_level(), ctyp.terminal('int')),), gc_scope_top_level())
+    
+    sequence = crep.cpp_sequence(value_obj,  # type: ignore
+                                 crep.cpp_value('i', gc_scope_top_level(), ctyp.terminal('int')),
                                  gc_scope_top_level())
     node.rep = sequence  # type: ignore
     as_root = q.get_as_ROOT(node)

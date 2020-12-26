@@ -3,17 +3,18 @@
 
 class terminal:
     'Represents something we cannot see inside, like float, or int, or bool'
-    def __init__(self, t, is_pointer=False):
-        '''
-        Initialize a terminal type
+    def __init__(self, t: str, is_pointer=False):
+        '''Create a terminal type - a type that we do not need to see inside
 
-        t:      The type as a string (valid in C++)
+        Args:
+            t (str): The name of the type (integer, double, xAOD::Jet, etc.)
+            is_pointer (bool, optional): True if this is a pointer. Defaults to False.
         '''
         self._type = t
         self._is_pointer = is_pointer
 
     def __str__(self):
-        return self.type
+        return str(self.type)
 
     def is_pointer(self):
         return self._is_pointer
@@ -26,7 +27,7 @@ class terminal:
         elif self._type == "int":
             return "0"
         else:
-            raise Exception("Do not know a default value for the type '{0}'.".format(self._type))
+            raise Exception(f"Do not know a default value for the type '{self._type}'.")
 
     @property
     def type(self) -> str:
