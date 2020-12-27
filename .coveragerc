@@ -1,0 +1,3 @@
+[run]
+branch = True
+omit = func_adl_xAOD/R21Code/ATestRun_eljob.py
