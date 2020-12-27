@@ -21,7 +21,7 @@ from .util_scope import top_level_scope
 xAODExecutionInfo = namedtuple('xAODExecutionInfo', 'result_rep output_path main_script all_filenames')
 
 
-class cpp_source_emitter:
+class _cpp_source_emitter:
     r'''
     Helper class to emit C++ code as we go
     '''
@@ -53,18 +53,14 @@ def _find(pathname: str, matchFunc=os.path.isfile):
         if matchFunc(candidate):
             return candidate
     all_dirs = ','.join(sys.path + ['/usr/local'])
-    raise Exception(f"Can't find file '{pathname}'. Looked in {all_dirs}")
+    raise RuntimeError(f"Can't find file '{pathname}'. Looked in {all_dirs}")
 
 
-def find_file(pathname):
-    return _find(pathname)
-
-
-def find_dir(path):
+def _find_dir(path):
     return _find(path, matchFunc=os.path.isdir)
 
 
-def is_format_request(a: ast.AST) -> bool:
+def _is_format_request(a: ast.AST) -> bool:
     '''Return true if the top level ast is a call to generate a ROOT file output.
 
     Args:
@@ -74,14 +70,14 @@ def is_format_request(a: ast.AST) -> bool:
         bool: True if the ast is not format agnostic.
     '''
     if not isinstance(a, ast.Call):
-        return False
+        raise ValueError(f'A func_adl ast must start with a function call. This does not: {ast.dump(a)}')
     if not isinstance(a.func, ast.Name):
-        return False
+        raise ValueError(f'A func_adl ast must start with a function call to something like Select or AsROOTTTree. This does not: {ast.dump(a)}')
     return a.func.id == 'ResultTTree'
 
 
 class atlas_xaod_executor:
-    def copy_template_file(self, j2_env, info, template_file, final_dir: Path):
+    def _copy_template_file(self, j2_env, info, template_file, final_dir: Path):
         'Copy a file to a final directory'
         j2_env.get_template(template_file).stream(info).dump(str(final_dir / template_file))
 
@@ -118,13 +114,13 @@ class atlas_xaod_executor:
         # Visit the AST to generate the code structure and find out what the
         # result is going to be.
         qv = query_ast_visitor()
-        result_rep = qv.get_rep(ast) if is_format_request(ast) \
+        result_rep = qv.get_rep(ast) if _is_format_request(ast) \
             else qv.get_as_ROOT(ast)
 
         # Emit the C++ code into our dictionaries to be used in template generation below.
-        query_code = cpp_source_emitter()
+        query_code = _cpp_source_emitter()
         qv.emit_query(query_code)
-        book_code = cpp_source_emitter()
+        book_code = _cpp_source_emitter()
         qv.emit_book(book_code)
         class_dec_code = qv.class_declaration_code()
         includes = qv.include_files()
@@ -137,16 +133,16 @@ class atlas_xaod_executor:
         info['include_files'] = includes
 
         # We use jinja2 templates. Write out everything.
-        template_dir = find_dir("func_adl_xAOD/R21Code")
+        template_dir = _find_dir("func_adl_xAOD/R21Code")
         j2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(template_dir))
-        self.copy_template_file(
+        self._copy_template_file(
             j2_env, info, 'ATestRun_eljob.py', output_path)
-        self.copy_template_file(
+        self._copy_template_file(
             j2_env, info, 'package_CMakeLists.txt', output_path)
-        self.copy_template_file(j2_env, info, 'query.cxx', output_path)
-        self.copy_template_file(j2_env, info, 'query.h', output_path)
-        self.copy_template_file(j2_env, info, 'runner.sh', output_path)
+        self._copy_template_file(j2_env, info, 'query.cxx', output_path)
+        self._copy_template_file(j2_env, info, 'query.h', output_path)
+        self._copy_template_file(j2_env, info, 'runner.sh', output_path)
 
         (output_path / 'runner.sh').chmod(0o755)
 

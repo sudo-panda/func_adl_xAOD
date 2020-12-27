@@ -22,7 +22,7 @@ class dummy_executor:
         self.QueryVisitor = None
         self.ResultRep = None
 
-    def evaluate(self, a: ast.AST, ):
+    def evaluate(self, a: ast.AST):
         rnr = atlas_xaod_executor()
         self.QueryVisitor = query_ast_visitor()
         a_transformed = rnr.apply_ast_transformations(a)
@@ -84,7 +84,6 @@ async def exe_from_qastle(q: str):
 
     # Use the dummy executor to process this, and return it.
     exe = dummy_executor()
-    rnr = atlas_xaod_executor()
     exe.evaluate(a)
     return exe
 
