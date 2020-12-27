@@ -15,7 +15,6 @@ def test_cant_call_double():
     try: 
         dataset_for_testing("file://root.root") \
             .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt().eta()).Sum()") \
-            .AsROOTTTree('root.root', "dude", "n_jets") \
             .value()
     except xAODTranslationError as e:
         msg = str(e)
@@ -27,5 +26,4 @@ def test_can_call_prodVtx():
     ctyp.add_method_type_info("xAOD::TruthParticle", "prodVtx", ctyp.terminal('xAODTruth::TruthVertex', is_pointer=True))
     dataset_for_testing("file://root.root") \
         .Select("lambda e: e.TruthParticles('TruthParticles').Select(lambda t: t.prodVtx().x()).Sum()") \
-        .AsROOTTTree('root.root', 'dude', "n_jets") \
         .value()

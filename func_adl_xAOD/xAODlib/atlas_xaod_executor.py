@@ -65,7 +65,7 @@ def find_dir(path):
 
 
 def is_format_request(a: ast.AST) -> bool:
-    '''Return true if we end with one of the AsPandas or AsAwkward guys, otherwise false.
+    '''Return true if the top level ast is a call to generate a ROOT file output.
 
     Args:
         ast (ast.AST): AST to check at the top level
@@ -77,7 +77,7 @@ def is_format_request(a: ast.AST) -> bool:
         return False
     if not isinstance(a.func, ast.Name):
         return False
-    return a.func.id in ['ResultPandasDF', 'ResultAwkwardArray', 'ResultTTree']
+    return a.func.id == 'ResultTTree'
 
 
 class atlas_xaod_executor:

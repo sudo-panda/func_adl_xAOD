@@ -5,7 +5,7 @@ from tests.xAODlib.utils_for_testing import *
 def test_tree_name():
     r = dataset_for_testing() \
         .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()/1000).Sum()") \
-        .AsROOTTTree('dude.root', 'analysis', 'jetPT') \
+        .AsROOTTTree('junk.root', 'analysis', ['fork']) \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -16,7 +16,6 @@ def test_tree_name():
 def test_Aggregate_not_initial_const_SUM():
     r = dataset_for_testing() \
         .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()/1000).Sum()") \
-        .AsROOTTTree('dude.root', 'analysis', 'jetPT') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -26,7 +25,6 @@ def test_Aggregate_not_initial_const_SUM():
 def test_Aggregate_uses_floats_for_float_sum():
     r = dataset_for_testing() \
         .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()/1000).Sum()") \
-        .AsROOTTTree('dude.root', 'analysis', 'jetPT') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -36,7 +34,6 @@ def test_Aggregate_uses_floats_for_float_sum():
 def test_count_after_single_sequence():
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").Select(lambda j: j.pt()).Count()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -51,7 +48,6 @@ def test_count_after_single_sequence():
 def test_count_after_single_sequence_with_filter():
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").Select(lambda j: j.pt()).Where(lambda jpt: jpt>10.0).Count()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -66,7 +62,6 @@ def test_count_after_single_sequence_with_filter():
 def test_count_after_double_sequence():
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").SelectMany(lambda j: e.Tracks("InnerTracks")).Count()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -81,7 +76,6 @@ def test_count_after_double_sequence():
 def test_count_after_single_sequence_of_sequence():
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").Select(lambda j: e.Tracks("InnerTracks")).Count()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -96,7 +90,6 @@ def test_count_after_single_sequence_of_sequence():
 def test_count_after_double_sequence_with_filter():
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").SelectMany(lambda j: e.Tracks("InnerTracks").Where(lambda t: t.pt()>10.0)).Count()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -111,7 +104,6 @@ def test_count_after_double_sequence_with_filter():
 def test_count_after_single_sequence_of_sequence_unwound():
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").Select(lambda j: e.Tracks("InnerTracks")).SelectMany(lambda ts: ts).Count()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -126,7 +118,6 @@ def test_count_after_single_sequence_of_sequence_unwound():
 def test_count_after_single_sequence_of_sequence_with_useless_where():
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").Select(lambda j: e.Tracks("InnerTracks").Where(lambda pt: pt > 10.0)).Count()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -145,26 +136,22 @@ def test_first_can_be_iterable_after_where():
     # The problem was that First() always returned something you weren't allowed to iterate over. Which is not what we want here.
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").Select(lambda j: e.Tracks("InnerTracks").Where(lambda t: t.pt() > 1000.0)).First().Count()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
 
 def test_first_can_be_iterable():
     # Make sure a First() here gets called back correctly and generated.
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").Select(lambda j: e.Tracks("InnerTracks")).First().Count()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
 
 def test_Aggregate_per_jet():
     r = dataset_for_testing() \
         .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()).Count()") \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
 
 def test_Aggregate_per_jet_int():
     r = dataset_for_testing() \
         .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()).Count()") \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
 
     lines = get_lines_of_code(r)
@@ -175,7 +162,6 @@ def test_Aggregate_per_jet_int():
 def test_generate_Max():
     r = dataset_for_testing() \
         .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()).Max()") \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -185,7 +171,6 @@ def test_First_selects_collection_count():
     # Make sure that we have the "First" predicate after if Where's if statement.
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Tracks("InDetTrackParticles")).First().Count()') \
-        .AsPandasDF('TrackCount') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
@@ -195,7 +180,6 @@ def test_First_selects_collection_count():
 def test_sequence_with_where_first():
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Tracks("InDetTrackParticles").Where(lambda t: t.pt() > 1000.0)).First().Count()') \
-        .AsPandasDF('dude') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)

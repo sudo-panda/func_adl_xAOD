@@ -6,13 +6,11 @@ from func_adl import EventDataset
 def test_first_jet_in_event():
     dataset_for_testing() \
         .Select('lambda e: e.Jets("bogus").Select(lambda j: j.pt()).First()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
 
 def test_first_after_selectmany():
     dataset_for_testing() \
         .Select('lambda e: e.Jets("jets").SelectMany(lambda j: e.Tracks("InnerTracks")).First()') \
-        .AsROOTTTree('dude.root', 'analysis', 'JetPt') \
         .value()
 
 def test_first_after_where():
@@ -21,7 +19,6 @@ def test_first_after_where():
     # in a select.
     dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Where(lambda j: j.pt() > 10).First().pt()') \
-        .AsPandasDF('FirstJetPt') \
         .value()
 
 def test_first_object_in_each_event():
@@ -30,14 +27,15 @@ def test_first_object_in_each_event():
     # in a select.
     dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").First().pt()/1000.0') \
-        .AsPandasDF('FirstJetPt') \
         .value()
 
 def test_First_Of_Select_is_not_array():
     # The following statement should be a straight sequence, not an array.
     r = dataset_for_testing() \
-        .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0).Where(lambda jpt: jpt > 10.0).First()') \
-        .AsPandasDF('FirstJetPt') \
+        .Select(lambda e: 
+            {
+                'FirstJetPt': e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0).Where(lambda jpt: jpt > 10.0).First()
+            }) \
         .value()
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
@@ -58,7 +56,6 @@ def test_First_Of_Select_After_Where_is_in_right_place():
     # Make sure that we have the "First" predicate after if Where's if statement.
     r = dataset_for_testing() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0).Where(lambda jpt: jpt > 10.0).First()') \
-        .AsPandasDF('FirstJetPt') \
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)

@@ -25,7 +25,7 @@ What follows are the parts of the language that are covered:
 
 - Function calls, method calls, and lambda calls (and lambda functions), with some limitations.
 - Integer indexing into arrays
-- Limited tuple support as a means of collecting information together, or as an output to a ROOT file or pandas `DataFrame` or `awkward` array.
+- Limited tuple support as a means of collecting information together, or as an output to a ROOT file.
 - Limited list support (in same way as above). In particular, the `append` method is not supported as that modifies the list, rather than creating a new one.
 - Unary, Binary, and comparison operations. Only 2 argument comparisons are supported (e.g. `a > b` and not `a > b > c`).
 - Using `and` and `or` to combine conditional expressions. Note that this is written as `&` and `|` when writing an expression due to the fact `python` demands a `bool` return from `and` and `or` when written in code.
@@ -68,7 +68,7 @@ The `xAOD` code only renders the `func_adl` expression as a ROOT file. The ROOT 
 - If a `Select` sequence of a `tuple` is the last `func_adl` expression, then a file called `xaod_output.root` will be generated, and it will contain a `TTree` called `xaod_tree` with a columns named `col1`, `col2`, etc.
 - If a `Select` sequence of dictionary's is the last `func_adl` expression, then a file called `xaod_output.root` will be generated, and it will contain a `TTree` called `xaod_tree`, with column names taken from the dictionary keys.
 
-`ServiceX` (and the [`servicex` frontend package](https://pypi.org/project/servicex/)) can convert from ROOT to other formats like a `pandas.DataFrame` or an `awkward` array. This package contains a `LocalFile` object which can do something similar, but it is built only for testing.
+`ServiceX` (and the [`servicex` frontend package](https://pypi.org/project/servicex/)) can convert from ROOT to other formats like a `pandas.DataFrame` or an `awkward` array. This package contains a `LocalFile` object which can do something similar, but it is built only for testing, and only for ROOT file output.
 
 ## Testing and Development
 

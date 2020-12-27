@@ -4,7 +4,7 @@ from func_adl_xAOD.xAODlib.util_scope import gc_scope_top_level
 from func_adl_xAOD.xAODlib.ast_to_cpp_translator import query_ast_visitor
 import func_adl_xAOD.cpplib.cpp_representation as crep
 import func_adl_xAOD.cpplib.cpp_types as ctyp
-import func_adl_xAOD.xAODlib.result_handlers as rh
+import func_adl_xAOD.xAODlib.result_ttree as rh
 
 
 def test_binary_plus_return_type_1():

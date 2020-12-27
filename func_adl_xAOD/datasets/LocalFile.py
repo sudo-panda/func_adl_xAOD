@@ -1,5 +1,6 @@
 import ast
 import asyncio
+from func_adl_xAOD.xAODlib.result_ttree import cpp_ttree_rep, extract_result_TTree
 import logging
 import os
 from pathlib import Path
@@ -9,20 +10,11 @@ from typing import Any, Callable, List, Union, Optional
 from func_adl import EventDataset
 
 from func_adl_xAOD.xAODlib.atlas_xaod_executor import atlas_xaod_executor
-import func_adl_xAOD.xAODlib.result_handlers as rh
 
 
 # Use this to turn on dumping of output and C++
 dump_running_log = True
 dump_cpp = False
-
-
-# Result handlers - for each return type representation, add a handler that can process it
-result_handlers = {
-    rh.cpp_ttree_rep: rh.extract_result_TTree,
-    rh.cpp_awkward_rep: rh.extract_awkward_result,
-    rh.cpp_pandas_rep: rh.extract_pandas_result,
-}
 
 
 class AtlasXAODDockerException(Exception):
@@ -102,6 +94,5 @@ class LocalFile(EventDataset):
                 raise Exception(f"Docker command failed with error {proc.returncode} ({docker_cmd})")
 
             # Now that we have run, we can pluck out the result.
-            if type(f_spec.result_rep) not in result_handlers:
-                raise Exception(f'Do not know how to process result of type {type(f_spec.result_rep.__name__)}.')
-            return result_handlers[type(f_spec.result_rep)](f_spec.result_rep, local_run_dir)
+            assert isinstance(f_spec.result_rep, cpp_ttree_rep), 'Unknown return type'
+            return extract_result_TTree(f_spec.result_rep, local_run_dir)

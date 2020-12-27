@@ -11,7 +11,7 @@ import func_adl_xAOD.cpplib.cpp_types as ctyp
 import func_adl_xAOD.cpplib.math_utils  # (needed for math function injection)
 import func_adl_xAOD.xAODlib.EventCollections
 import func_adl_xAOD.xAODlib.Jets  # NOQA
-import func_adl_xAOD.xAODlib.result_handlers as rh
+import func_adl_xAOD.xAODlib.result_ttree as rh
 import func_adl_xAOD.xAODlib.statement as statement
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
@@ -161,10 +161,13 @@ class query_ast_visitor(FuncADLNodeVisitor):
         node - if the node has a rep, just return
 
         '''
-        r = FuncADLNodeVisitor.visit(self, node)
+        if not hasattr(node, 'rep'):
+            FuncADLNodeVisitor.visit(self, node)
+
+        # Lots of nodes never get a representation - like `ast.Name`, so we
+        # need to protect the access here.
         if hasattr(node, 'rep'):
             self._result = node.rep
-        return r
 
     def get_rep(self, node: ast.AST, retain_scope: bool = False) -> Union[crep.cpp_value, crep.cpp_sequence]:
         r'''Return the rep for the node. If it isn't set yet, then run our visit on it.
@@ -203,7 +206,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         This is used to make sure whatever the sequence is, that it returns a RootTTree. Use this
         when the user may not have explicitly requested an output format. For example, if they end
-        with a tuple or a dict request, but not a AsAwkwardArray.
+        with a tuple or a dict request, but not a AsAwkwardArray or similar.
 
         1. If the top level ast node already requests an ROOTTTree, the representation is returned.
         1. If the node is a sequence of `cpp_values`, then a single column tree is created.
@@ -250,7 +253,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
             assert isinstance(result, rh.cpp_ttree_rep)
             return result
         if isinstance(values, crep.cpp_tuple):
-            col_names = ast.List(elts=[ast.parse(f"'col{i}'").body[0].value for i, _ in enumerate(values.values())])
+            col_names = ast.List(elts=[ast.parse(f"'col{i}'").body[0].value for i, _ in enumerate(values.values())])  # type: ignore
             ast_ttree = function_call('ResultTTree',
                                       [node,
                                        col_names,
@@ -259,7 +262,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
             result = self.get_rep(ast_ttree)
             assert isinstance(result, rh.cpp_ttree_rep)
             return result
-        elif isinstance(values, crep.cpp_value):
+        elif isinstance(values, crep.cpp_value) or isinstance(values, crep.cpp_sequence):
             ast_ttree = function_call('ResultTTree',
                                       [node,
                                        ast.parse('"col1"').body[0].value,  # type: ignore
@@ -916,47 +919,6 @@ class query_ast_visitor(FuncADLNodeVisitor):
         self._gc.set_scope(s_orig)
         self._gc.pop_scope()
         return node.rep  # type: ignore
-
-    def call_ResultAwkwardArray(self, node: ast.Call, args: List[ast.AST]):
-        '''
-        The result of this guy is an awkward array. We generate a token here, and invoke the resultTTree in order to get the
-        actual ROOT file written. Later on, when dealing with the result stuff, we extract it into an awkward array.
-        '''
-        assert len(args) == 2
-        source = args[0]
-        column_names = args[1]
-
-        ttree = function_call('ResultTTree', [source, column_names, cast(ast.Expr, ast.parse('"awkwardtree"').body[0]).value, cast(ast.Expr, ast.parse('"output.root"').body[0]).value])
-        r = self.get_rep(ttree)
-        if not isinstance(r, rh.cpp_ttree_rep):
-            raise Exception("Can't deal with different return type from tree!")
-        node.rep = rh.cpp_awkward_rep(r.filename, r.treename, self._gc.current_scope())  # type: ignore
-        self._result = node.rep  # type: ignore
-
-    def call_ResultPandasDF(self, node: ast.Call, args: List[ast.AST]):
-        '''
-        The result of this guy is an pandas dataframe. We generate a token here, and invoke the resultTTree in order to get the
-        actual ROOT file written. Later on, when dealing with the result stuff, we extract it into an awkward array.
-        '''
-        assert len(args) == 2
-        source = args[0]
-        column_names = args[1]
-
-        ttree = function_call('ResultTTree', [source, column_names, ast.parse('"pandatree"').body[0].value, ast.parse('"output.root"').body[0].value])  # type: ignore
-        r = self.get_rep(ttree)
-
-        # Make sure what we are asking for make sense in a pandas world
-        if not isinstance(r, rh.cpp_ttree_rep):
-            raise Exception("Can't deal with different return type from tree!")
-        if hasattr(source, 'rep'):
-            source_rep = source.rep  # type: ignore
-            if isinstance(source_rep, crep.cpp_sequence):
-                if (rep_is_collection(source_rep.sequence_value())):
-                    raise Exception("Unable to render arrays of arrays in a pandas dataframe")
-
-        # Ok - push it out up higher
-        node.rep = rh.cpp_pandas_rep(r.filename, r.treename, self._gc.current_scope())  # type: ignore
-        self._result = node.rep  # type: ignore
 
     def call_Select(self, node: ast.Call, args: List[ast.arg]):
         'Transform the iterable from one form to another'
