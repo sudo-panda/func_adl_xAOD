@@ -129,17 +129,6 @@ class ttree_fill:
         e.add_line('tree("{0}")->Fill();'.format(self._tree_name))
 
 
-class xaod_get_collection:
-    def __init__(self, collection_name, var_name):
-        self._collection_name = collection_name
-        self._var_name = var_name
-
-    def emit(self, e):
-        e.add_line("const xAOD::JetContainer* {0} = 0;".format(self._var_name))
-        e.add_line('ANA_CHECK (evtStore()->retrieve( {0}, "{1}"));'.format(
-            self._var_name, self._collection_name))
-
-
 class set_var:
     'Set a variable to a value'
 

@@ -1,5 +1,7 @@
 # Some very direct white box testing
 import ast
+from tests.xAODlib.utils_for_testing import ast_parse_with_replacement
+from typing import cast
 from func_adl_xAOD.xAODlib.util_scope import gc_scope_top_level
 from func_adl_xAOD.xAODlib.ast_to_cpp_translator import query_ast_visitor
 import func_adl_xAOD.cpplib.cpp_representation as crep
@@ -116,3 +118,15 @@ def test_as_root_as_tuple():
     as_root = q.get_as_ROOT(node)
 
     assert isinstance(as_root, rh.cpp_ttree_rep)
+
+
+def test_subscript():
+    q = query_ast_visitor()
+    our_a = ast.Name(id='a')
+    our_a.rep = crep.cpp_collection('jets', gc_scope_top_level(), ctyp.collection('int'))  # type: ignore
+    node = ast_parse_with_replacement('a[10]', {'a': our_a}).body[0].value  # type: ignore
+    as_root = q.get_rep(node)
+
+    assert isinstance(as_root, crep.cpp_value)
+    assert as_root.cpp_type() == 'int'
+    assert as_root.as_cpp() == 'jets.at(10)'

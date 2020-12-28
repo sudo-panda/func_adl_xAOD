@@ -1,20 +1,38 @@
 import ast
 import asyncio
-from func_adl_xAOD.xAODlib.result_ttree import cpp_ttree_rep, extract_result_TTree
 import logging
 import os
-from pathlib import Path
+import shutil
 import tempfile
-from typing import Any, Callable, List, Union, Optional
+from pathlib import Path
+from typing import Any, Callable, List, Optional, Union
 
 from func_adl import EventDataset
-
 from func_adl_xAOD.xAODlib.atlas_xaod_executor import atlas_xaod_executor
-
+from func_adl_xAOD.xAODlib.result_ttree import cpp_ttree_rep
 
 # Use this to turn on dumping of output and C++
 dump_running_log = True
 dump_cpp = False
+
+
+
+def _extract_result_TTree(rep: cpp_ttree_rep, run_dir):
+    '''Copy the final file into a place that is "safe", and return that as a path.
+
+    The reason for this is that the temp directory we are using is about to be deleted!
+
+    Args:
+        rep (cpp_base_rep): The representation of the final result
+        run_dir ([type]): Directory where it ran
+
+    Raises:
+        Exception: [description]
+    '''
+    current_path = run_dir / rep.filename
+    new_path = Path('.') / rep.filename
+    shutil.copy(current_path, new_path)
+    return new_path
 
 
 class AtlasXAODDockerException(Exception):
@@ -95,4 +113,4 @@ class LocalFile(EventDataset):
 
             # Now that we have run, we can pluck out the result.
             assert isinstance(f_spec.result_rep, cpp_ttree_rep), 'Unknown return type'
-            return extract_result_TTree(f_spec.result_rep, local_run_dir)
+            return _extract_result_TTree(f_spec.result_rep, local_run_dir)

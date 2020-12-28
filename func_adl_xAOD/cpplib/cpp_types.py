@@ -20,14 +20,15 @@ class terminal:
         return self._is_pointer
 
     def default_value(self):
-        if self._type == "double":
-            return "0.0"
-        elif self._type == "float":
-            return "0.0"
-        elif self._type == "int":
-            return "0"
-        else:
-            raise Exception(f"Do not know a default value for the type '{self._type}'.")
+        raise NotImplementedError()
+        # if self._type == "double":
+        #     return "0.0"
+        # elif self._type == "float":
+        #     return "0.0"
+        # elif self._type == "int":
+        #     return "0"
+        # else:
+        #     raise Exception(f"Do not know a default value for the type '{self._type}'.")
 
     @property
     def type(self) -> str:

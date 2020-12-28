@@ -3,7 +3,7 @@
 #
 import ast
 from pathlib import Path
-from typing import Any, List
+from typing import Any, Dict, List
 from func_adl.object_stream import ObjectStream
 
 import pandas as pd
@@ -22,7 +22,7 @@ class dummy_executor:
         self.QueryVisitor = None
         self.ResultRep = None
 
-    def evaluate(self, a: ast.AST, ):
+    def evaluate(self, a: ast.AST):
         rnr = atlas_xaod_executor()
         self.QueryVisitor = query_ast_visitor()
         a_transformed = rnr.apply_ast_transformations(a)
@@ -84,7 +84,6 @@ async def exe_from_qastle(q: str):
 
     # Use the dummy executor to process this, and return it.
     exe = dummy_executor()
-    rnr = atlas_xaod_executor()
     exe.evaluate(a)
     return exe
 
@@ -223,3 +222,27 @@ async def as_pandas_async(o: ObjectStream) -> pd.DataFrame:
         pd.DataFrame: The result
     '''
     return load_root_as_pandas(await o.value_async())
+
+
+def ast_parse_with_replacement(ast_string: str, replacements: Dict[str, ast.AST]) -> ast.AST:
+    '''Returns an ast, where any ast.Name elements are replaced by the ast that is in
+    the dict.
+
+    Args:
+        ast_string (str): The string to parse
+        replacements (Dict[str, ast.AST]): Dict of what to replace
+
+    Returns:
+        (ast.AST): Ast from the parse, with the names replaced.
+    '''
+    a = ast.parse(ast_string)
+
+    class replacer(ast.NodeTransformer):
+        def visit_Name(self, node: ast.Name) -> Any:
+            if node.id in replacements:
+                return replacements[node.id]
+
+            return super().visit_Name(node)
+
+
+    return replacer().visit(a)

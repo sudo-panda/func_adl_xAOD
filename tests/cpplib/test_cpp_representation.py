@@ -1,9 +1,9 @@
-# Test the cpp representations. These objects are quite simple, so there
-# aren't that many tests. Mostly when bugs are found something gets added here.
-
 import func_adl_xAOD.cpplib.cpp_representation as crep
 import func_adl_xAOD.cpplib.cpp_types as ctyp
-from func_adl_xAOD.xAODlib.util_scope import gc_scope_top_level, top_level_scope
+import pytest
+from func_adl_xAOD.xAODlib.util_scope import (gc_scope_top_level,
+                                              top_level_scope)
+
 
 def test_expression_pointer_decl():
     e2 = crep.cpp_value("dude", top_level_scope(), ctyp.terminal("int"))
@@ -11,6 +11,16 @@ def test_expression_pointer_decl():
 
     e3 = crep.cpp_value("dude", top_level_scope(), ctyp.terminal("int", is_pointer=True))
     assert True == e3.is_pointer()
+
+
+def test_cpp_value_as_str():
+    'Make sure we can generate a str from a value - this will be important for errors'
+    v1 = crep.cpp_value('dude', top_level_scope(), ctyp.terminal('int'))
+    assert 'dude' in str(v1)
+
+    v2 = crep.cpp_value('dude', top_level_scope(), None)
+    assert 'dude' in str(v2)
+
 
 def test_variable_type_update():
     tc = gc_scope_top_level()
@@ -21,6 +31,27 @@ def test_variable_type_update():
     v.update_type(ctyp.terminal('float', False))
 
     assert v.cpp_type().type == 'float'
+
+
+def test_variable_pointer():
+    'Make sure is_pointer can deal with a non-type correctly'
+    v1 = crep.cpp_value('dude', top_level_scope(), ctyp.terminal('int'))
+    v2 = crep.cpp_value('dude', top_level_scope(), None)
+
+    assert not v1.is_pointer()
+    with pytest.raises(RuntimeError) as e:
+        v2.is_pointer()
+
+
+def test_variable_pointer():
+    'Make sure is_pointer can deal with a non-type correctly'
+    v1 = crep.cpp_value('dude', top_level_scope(), ctyp.terminal('int'))
+    v2 = crep.cpp_value('dude', top_level_scope(), None)
+
+    assert v1.cpp_type().type == 'int'
+    with pytest.raises(RuntimeError) as e:
+        v2.cpp_type()
+
 
 def test_variable_type__with_initial_update():
     tc = gc_scope_top_level()
