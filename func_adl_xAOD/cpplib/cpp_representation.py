@@ -101,7 +101,7 @@ class cpp_value(cpp_rep_base):
     r'''
     Represents a value. This has a particular value in C++ code that is valid at some C++ scope, or deeper.
     '''
-    def __init__(self, cpp_expression: str, scope: Union[gc_scope, gc_scope_top_level], cpp_type: ctyp.terminal):
+    def __init__(self, cpp_expression: str, scope: Optional[Union[gc_scope, gc_scope_top_level]], cpp_type: Optional[ctyp.terminal]):
         r'''
         Initialize a C++ value
 
@@ -117,11 +117,9 @@ class cpp_value(cpp_rep_base):
     def __str__(self) -> str:
         return f'{str(self._cpp_type)} value (expression {self._expression})'
 
-    def is_pointer(self):
+    def is_pointer(self) -> bool:
         'Return true if this type is a pointer'
-        if self._cpp_type is None:
-            raise Exception(f"Attempt to get the type of a typeless C++ expression '{self._expression}''.")
-        return self._cpp_type.is_pointer()
+        return self.cpp_type().is_pointer()
 
     def as_cpp(self):
         return self._expression
@@ -131,16 +129,18 @@ class cpp_value(cpp_rep_base):
         if self._scope is None:
             self._scope = scope
         else:
-            raise Exception("Internal Error: You can't reset the scope to something new")
+            raise RuntimeError("Internal Error: You can't reset the scope to something new")
 
     def scope(self) -> Union[gc_scope, gc_scope_top_level]:
         'Return the scope at which this variable becomes valid.'
         if self._scope is not None:
             return self._scope
         else:
-            raise Exception("Internal Error: Asking for the undefined scope of a value.")
+            raise RuntimeError("Internal Error: Asking for the undefined scope of a value.")
 
     def cpp_type(self) -> ctyp.terminal:
+        if self._cpp_type is None:
+            raise RuntimeError(f'Internal Error: Variable {self._expression} does not have an assigned type, but needs one.')
         return self._cpp_type
 
     def copy_with_new_scope(self, scope):
@@ -274,7 +274,7 @@ class cpp_sequence(cpp_rep_base):
         return self._type
 
     def as_cpp(self):
-        raise Exception("Do not know how to get the cpp rep of a sequence!")
+        raise RuntimeError("Do not know how to get the cpp rep of a sequence!")
 
     def scope(self) -> Union[gc_scope, gc_scope_top_level]:
         'Return scope where this sequence was created/valid'
