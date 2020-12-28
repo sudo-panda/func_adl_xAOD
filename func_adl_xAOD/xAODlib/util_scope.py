@@ -20,13 +20,10 @@ class gc_scope:
         '''
         Return a new scope, some number "up" from where we are now. This uses standard
         array slicing in python. If you do 0 you'll get back the top level. If you do -1
-        you will get back everything but the last thing. -2 last two thigns, etc.
+        you will get back everything but the last thing. -2 last two things, etc.
         '''
-        if type(key) is not int:
-            raise Exception("Key must be an integer")
-
         if len(self._scope_stack[:key]) == 0:
-            raise Exception("Winding up at the top level scope is not yet supported")
+            raise RuntimeError("Winding up at the top level scope is not yet supported")
 
         return gc_scope(self._scope_stack[:key])
 
@@ -63,7 +60,8 @@ class gc_scope_top_level:
         return True
 
     def __getitem__(self, key: int) -> gc_scope:
-        raise Exception("This should never be called. Internal error")
+        'Calling this would be an internal error'
+        raise NotImplementedError()
 
     def starts_with(self, c):
         'Starts with can only be true for top level if the other guy is top level'
