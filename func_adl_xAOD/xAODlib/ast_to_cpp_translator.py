@@ -100,7 +100,7 @@ def determine_type_mf(parent_type, function_name):
     '''
     # If we don't know the type...
     if parent_type is None:
-        raise Exception("Internal Error: Trying to call member function for a type we do not know!")
+        raise RuntimeError("Internal Error: Trying to call member function for a type we do not know!")
     # If we are doing one of the normal "terminals", then we can just bomb. This should not happen!
 
     rtn_type = ctyp.method_type_info(str(parent_type), function_name)
@@ -350,16 +350,19 @@ class query_ast_visitor(FuncADLNodeVisitor):
             # Next, process the lambda's body.
             call_node.rep = self.get_rep(call_node.func.body)
 
-    def create_accumulator(self, seq: crep.cpp_sequence, initial_value=None, acc_type=None):
+    def _create_accumulator(self, seq: crep.cpp_sequence, acc_type: ctyp.terminal, initial_value=None):
         'Helper to create an accumulator for the Aggregate function'
         accumulator_type = acc_type
-        if accumulator_type is None:
-            sv = seq.sequence_value()
-            if not isinstance(sv, crep.cpp_value):
-                raise Exception("Do not know how to accumulate a sequence!")
-            accumulator_type = sv.cpp_type()
+
+        # When we implement other types of aggregate, this code will need to
+        # be back in.
+        # if accumulator_type is None:
+        #     sv = seq.sequence_value()
+        #     if not isinstance(sv, crep.cpp_value):
+        #         raise Exception("Do not know how to accumulate a sequence!")
+        #     accumulator_type = sv.cpp_type()
         if not check_accumulator_type(accumulator_type):
-            raise Exception("Aggregate over a sequence of type '{0}' is not supported.".format(str(accumulator_type)))
+            raise ValueError(f"Aggregate over a sequence of type '{str(accumulator_type)}' is not supported.")
 
         # Getting the scope level right is tricky. If this is a straight sequence of items, then we want the sequence level.
         # But if this is a sequence of sequences, we are aggregating over the sequence itself. So we need to do it one level
@@ -382,48 +385,50 @@ class query_ast_visitor(FuncADLNodeVisitor):
         - (acc lambda): the accumulator is set to the first element, and the lambda is called to
                         update it after that. This is called `agg_only`.
         '''
-        raise Exception('not converted yet')
-        agg_lambda = node.args[0]
+        raise NotImplementedError()
+        # This is commented out b.c. we've not written detailed testing nor found a real
+        # use yet in code - though it may very well happen! So we'll leave our first guess in here.
+        # agg_lambda = node.args[0]
 
-        # Get the sequence we are calling against and the accumulator
-        if not isinstance(node.func, ast.Attribute):
-            raise Exception("Wrong type of function")
-        seq = self.as_sequence(node.func.value)
-        accumulator, accumulator_scope = self.create_accumulator(seq)
+        # # Get the sequence we are calling against and the accumulator
+        # if not isinstance(node.func, ast.Attribute):
+        #     raise Exception("Wrong type of function")
+        # seq = self.as_sequence(node.func.value)
+        # accumulator, accumulator_scope = self._create_accumulator(seq)
 
-        # We have to do a simple if statement here so that the first time through we can set the
-        # accumulator, and the second time we can add to it.
+        # # We have to do a simple if statement here so that the first time through we can set the
+        # # accumulator, and the second time we can add to it.
 
-        is_first_iter = crep.cpp_variable(unique_name("is_first"), self._gc.current_scope(), cpp_type=ctyp.terminal('bool'), initial_value=crep.cpp_value('true', self._gc.current_scope(), ctyp.terminal('bool')))
-        accumulator_scope.declare_variable(is_first_iter)
+        # is_first_iter = crep.cpp_variable(unique_name("is_first"), self._gc.current_scope(), cpp_type=ctyp.terminal('bool'), initial_value=crep.cpp_value('true', self._gc.current_scope(), ctyp.terminal('bool')))
+        # accumulator_scope.declare_variable(is_first_iter)
 
-        # Set the scope where we will be doing the accumulation
-        sv = seq.sequence_value()
-        if isinstance(sv, crep.cpp_sequence):
-            self._gc.set_scope(sv.iterator_value().scope()[-1])
-        else:
-            self._gc.set_scope(sv.scope())
+        # # Set the scope where we will be doing the accumulation
+        # sv = seq.sequence_value()
+        # if isinstance(sv, crep.cpp_sequence):
+        #     self._gc.set_scope(sv.iterator_value().scope()[-1])
+        # else:
+        #     self._gc.set_scope(sv.scope())
 
-        # Code up if statement to select out the first element.
-        if_first = statement.iftest(is_first_iter)
-        self._gc.add_statement(if_first)
-        self._gc.add_statement(statement.set_var(is_first_iter, crep.cpp_value("false", self._gc.current_scope(), ctyp.terminal('bool'))))
+        # # Code up if statement to select out the first element.
+        # if_first = statement.iftest(is_first_iter)
+        # self._gc.add_statement(if_first)
+        # self._gc.add_statement(statement.set_var(is_first_iter, crep.cpp_value("false", self._gc.current_scope(), ctyp.terminal('bool'))))
 
-        # Set the accumulator
-        self._gc.add_statement(statement.set_var(accumulator, seq.sequence_value()))
-        self._gc.pop_scope()
+        # # Set the accumulator
+        # self._gc.add_statement(statement.set_var(accumulator, seq.sequence_value()))
+        # self._gc.pop_scope()
 
-        # Now do the if statement and make the call to calculate the accumulation.
-        self._gc.add_statement(statement.elsephrase())
-        call = ast.Call(func=agg_lambda, args=[accumulator.as_ast(), seq.sequence_value().as_ast()])
-        self._gc.add_statement(statement.set_var(accumulator, self.get_rep(call)))
+        # # Now do the if statement and make the call to calculate the accumulation.
+        # self._gc.add_statement(statement.elsephrase())
+        # call = ast.Call(func=agg_lambda, args=[accumulator.as_ast(), seq.sequence_value().as_ast()])
+        # self._gc.add_statement(statement.set_var(accumulator, self.get_rep(call)))
 
-        # Finally, since this is a terminal, we need to pop off the top.
-        self._gc.set_scope(accumulator_scope)
+        # # Finally, since this is a terminal, we need to pop off the top.
+        # self._gc.set_scope(accumulator_scope)
 
-        # Cache the results in our result in case we are skipping nodes in the AST.
-        node.rep = accumulator
-        self._result = accumulator
+        # # Cache the results in our result in case we are skipping nodes in the AST.
+        # node.rep = accumulator
+        # self._result = accumulator
 
     def visit_call_Aggregate_initial(self, node: ast.Call, args: List[ast.AST]):
         '''
@@ -437,7 +442,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         # Get the sequence we are calling against and the accumulator
         seq = self.as_sequence(raw_seq)
-        accumulator, accumulator_scope = self.create_accumulator(seq, initial_value=init_val, acc_type=init_val.cpp_type())
+        accumulator, accumulator_scope = self._create_accumulator(seq, initial_value=init_val, acc_type=init_val.cpp_type())
 
         # Now do the accumulation. This happens at the current iterator scope.
         sv = seq.sequence_value()
@@ -469,14 +474,14 @@ class query_ast_visitor(FuncADLNodeVisitor):
                         element in the sequence, and then acc is called to update it after that.
                         This is called `agg_initial_func`
         '''
-        raise Exception("Not yet implemented")
+        raise NotImplementedError()
         # Needs testing!
         # agg_lambda = node.args[1]
         # init_lambda = node.args[0]
 
         # # Get the sequence we are calling against and the accumulator
         # seq = self.as_sequence(node.func.value)
-        # accumulator, accumulator_scope = self.create_accumulator(seq, initial_value=init_val)
+        # accumulator, accumulator_scope = self._create_accumulator(seq, initial_value=init_val)
 
         # is_first_iter = crep.cpp_value(unique_name("is_first"), accumulator_scope, cpp_type=ctyp.terminal("bool"), initial_value='true')
         # accumulator_scope.declare_variable(is_first_iter)

@@ -51,7 +51,7 @@ from func_adl_xAOD.xAODlib.util_scope import gc_scope, gc_scope_top_level
 import func_adl_xAOD.cpplib.cpp_types as ctyp
 import ast
 import copy
-from typing import Union, Optional
+from typing import Union, Optional, cast
 
 
 def dereference_var(v: cpp_value):
@@ -177,7 +177,7 @@ class cpp_collection(cpp_value):
     r'''
     Represents a special kind of value - a collection (vector<float>).
     '''
-    def __init__(self, cpp_expression: str, scope: gc_scope, collection_type):
+    def __init__(self, cpp_expression: str, scope: gc_scope, collection_type: ctyp.collection):
         r'''
         Initialize a C++ value that can be turned into a sequence if requested.
 
@@ -189,8 +189,7 @@ class cpp_collection(cpp_value):
 
     def get_element_type(self):
         'Return the type of the element of the sequence'
-        assert False
-        return self.cpp_type().element_type()
+        return cast(ctyp.collection, self.cpp_type()).element_type()
 
 
 class cpp_tuple(cpp_rep_base):
