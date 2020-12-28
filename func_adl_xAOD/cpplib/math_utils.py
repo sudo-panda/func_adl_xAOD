@@ -11,7 +11,7 @@ def DeltaRAst(call_node):
     '''
 
     if len(call_node.args) != 4:
-        raise Exception("Calling DeltaR(eta1, phi1, eta2, phi2) has incorrect number of arguments")
+        raise ValueError("Calling DeltaR(eta1, phi1, eta2, phi2) has incorrect number of arguments")
 
     # Create an AST to hold onto all of this.
     r = cpp_ast.CPPCodeValue()
@@ -34,7 +34,7 @@ def DeltaRAst(call_node):
 
 def DeltaR(eta1, phi1, eta2, phi2):
     'Calculate the DeltaR between two eta,phi specified vectors'
-    raise Exception('This should never be called')
+    raise NotImplementedError('DeltaR should never be called in python!')
 
 
 # Mark the DeltaR function as one that can be called.
