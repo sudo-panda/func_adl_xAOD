@@ -126,6 +126,7 @@ class cpp_value(cpp_rep_base):
 
     def reset_scope(self, scope: gc_scope):
         'If scope has not been set, then we can set it'
+        # TODO: #116 This feels like a kludge - should we pass around something else and get rid of this?
         if self._scope is None:
             self._scope = scope
         else:
@@ -242,6 +243,8 @@ class cpp_sequence(cpp_rep_base):
 
     A sequence is a stream of values of a particular type. You can think of it like a generator expression,
     or like a vector of some type.
+
+    TODO: #117 Rename this to be a cpp_iterator?
     '''
     def __init__(self, sequence_value: Union[cpp_value, cpp_sequence], iterator_value: cpp_value,
                  scope: Union[gc_scope_top_level, gc_scope]):

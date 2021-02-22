@@ -51,6 +51,7 @@ class collection (terminal):
         return self._element_type
 
     def is_pointer(self):
+        # TODO: #115 remove this method as extra?
         return self._is_pointer
 
 
