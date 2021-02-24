@@ -8,13 +8,17 @@ set -x
 mkdir analysis
 cd analysis
 
-## copy the analyzer to the analysis for folder
-cp -r /scripts/* .
+## Create the ED Analyzer package
+mkedanlzr Analyzer
+cd Analyzer
+
+## Copy the Analyzer files to the Analyzer
+cp /scripts/Analyzer.cc ./src/
+cp /scripts/analyzer_cfg.py .
+cp /scripts/BuildFile.xml .
 
 ## build the HiggsDemoAnalyzer
-cd Analyzer
 scram b
 
 ## run the analysis
 cmsRun analyzer_cfg.py
-
