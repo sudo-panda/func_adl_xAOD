@@ -73,7 +73,29 @@ As different types of things have different capabilities, several objects track 
 - `cpp_dict` - a dictionary as a container of other values. This has no direct C++ analogy/type. It is never emitted directly to C++ code. Rather it is used to track a named list of values during query building.
 - `cpp_sequence` - basically, an iterator that points to some object in a collection. It contains the variable that is the actual iterator as well as a pointer to the parent collection.
 
-### Scope
+### Statements
+
+Statements are very simple - they contain very little intelligence; by the time the code has been reduced to a C++ statement all variable naming and placement, etc., has been performed.
+
+### Scope and Statements
+
+When variables are declared the scope at which they are defined must be tracked. Since variables are intertwined with statements, these two things go hand-in-hand.
+
+Broadly, there are two kinds of statements - simple statements and compound statements. All statements must support the `emit` method, which is how code is emitted to the strings that are placed in the template files.
+
+Simple Statements:
+
+- `arbitrary_statement` - an arbitrary line of code.
+- `set_var` - 
+- `push_back` - 
+- `container_clear` - 
+- `book_ttree` and `ttree_fill` (these are ATLAS specific statements) - 
+
+Block Statements:
+
+- `block` - 
+- `loop` - 
+- `iftest` and `elsephrase` -
 
 ### Function Mapping
 

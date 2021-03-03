@@ -2,6 +2,10 @@
 import func_adl_xAOD.cpplib.cpp_representation as crep
 from typing import Any
 
+# TODO: #119 Move this into the generic C++ code.
+#       This can be done except for the booking and filling of the TTree.
+# TODO: #120 Type the emit method and code with a C++ emitter code.
+
 
 class BlockException (Exception):
     def __init__(self, message):
