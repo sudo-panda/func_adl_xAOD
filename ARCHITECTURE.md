@@ -85,25 +85,64 @@ Broadly, there are two kinds of statements - simple statements and compound stat
 
 Simple Statements:
 
+All statements inherit from an abstract base class: all classes must provide a method to write out the code in a linear order, even though the code isn't always created in that order.
+
 - `arbitrary_statement` - an arbitrary line of code.
-- `set_var` - 
-- `push_back` - 
-- `container_clear` - 
-- `book_ttree` and `ttree_fill` (these are ATLAS specific statements) - 
+- `set_var` - Sets a variable to a particular value (using a boring old `=` sign)
+- `push_back` - Pushes a value onto a `vector`
+- `container_clear` - Clears a declared `vector` by calling `.clear()`.
+- `book_ttree` and `ttree_fill` (these are ATLAS specific statements) - Results are put on a `TTree`. The ATLAS infrastructure is used to store the ROOT `TTree`s (hence the fact that this is ATLAS specific). The variables that are booked are then set via other statement. When the fill is called, it just calls the `Fill` method of `TTree`.
 
 Block Statements:
 
-- `block` - 
-- `loop` - 
-- `iftest` and `elsephrase` -
+A block statement is really just a collection of statements enclosed by brackets, `{` and `}`. It has a variable declaration section along with executable statements. In C++ these are interchangeable, but that level of flexibility isn't needed for this, so isn't modeled. Note that during `func_adl` traversal it is often necessary to declare a new variable at an outer context - so the ability to walk back up nested levels is important (for example, think of the Count predicate - encountered while iterating over jets, and the counter variable must be declared outside that iterating loop).
+
+- `block` - The concrete base class. Automatically scopes all code it is responsible for holding onto. Provides for variable declaration and statement holding services.
+- `loop` - A type of block that is controlled by a for loop over a container (the `for (auto itr: container) {...}` construct).
+- `iftest` and `elsephrase` - Two blocks that are part of an if/else statement.
+
+Scope:
+
+Scope is a way of tracking:
+
+- Where we are currently adding code
+- Where a variable was declared
+- Ability to walk up and down the scope
+- Compare the scoping of a statement and variable to understand if a particular variable is visible at a statement's scope.
+
+For example, implementing the `Count` above, scoping objects provide services so the code can say "Add and initialize this counter variable to zero outside the scope that this jet iterator is declared at".
+
+These services are provided by the `gc_scope` object. It represents a particular `frame` or scope, as well as providing the methods to move up and down and some comparison services. It does this by keeping a private copy of the scope stack: the current scope of the statement/variable and all the scopes above. There is a special kind of scope, called `top_level`, which is represented by a token, and is the global scope at which the whole executor is declared.
+
+During traversal, the main coding object, `generated_code` holds onto the current position that statements are being added. This is a scope object. To add a new statement, the code first finds the current scoping object. It then asks that object to add the statement to the end of its list of statements. For that reason, only a block statement can be pointed to by the scope.
 
 ### Function Mapping
 
+There are many functions in C++ that are the same in python. By far the simplest thing to do is map between the two. The math functions are perfect examples of this (e.g. `sin` and `cos`). A lookup table is maintained that holds onto the python name of a function, the C++ name, its return type, and the include file that it is declared in.
+
+These are declared in the `cpp_functions.py` file.
+
 ## Traversing the `func_adl` AST
 
-### Statements
+The `func_adl` query comes in as a python AST. A standard python `ast.NodeVisitor` traverses the AST and generates the code (called `query_ast_visitor`).
 
-### Accumulating the Generated Code & Scope
+### Accumulating the Generated Code
+
+The object `generated_code` is responsible for holding onto everything needed as the AST is traversed:
+
+- The current block it is being filled with code
+- Track the outer most block (`book_block`) - all code is contained in this block.
+- Any variables that need to be declared at class level (e.g. class instance variables). These are variables that need to be kept around between events.
+- The current scope
+- List of include files that should be added to the code as it is generated.
+
+It can do things like:
+
+- move up and down the scope stack (.e.g pop a level when coming out of a loop)
+- Add top level statements - like a `TTree` booking statement.
+- emit the C++ code via a C++ formatter, booking statements (as they often have to be placed in a different spot in the template), and class variable declarations.
+
+The emitting of code is done by a very simple object that contains a single method, called `add_line`: it takes a string as an argument. A simple version that supplies automatic indenting, etc., can be found in `atlas_xaod_executor`.
 
 ### Event Collections
 

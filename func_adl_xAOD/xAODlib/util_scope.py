@@ -13,7 +13,7 @@ def top_level_scope():
 
 
 class gc_scope:
-    'Internal class to track the scope of a statement.'
+    'Internal class to track the scope of a statement or variable.'
     def __init__(self, scope_stack):
         self._scope_stack = copy.copy(scope_stack)
 
