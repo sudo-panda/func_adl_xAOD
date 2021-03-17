@@ -29,17 +29,22 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-// ****************
-//------ EXTRA HEADER FILES--------------------//
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+// ****************
+// //------ EXTRA HEADER FILES--------------------//
+
+{% for i in include_files %}
+#include "{{i}}"
+{% endfor %}
 
 // for Root tree
 #include "TTree.h"
 
 // for muon information
-#include "DataFormats/MuonReco/interface/Muon.h"
+// #include "DataFormats/MuonReco/interface/Muon.h"
 // ++++++++++++++++
 //
 // class declaration
@@ -64,12 +69,16 @@ private:
    virtual void endLuminosityBlock(edm::LuminosityBlock const &, edm::EventSetup const &);
 
    // ----------member data ---------------------------
+
+   TTree *myTree;
+
    // *******************
-   TTree *t1;
+   // double pt_gmu;
 
-   double pt_gmu;
-
-   int nRun, nEvt, nLumi;
+   // int nRun, nEvt, nLumi;
+   {% for l in class_decl %}
+   {{l}} 
+   {% endfor %}
    // +++++++++++++++++++
 };
 
@@ -89,11 +98,16 @@ Analyzer::Analyzer(const edm::ParameterSet &iConfig)
 {
    //now do what ever initialization is needed
    // *************
-   edm::Service<TFileService> fs;
+   // edm::Service<TFileService> fs;
 
-   // Transverse momentum of Global Muon in a Tree
-   t1 = fs->make<TTree>("treegmu", "treegmu");
-   t1->Branch("pt_gmu", &pt_gmu, "pt_gmu/D");
+   // // Transverse momentum of Global Muon in a Tree
+   // t1 = fs->make<TTree>("treegmu", "My analysis ntuple");
+   // t1->Branch("pt_gmu", &pt_gmu, "pt_gmu/D");
+
+   {% for l in book_code %}
+   {{l}} 
+   {% endfor %}
+
    // +++++++++++++
 }
 
@@ -123,16 +137,20 @@ void Analyzer::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
    iSetup.get<SetupRecord>().get(pSetup);
 #endif
 
-   edm::Handle<reco::TrackCollection> gmuons;
-   iEvent.getByLabel("globalMuons", gmuons);
+   // edm::Handle<reco::TrackCollection> gmuons;
+   // iEvent.getByLabel("globalMuons", gmuons);
 
-   for (unsigned t = 0; t < gmuons->size(); t++)
-   {
-      const reco::Track &iMuon = (*gmuons)[t];
+   // for (unsigned t = 0; t < gmuons->size(); t++)
+   // {
+   //    const reco::Track &iMuon = (*gmuons)[t];
 
-      pt_gmu = iMuon.pt();
-      t1->Fill();
-   }
+   //    pt_gmu = iMuon.pt();
+   //    t1->Fill();
+   // }
+
+   {% for l in query_code %}
+   {{l}} 
+   {% endfor %}
 }
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -171,9 +189,9 @@ void Analyzer::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
    //The following says we do not know what parameters are allowed so do no validation
    // Please change this to state exactly what you do use, even if it is no parameters
    // ************
-   // edm::ParameterSetDescription desc;
-   // desc.setUnknown();
-   // descriptions.addDefault(desc);
+   edm::ParameterSetDescription desc;
+   desc.setUnknown();
+   descriptions.addDefault(desc);
    // ++++++++++++
 }
 
