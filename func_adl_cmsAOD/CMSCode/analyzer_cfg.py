@@ -17,7 +17,7 @@ process.demo = cms.EDAnalyzer('Analyzer'
                               )
 
 process.TFileService = cms.Service("TFileService",
-                                   fileName=cms.string('/results/analysis.root')
+                                   fileName=cms.string('/results/ANALYSIS.root')
                                    )
 
 process.p = cms.Path(process.demo)
