@@ -99,7 +99,7 @@ class atlas_xaod_executor:
         # And return the modified ast
         return a
 
-    def write_cpp_files(self, ast: ast.AST, output_path: Path) -> xAODExecutionInfo:
+    def write_cpp_files(self, a: ast.AST, output_path: Path) -> xAODExecutionInfo:
         r"""
         Given the AST generate the C++ files that need to run. Return them along with
         the input files.
@@ -107,15 +107,15 @@ class atlas_xaod_executor:
 
         # Find the base file dataset and mark it.
         from func_adl import find_EventDataset
-        file = find_EventDataset(ast)
+        file = find_EventDataset(a)
         iterator = crep.cpp_variable("bogus-do-not-use", top_level_scope(), cpp_type=None)
         file.rep = crep.cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
         # Visit the AST to generate the code structure and find out what the
         # result is going to be.
         qv = query_ast_visitor()
-        result_rep = qv.get_rep(ast) if _is_format_request(ast) \
-            else qv.get_as_ROOT(ast)
+        result_rep = qv.get_rep(a) if _is_format_request(a) \
+            else qv.get_as_ROOT(a)
 
         # Emit the C++ code into our dictionaries to be used in template generation below.
         query_code = _cpp_source_emitter()
