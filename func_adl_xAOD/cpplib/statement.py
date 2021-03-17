@@ -1,5 +1,6 @@
 # Statements
 import func_adl_xAOD.cpplib.cpp_representation as crep
+from abc import ABC, abstractmethod  # For declaring abstract base class
 from typing import Any
 
 
@@ -9,7 +10,7 @@ class BlockException (Exception):
 
 
 class block:
-    'This is a bock of statements surrounded by a scoping (like open close bracket, for loop, etc.)'
+    'This is a block of statements surrounded by a scoping (like open close bracket, for loop, etc.)'
 
     def __init__(self):
         self._statements = []
@@ -65,7 +66,9 @@ class block:
 class loop(block):
     'A for loop'
 
-    def __init__(self, loop_var_rep: crep.cpp_value, collection_rep: crep.cpp_collection):
+    def __init__(self, loop_var_rep: crep.cpp_value,
+                 collection_rep: crep.cpp_collection,
+                 is_loop_var_pntr=False, is_loop_var_ref=False):
         '''
         Create a new implicit for loop statement. A new var is created, and the scope is set to
         be the one down from here.
@@ -73,16 +76,21 @@ class loop(block):
         block.__init__(self)
         self._collection = collection_rep
         self._loop_variable = loop_var_rep
+        self._is_loop_var_pointer = is_loop_var_pntr
+        self._is_loop_var_reference = is_loop_var_ref
 
     def emit(self, e):
         'Emit a for loop enclosed by a block of code'
-        e.add_line("for (auto {0} : {1})".format(
+        e.add_line("for (auto {0}{1} : {2})".format(
+            '*' if self._is_loop_var_pointer
+            else ('&' if self._is_loop_var_reference else ''),
             self._loop_variable.as_cpp(), self._collection.as_cpp()))
         block.emit(self, e)
 
 
 class iftest(block):
     'An if statement'
+
     def __init__(self, if_expr):
         block.__init__(self)
         self._expr = if_expr
@@ -94,6 +102,7 @@ class iftest(block):
 
 class elsephrase(block):
     'An else statement. Must come after you pop and if statement off'
+
     def __init__(self):
         block.__init__(self)
 
@@ -103,30 +112,30 @@ class elsephrase(block):
         block.emit(self, e)
 
 
-class book_ttree:
+# By Inheriting from ABC we declare it as an Abstract Base Class
+class book_ttree(ABC):
     'Book a TTree for writing out. Meant to be in the Book method'
 
     def __init__(self, tree_name, leaves):
         self._tree_name = tree_name
         self._leaves = leaves
 
+    @abstractmethod
     def emit(self, e):
-        'Emit the book statement for a tree'
-        e.add_line('ANA_CHECK (book (TTree ("{0}", "My analysis ntuple")));'.format(
-            self._tree_name))
-        e.add_line('auto myTree = tree ("{0}");'.format(self._tree_name))
-        for var_pair in self._leaves:
-            e.add_line('myTree->Branch("{0}", &{1});'.format(var_pair[0], var_pair[1].as_cpp()))
+        # It is marked as an abstract method and will have to be
+        # implemented before being used
+        pass
 
 
-class ttree_fill:
+class ttree_fill(ABC):
     'Fill a TTree'
 
     def __init__(self, tree_name):
         self._tree_name = tree_name
 
+    @abstractmethod
     def emit(self, e):
-        e.add_line('tree("{0}")->Fill();'.format(self._tree_name))
+        pass
 
 
 class set_var:
@@ -172,6 +181,7 @@ class container_clear:
 
 class arbitrary_statement:
     'An arbitrary line of C++ code. Avoid if possible, as it makes analysis impossible'
+
     def __init__(self, line):
         self._line = line
 

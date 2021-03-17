@@ -12,7 +12,7 @@ import func_adl_xAOD.cpplib.math_utils  # (needed for math function injection)
 import func_adl_xAOD.xAODlib.EventCollections
 import func_adl_xAOD.xAODlib.Jets  # NOQA
 import func_adl_xAOD.xAODlib.result_ttree as rh
-import func_adl_xAOD.xAODlib.statement as statement
+import func_adl_xAOD.cpplib.statement as statement
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
 from func_adl.util_ast import lambda_unwrap
@@ -124,6 +124,31 @@ def _extract_column_names(names_ast: ast.AST) -> List[str]:
     if isinstance(names, str):
         return [names]
     return names
+
+
+class book_xaod_ttree(statement.book_ttree):
+    'Book an ATLAS TTree for writing out. Meant to be in the Book method'
+
+    def __init__(self, tree_name, leaves):
+        super().__init__(tree_name, leaves)
+
+    def emit(self, e):
+        'Emit the book statement for a tree'
+        e.add_line('ANA_CHECK (book (TTree ("{0}", "My analysis ntuple")));'.format(
+            self._tree_name))
+        e.add_line('auto myTree = tree ("{0}");'.format(self._tree_name))
+        for var_pair in self._leaves:
+            e.add_line('myTree->Branch("{0}", &{1});'.format(var_pair[0], var_pair[1].as_cpp()))
+
+
+class xaod_ttree_fill(statement.ttree_fill):
+    'Fill a ATLAS TTree'
+
+    def __init__(self, tree_name):
+        super().__init__(tree_name)
+
+    def emit(self, e):
+        e.add_line('tree("{0}")->Fill();'.format(self._tree_name))
 
 
 class query_ast_visitor(FuncADLNodeVisitor):
@@ -895,7 +920,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
             self._gc.declare_class_variable(cv[1])
 
         # Next, emit the booking code
-        self._gc.add_book_statement(statement.book_ttree(tree_name, var_names))
+        self._gc.add_book_statement(book_xaod_ttree(tree_name, var_names))
 
         # Note that the output file and tree are what we are going to return.
         # The output filename is fixed - the hose code in AnalysisBase has that hard coded.
@@ -915,7 +940,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # - If a sequence, you want it where the sequence iterator is defined - or outside that scope
         # - If a value, you want it at the level where the value is set.
         self._gc.set_scope(scope_fill)
-        self._gc.add_statement(statement.ttree_fill(tree_name))
+        self._gc.add_statement(xaod_ttree_fill(tree_name))
         for e in zip(seq_values.values(), var_names):
             if rep_is_collection(e[0]):
                 self._gc.add_statement(statement.container_clear(e[1][1]))

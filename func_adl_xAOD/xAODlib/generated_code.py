@@ -1,5 +1,5 @@
 # Hold onto the generated code
-from func_adl_xAOD.xAODlib.statement import block
+from func_adl_xAOD.cpplib.statement import block
 from func_adl_xAOD.xAODlib.util_scope import gc_scope, gc_scope_top_level
 from typing import Union
 

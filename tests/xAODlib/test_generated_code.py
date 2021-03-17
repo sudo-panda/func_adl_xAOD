@@ -1,6 +1,6 @@
 # Test the generated code object
 from func_adl_xAOD.xAODlib.generated_code import generated_code
-import func_adl_xAOD.xAODlib.statement as statement
+import func_adl_xAOD.cpplib.statement as statement
 
 class dummy_emitter:
     def __init__ (self):

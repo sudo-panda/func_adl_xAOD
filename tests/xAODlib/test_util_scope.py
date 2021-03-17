@@ -2,7 +2,7 @@
 
 
 from func_adl_xAOD.xAODlib.generated_code import generated_code
-import func_adl_xAOD.xAODlib.statement as statement
+import func_adl_xAOD.cpplib.statement as statement
 import func_adl_xAOD.cpplib.cpp_types as ctyp
 import func_adl_xAOD.cpplib.cpp_representation as crep
 from func_adl_xAOD.xAODlib.util_scope import deepest_scope, gc_scope_top_level
