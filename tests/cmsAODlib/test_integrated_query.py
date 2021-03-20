@@ -34,3 +34,30 @@ def test_select_pt_of_global_muons():
     assert training_df.iloc[1]['col1'] == 9.61424481835254
     assert training_df.iloc[-1]['col1'] == 6.501343718188815
 
+def test_select_twice_pt_of_global_muons():
+    training_df = as_pandas(f_single \
+        .SelectMany('lambda e: e.Muons("globalMuons")') \
+        .Select('lambda m: m.pt() * 2'))
+    
+    assert training_df.iloc[0]['col1'] == 5.174425160275886
+    assert training_df.iloc[1]['col1'] == 19.22848963670508
+    assert training_df.iloc[-1]['col1'] == 13.00268743637763
+
+def test_select_eta_of_global_muons():
+    training_df = as_pandas(f_single \
+        .SelectMany('lambda e: e.Muons("globalMuons")') \
+        .Select('lambda m: m.eta()'))
+    
+    assert training_df.iloc[0]['col1'] == 1.8461242323191596
+    assert training_df.iloc[1]['col1'] == 1.3034489505966336
+    assert training_df.iloc[-1]['col1'] == 1.0993582143911786
+
+def test_select_pt_eta_of_global_muons():
+    training_df = as_pandas(f_single \
+        .SelectMany('lambda e: e.Muons("globalMuons")') \
+        .Select('lambda m: m.pt() + m.eta()'))
+    
+    assert training_df.iloc[0]['col1'] == 4.433336812457103
+    assert training_df.iloc[1]['col1'] == 10.917693768949174
+    assert training_df.iloc[-1]['col1'] == 7.6007019325799945
+
