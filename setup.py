@@ -15,12 +15,12 @@ else:
     version = version.split('/')[-1]
 
 # Template files for running on ATLAS.
-xaod_template_files = os.listdir('func_adl_xAOD/R21Code')
+xaod_template_files = os.listdir('func_adl_xAOD/template/altas/r21')
 
 # Finally, the setup.
 setup(name="func_adl_xAOD",
       version=version,
-      packages=['func_adl_xAOD'] + [f'func_adl_xAOD.{f}' for f in ['cpplib', 'xAODlib']],
+      packages=['func_adl_xAOD'] + [f'func_adl_xAOD.{f}' for f in ['common_lib', 'xAOD_lib']],
       scripts=[],
       description="Functional Analysis Description Language backend for accessing ATLAS xAOD files.",
       long_description=long_description,
@@ -69,7 +69,7 @@ setup(name="func_adl_xAOD",
           "Topic :: Utilities",
       ],
       package_data={
-          'func_adl_xAOD': ['R21Code/*'],
+          'func_adl_xAOD': ['template/atlas/r21/*'],
       },
       platforms="Any",
       )

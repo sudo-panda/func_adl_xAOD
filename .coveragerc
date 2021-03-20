@@ -1,6 +1,6 @@
 [run]
 branch = True
-omit = func_adl_xAOD/R21Code/ATestRun_eljob.py
+omit = func_adl_xAOD/template/
 
 [report]
 exclude_lines =
