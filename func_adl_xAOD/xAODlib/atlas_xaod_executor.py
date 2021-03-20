@@ -16,7 +16,7 @@ from func_adl_xAOD.cpplib.cpp_functions import find_known_functions
 import func_adl_xAOD.cpplib.cpp_representation as crep
 
 from .ast_to_cpp_translator import query_ast_visitor
-from .util_scope import top_level_scope
+from func_adl_xAOD.xAODlib.util_scope import top_level_scope
 
 xAODExecutionInfo = namedtuple('xAODExecutionInfo', 'result_rep output_path main_script all_filenames')
 

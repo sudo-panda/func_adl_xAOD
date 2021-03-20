@@ -23,7 +23,7 @@ from func_adl_xAOD.xAODlib.util_scope import (deepest_scope, gc_scope,
                                               gc_scope_top_level,
                                               top_level_scope)
 
-from .utils import most_accurate_type
+from func_adl_xAOD.xAODlib.utils import most_accurate_type
 
 # Convert between Python comparisons and C++.
 compare_operations = {
