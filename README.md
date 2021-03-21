@@ -64,9 +64,9 @@ Template functions don't make sense yet in python.
 The `xAOD` code only renders the `func_adl` expression as a ROOT file. The ROOT file contains a simple `TTree` in its root directory.
 
 - If `AsROOTTTree` is the top level `func_adl` node, then the tree name and file name are taken from that expression. Only a sequence of python `tuples` or a single item can be understood by `AsROOTTTree`.
-- If a `Select` sequence of `int` or `double` is the last `func_adl` expression, then a file called `xaod_output.root` will be generated, and it will contain a `TTree` called `xaod_tree` with a single column, called `col1`.
-- If a `Select` sequence of a `tuple` is the last `func_adl` expression, then a file called `xaod_output.root` will be generated, and it will contain a `TTree` called `xaod_tree` with a columns named `col1`, `col2`, etc.
-- If a `Select` sequence of dictionary's is the last `func_adl` expression, then a file called `xaod_output.root` will be generated, and it will contain a `TTree` called `xaod_tree`, with column names taken from the dictionary keys.
+- If a `Select` sequence of `int` or `double` is the last `func_adl` expression, then a file called `xaod_output.root` will be generated, and it will contain a `TTree` called `atlas_xaod_tree` with a single column, called `col1`.
+- If a `Select` sequence of a `tuple` is the last `func_adl` expression, then a file called `xaod_output.root` will be generated, and it will contain a `TTree` called `atlas_xaod_tree` with a columns named `col1`, `col2`, etc.
+- If a `Select` sequence of dictionary's is the last `func_adl` expression, then a file called `xaod_output.root` will be generated, and it will contain a `TTree` called `atlas_xaod_tree`, with column names taken from the dictionary keys.
 
 `ServiceX` (and the [`servicex` frontend package](https://pypi.org/project/servicex/)) can convert from ROOT to other formats like a `pandas.DataFrame` or an `awkward` array.
 

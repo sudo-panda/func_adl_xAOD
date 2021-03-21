@@ -3,7 +3,7 @@ from math import sin
 
 from func_adl import EventDataset
 
-from tests.xAOD_lib.utils_for_testing import get_lines_of_code, print_lines, find_line_with, find_open_blocks, dataset_for_testing
+from tests.atlas_xAOD_lib.utils_for_testing import get_lines_of_code, print_lines, find_line_with, find_open_blocks, dataset_for_testing
 
 
 def test_first_jet_in_event():

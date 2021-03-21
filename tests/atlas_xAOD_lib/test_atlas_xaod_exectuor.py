@@ -2,7 +2,7 @@ import ast
 import pytest
 
 from func_adl.event_dataset import EventDataset
-from func_adl_xAOD.xAOD_lib.atlas_xaod_executor import atlas_xaod_executor
+from func_adl_xAOD.atlas_xAOD_lib.atlas_xaod_executor import atlas_xaod_executor
 
 
 def test_ctor():
@@ -31,7 +31,7 @@ def test_xaod_executor(tmp_path):
 
 def test_find_exception():
     'Make sure _find exception is well formed'
-    from func_adl_xAOD.xAOD_lib.atlas_xaod_executor import _find
+    from func_adl_xAOD.common_lib.executor import _find
 
     with pytest.raises(RuntimeError) as e:
         _find('fork-it-over.txt')

@@ -1,6 +1,6 @@
 # Test out various things connected to the Aggregate call.
 # That code is more complex than I'd like it!
-from tests.xAOD_lib.utils_for_testing import *
+from tests.atlas_xAOD_lib.utils_for_testing import *
 
 
 def test_tree_name():

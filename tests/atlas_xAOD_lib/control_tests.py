@@ -8,7 +8,7 @@ from .LocalFile import LocalFile
 run_long_running_tests = pytest.mark.xaod_runner
 
 # The file we can use in our test. It has only 10 events...
-local_path = 'tests/xAOD_lib/jets_10_events.root'
+local_path = 'tests/atlas_xAOD_lib/jets_10_events.root'
 f_location = Path(os.path.abspath(local_path))
 f_single = LocalFile(f_location)
 f_multiple = LocalFile([f_location, f_location])

@@ -4,24 +4,24 @@
 import ast
 import logging
 
+from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Type, Union, cast
 
+from func_adl.util_ast import lambda_unwrap
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
-from func_adl.util_ast import lambda_unwrap
 
-import func_adl_xAOD.common_lib.cpp_ast as cpp_ast
-import func_adl_xAOD.common_lib.cpp_representation as crep
-import func_adl_xAOD.common_lib.cpp_types as ctyp
 import func_adl_xAOD.common_lib.math_utils  # (needed for math function injection)
-import func_adl_xAOD.common_lib.result_ttree as rh
+import func_adl_xAOD.common_lib.cpp_ast as cpp_ast
+import func_adl_xAOD.common_lib.cpp_types as ctyp
 import func_adl_xAOD.common_lib.statement as statement
-import func_adl_xAOD.xAOD_lib.EventCollections
-import func_adl_xAOD.xAOD_lib.Jets  # NOQA
+import func_adl_xAOD.common_lib.result_ttree as rh
+import func_adl_xAOD.common_lib.cpp_representation as crep
+
 
 from func_adl_xAOD.common_lib.utils import most_accurate_type
-from func_adl_xAOD.common_lib.cpp_functions import FunctionAST
 from func_adl_xAOD.common_lib.cpp_vars import unique_name
+from func_adl_xAOD.common_lib.cpp_functions import FunctionAST
 from func_adl_xAOD.common_lib.generated_code import generated_code
 from func_adl_xAOD.common_lib.util_scope import (deepest_scope, gc_scope,
                                                  gc_scope_top_level,
@@ -129,37 +129,12 @@ def _extract_column_names(names_ast: ast.AST) -> List[str]:
     return names
 
 
-class book_xaod_ttree(statement.book_ttree):
-    'Book an ATLAS TTree for writing out. Meant to be in the Book method'
-
-    def __init__(self, tree_name, leaves):
-        super().__init__(tree_name, leaves)
-
-    def emit(self, e):
-        'Emit the book statement for a tree'
-        e.add_line('ANA_CHECK (book (TTree ("{0}", "My analysis ntuple")));'.format(
-            self._tree_name))
-        e.add_line('auto myTree = tree ("{0}");'.format(self._tree_name))
-        for var_pair in self._leaves:
-            e.add_line('myTree->Branch("{0}", &{1});'.format(var_pair[0], var_pair[1].as_cpp()))
-
-
-class xaod_ttree_fill(statement.ttree_fill):
-    'Fill a ATLAS TTree'
-
-    def __init__(self, tree_name):
-        super().__init__(tree_name)
-
-    def emit(self, e):
-        e.add_line('tree("{0}")->Fill();'.format(self._tree_name))
-
-
-class query_ast_visitor(FuncADLNodeVisitor):
+class query_ast_visitor(FuncADLNodeVisitor, ABC):
     r"""
     Drive the conversion to C++ from the top level query
     """
 
-    def __init__(self):
+    def __init__(self, prefix, is_loop_var_a_ref):
         r'''
         Initialize the visitor.
         '''
@@ -167,6 +142,8 @@ class query_ast_visitor(FuncADLNodeVisitor):
         self._gc = generated_code()
         self._arg_stack = argument_stack()
         self._result = None
+        self._prefix = prefix
+        self._is_loop_var_a_ref = is_loop_var_a_ref
 
     def include_files(self):
         return self._gc.include_files()
@@ -229,6 +206,14 @@ class query_ast_visitor(FuncADLNodeVisitor):
 
         return node.rep  # type: ignore
 
+    @abstractmethod
+    def create_ttree_fill_obj(self, tree_name: str) -> statement.ttree_fill:
+        pass
+
+    @abstractmethod
+    def create_book_ttree_obj(self, tree_name: str, leaves: list) -> statement.book_ttree:
+        pass
+
     def get_as_ROOT(self, node: ast.AST) -> rh.cpp_ttree_rep:
         '''For a given node, return a root ttree rep.
 
@@ -275,18 +260,19 @@ class query_ast_visitor(FuncADLNodeVisitor):
             ast_ttree = function_call('ResultTTree',
                                       [ast_dummy_source,
                                        col_names,
-                                       ast.parse('"xaod_tree"').body[0].value,  # type: ignore
-                                       ast.parse('"xaod_output"').body[0].value])  # type: ignore
+                                       ast.parse(f'"{self._prefix}_tree"').body[0].value,  # type: ignore
+                                       ast.parse(f'"{self._prefix}_output"').body[0].value])  # type: ignore
             result = self.get_rep(ast_ttree)
             assert isinstance(result, rh.cpp_ttree_rep)
             return result
+
         if isinstance(values, crep.cpp_tuple):
             col_names = ast.List(elts=[ast.parse(f"'col{i}'").body[0].value for i, _ in enumerate(values.values())])  # type: ignore
             ast_ttree = function_call('ResultTTree',
                                       [node,
                                        col_names,
-                                       ast.parse('"xaod_tree"').body[0].value,  # type: ignore
-                                       ast.parse('"xaod_output"').body[0].value])  # type: ignore
+                                       ast.parse(f'"{self._prefix}_tree"').body[0].value,  # type: ignore
+                                       ast.parse(f'"{self._prefix}_output"').body[0].value])  # type: ignore
             result = self.get_rep(ast_ttree)
             assert isinstance(result, rh.cpp_ttree_rep)
             return result
@@ -294,8 +280,8 @@ class query_ast_visitor(FuncADLNodeVisitor):
             ast_ttree = function_call('ResultTTree',
                                       [node,
                                        ast.parse('"col1"').body[0].value,  # type: ignore
-                                       ast.parse('"xaod_tree"').body[0].value,  # type: ignore
-                                       ast.parse('"xaod_output"').body[0].value])  # type: ignore
+                                       ast.parse(f'"{self._prefix}_tree"').body[0].value,  # type: ignore
+                                       ast.parse(f'"{self._prefix}_output"').body[0].value])  # type: ignore
             result = self.get_rep(ast_ttree)
             assert isinstance(result, rh.cpp_ttree_rep)
             return result
@@ -327,7 +313,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         '''
         element_type = rep.cpp_type().element_type()
         iterator_value = crep.cpp_value(unique_name("i_obj"), None, element_type)  # type: ignore
-        l_statement = statement.loop(iterator_value, crep.dereference_var(rep))  # type: ignore
+        l_statement = statement.loop(iterator_value, crep.dereference_var(rep), is_loop_var_a_ref=self._is_loop_var_a_ref)  # type: ignore
         self._gc.add_statement(l_statement)
         iterator_value.reset_scope(self._gc.current_scope())
 
@@ -923,7 +909,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
             self._gc.declare_class_variable(cv[1])
 
         # Next, emit the booking code
-        self._gc.add_book_statement(book_xaod_ttree(tree_name, var_names))
+        self._gc.add_book_statement(self.create_book_ttree_obj(tree_name, var_names))
 
         # Note that the output file and tree are what we are going to return.
         # The output filename is fixed - the hose code in AnalysisBase has that hard coded.
@@ -943,7 +929,7 @@ class query_ast_visitor(FuncADLNodeVisitor):
         # - If a sequence, you want it where the sequence iterator is defined - or outside that scope
         # - If a value, you want it at the level where the value is set.
         self._gc.set_scope(scope_fill)
-        self._gc.add_statement(xaod_ttree_fill(tree_name))
+        self._gc.add_statement(self.create_ttree_fill_obj(tree_name))
         for e in zip(seq_values.values(), var_names):
             if rep_is_collection(e[0]):
                 self._gc.add_statement(statement.container_clear(e[1][1]))

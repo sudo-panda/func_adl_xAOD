@@ -11,8 +11,8 @@ from testfixtures import LogCapture
 
 from func_adl_xAOD.common_lib.math_utils import DeltaR
 
-from tests.xAOD_lib.control_tests import f_single, run_long_running_tests
-from tests.xAOD_lib.utils_for_testing import as_awkward, as_pandas, as_pandas_async, load_root_as_pandas
+from tests.atlas_xAOD_lib.control_tests import f_single, run_long_running_tests
+from tests.atlas_xAOD_lib.utils_for_testing import as_awkward, as_pandas, as_pandas_async, load_root_as_pandas
 
 # These are *long* tests and so should not normally be run. Each test can take of order 30 seconds or so!!
 pytestmark = run_long_running_tests

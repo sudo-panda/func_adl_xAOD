@@ -17,7 +17,7 @@ public:
 private:
   // Class level variables
 
-  {% for l in class_dec %}
+  {% for l in class_decl %}
   {{l}}
   {% endfor %}
 

@@ -2,25 +2,27 @@
 import ast
 import copy
 
+from abc import ABC, abstractmethod
+
 import func_adl_xAOD.common_lib.cpp_ast as cpp_ast
-import func_adl_xAOD.common_lib.cpp_types as ctyp
 import func_adl_xAOD.common_lib.cpp_representation as crep
+import func_adl_xAOD.common_lib.cpp_types as ctyp
 
 from func_adl_xAOD.common_lib.cpp_vars import unique_name
 
 
 # Need a type for our type system to reason about the containers.
-class event_collection_container:
+class event_collection_container(ABC):
     def __init__(self, type_name, is_pointer=True):
         self._type_name = type_name
         self._is_pointer = is_pointer
 
     def is_pointer(self):
-        'All CMS event collections are pointers'
         return self._is_pointer
 
+    @abstractmethod
     def __str__(self):
-        return "edm::Handle<{0}>".format(self._type_name)
+        pass
 
 
 class event_collection_collection(event_collection_container):
@@ -30,7 +32,7 @@ class event_collection_collection(event_collection_container):
 
     def element_type(self):
         'Return the type of the elements in the collection'
-        return ctyp.terminal(self._element_name, is_pointer=False)
+        return ctyp.terminal(self._element_name, is_pointer=True)
 
     def dereference(self):
         'Return a new version of us that is not a pointer'
@@ -39,27 +41,11 @@ class event_collection_collection(event_collection_container):
         return new_us
 
 
-# all the collections types that are available. This is required because C++
-# is strongly typed, and thus we have to transmit this information.
-collections = [
-    {
-        'function_name': "Tracks",
-        'include_files': ['DataFormats/TrackReco/interface/TrackFwd.h'],
-        'container_type': event_collection_collection('reco::TrackCollection', 'reco::Track')
-    },
-    {
-        'function_name': "Muons",
-        'include_files': ['DataFormats/MuonReco/interface/Muon.h'],
-        'container_type': event_collection_collection('reco::TrackCollection', 'reco::Track')
-    },
-]
-
-
 def getCollection(info, call_node):
     r'''
     Return a cpp ast for accessing the jet collection
     '''
-    # Get the name collection to look at.
+    # Get the name jet collection to look at.
     if len(call_node.args) != 1:
         raise ValueError(f"Calling {info['function_name']} - only one argument is allowed")
     if not isinstance(call_node.args[0], ast.Str):
@@ -70,8 +56,8 @@ def getCollection(info, call_node):
     r.args = ['collection_name', ]
     r.include_files += info['include_files']
 
-    r.running_code += ['{0} result;'.format(info['container_type']),
-                       'iEvent.getByLabel(collection_name, result);']
+    r.running_code += ['{0} result = 0;'.format(info['container_type']),
+                       'ANA_CHECK (evtStore()->retrieve(result, collection_name));']
     r.result = 'result'
 
     is_collection = info['is_collection'] if 'is_collection' in info else True
@@ -90,14 +76,3 @@ def getCollection(info, call_node):
 def create_higher_order_function(info):
     'Creates a higher-order function because python scoping is broken'
     return lambda call_node: getCollection(info, call_node)
-
-
-for info in collections:
-    cpp_ast.method_names[info['function_name']] = create_higher_order_function(info)
-
-
-# Configure some info about the types.
-ctyp.add_method_type_info("xAOD::TruthParticle", "prodVtx", ctyp.terminal('xAODTruth::TruthVertex', is_pointer=True))
-ctyp.add_method_type_info("xAOD::TruthParticle", "decayVtx", ctyp.terminal('xAODTruth::TruthVertex', is_pointer=True))
-ctyp.add_method_type_info("xAOD::TruthParticle", "parent", ctyp.terminal('xAOD::TruthParticle', is_pointer=True))
-ctyp.add_method_type_info("xAOD::TruthParticle", "child", ctyp.terminal('xAOD::TruthParticle', is_pointer=True))

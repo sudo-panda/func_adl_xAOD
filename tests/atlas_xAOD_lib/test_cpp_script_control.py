@@ -13,7 +13,7 @@ from func_adl import EventDataset
 from tempfile import TemporaryDirectory
 from collections import namedtuple
 
-from func_adl_xAOD.xAOD_lib.atlas_xaod_executor import atlas_xaod_executor
+from func_adl_xAOD.atlas_xAOD_lib.atlas_xaod_executor import atlas_xaod_executor
 
 from .control_tests import local_path, run_long_running_tests
 

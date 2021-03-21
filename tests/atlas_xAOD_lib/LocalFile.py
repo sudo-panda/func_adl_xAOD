@@ -10,7 +10,7 @@ from pathlib import Path
 
 from func_adl import EventDataset
 from func_adl_xAOD.common_lib.result_ttree import cpp_ttree_rep
-from func_adl_xAOD.xAOD_lib.atlas_xaod_executor import atlas_xaod_executor
+from func_adl_xAOD.atlas_xAOD_lib.atlas_xaod_executor import atlas_xaod_executor
 
 # Use this to turn on dumping of output and C++
 dump_running_log = True

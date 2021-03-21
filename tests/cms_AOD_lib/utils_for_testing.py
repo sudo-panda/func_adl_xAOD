@@ -14,8 +14,8 @@ from func_adl.object_stream import ObjectStream
 
 from func_adl_xAOD.common_lib.util_scope import top_level_scope
 from func_adl_xAOD.common_lib.cpp_representation import cpp_sequence, cpp_variable
-from func_adl_xAOD.xAOD_lib.ast_to_cpp_translator import query_ast_visitor
-from func_adl_xAOD.xAOD_lib.atlas_xaod_executor import atlas_xaod_executor
+from func_adl_xAOD.common_lib.ast_to_cpp_translator import query_ast_visitor
+from func_adl_xAOD.cms_AOD_lib.cms_aod_executor import cms_aod_executor
 
 
 class dummy_executor:
@@ -177,7 +177,7 @@ def load_root_as_pandas(file: Path) -> pd.DataFrame:
     assert file.exists()
 
     with uproot.open(file) as input:
-        return input['demo/cmsaod_tree'].pandas.df()  # type: ignore
+        return input['demo/cms_aod_tree'].pandas.df()  # type: ignore
 
 
 def load_root_as_awkward(file: Path) -> ak.JaggedArray:
@@ -194,7 +194,7 @@ def load_root_as_awkward(file: Path) -> ak.JaggedArray:
     assert file.exists()
 
     with uproot.open(file) as input:
-        return input['cmsaod_tree'].arrays()  # type: ignore
+        return input['cms_aod_tree'].arrays()  # type: ignore
 
 
 def as_pandas(o: ObjectStream) -> pd.DataFrame:

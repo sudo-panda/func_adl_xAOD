@@ -1,10 +1,10 @@
 import pytest
 
-from tests.xAOD_lib.utils_for_testing import (dataset_for_testing,
-                                              exe_from_qastle,
-                                              find_line_numbers_with,
-                                              find_line_with, find_open_blocks,
-                                              get_lines_of_code, print_lines)
+from tests.atlas_xAOD_lib.utils_for_testing import (dataset_for_testing,
+                                                    exe_from_qastle,
+                                                    find_line_numbers_with,
+                                                    find_line_with, find_open_blocks,
+                                                    get_lines_of_code, print_lines)
 
 
 def test_get_attribute_float():

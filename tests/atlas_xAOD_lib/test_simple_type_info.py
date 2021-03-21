@@ -9,9 +9,9 @@ from func_adl import EventDataset
 
 import func_adl_xAOD.common_lib.cpp_types as ctyp
 
-from func_adl_xAOD.xAOD_lib.ast_to_cpp_translator import xAODTranslationError
+from func_adl_xAOD.common_lib.ast_to_cpp_translator import xAODTranslationError
 
-from tests.xAOD_lib.utils_for_testing import dataset_for_testing
+from tests.atlas_xAOD_lib.utils_for_testing import dataset_for_testing
 
 
 def test_cant_call_double():
