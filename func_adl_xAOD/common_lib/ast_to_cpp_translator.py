@@ -312,6 +312,7 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
         it comes time for a new type, this is where it should go.
         '''
         element_type = rep.cpp_type().element_type()
+        element_type = element_type.get_dereferenced_type() if self._is_loop_var_a_ref else element_type
         iterator_value = crep.cpp_value(unique_name("i_obj"), None, element_type)  # type: ignore
         l_statement = statement.loop(iterator_value, crep.dereference_var(rep), is_loop_var_a_ref=self._is_loop_var_a_ref)  # type: ignore
         self._gc.add_statement(l_statement)

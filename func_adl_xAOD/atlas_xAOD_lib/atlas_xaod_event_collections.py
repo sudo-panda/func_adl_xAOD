@@ -1,15 +1,21 @@
 import func_adl_xAOD.common_lib.cpp_ast as cpp_ast
 import func_adl_xAOD.common_lib.cpp_types as ctyp
 
-from func_adl_xAOD.common_lib.event_collections import event_collection_collection, event_collection_container, create_higher_order_function
+from func_adl_xAOD.common_lib.event_collections import event_collection_collection, event_collection_container, event_collections
 
 
 class atlas_xaod_event_collection_container(event_collection_container):
+    def __init__(self, type_name, is_pointer=True):
+        super().__init__(type_name, is_pointer)
+
     def __str__(self):
         return f"edm::Handle<{self._type_name}>"
 
 
 class atlas_xaod_event_collection_collection(event_collection_collection):
+    def __init__(self, type_name, element_name, is_type_pointer=True, is_element_pointer=True):
+        super().__init__(type_name, element_name, is_type_pointer, is_element_pointer)
+
     def __str__(self):
         return f"const {self._type_name}*"
 
@@ -63,7 +69,7 @@ class atlas_xaod_event_collections(event_collections):
 
 
 func_gen = atlas_xaod_event_collections()
-    for info in atlas_xaod_collections:
+for info in atlas_xaod_collections:
     cpp_ast.method_names[info['function_name']] = func_gen.create_higher_order_function(info)
 
 

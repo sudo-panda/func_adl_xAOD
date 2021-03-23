@@ -35,6 +35,9 @@ class terminal:
     def type(self) -> str:
         return self._type
 
+    def get_dereferenced_type(self):
+        return terminal(self._type, is_pointer=False) if self._is_pointer else self
+
 
 class collection (terminal):
     'Represents a collection/list/vector of the same type'
