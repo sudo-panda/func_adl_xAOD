@@ -41,7 +41,12 @@ class event_collection_collection(event_collection_container):
         return new_us
 
 
-def getCollection(info, call_node):
+class event_collections(ABC):
+    @abstractmethod
+    def get_running_code(self, container_type: event_collection_container) -> list:
+        pass
+
+    def get_collection(self, info, call_node):
     r'''
     Return a cpp ast for accessing the jet collection
     '''
@@ -56,8 +61,7 @@ def getCollection(info, call_node):
     r.args = ['collection_name', ]
     r.include_files += info['include_files']
 
-    r.running_code += ['{0} result = 0;'.format(info['container_type']),
-                       'ANA_CHECK (evtStore()->retrieve(result, collection_name));']
+        r.running_code += self.get_running_code(info['container_type'])
     r.result = 'result'
 
     is_collection = info['is_collection'] if 'is_collection' in info else True
@@ -71,8 +75,7 @@ def getCollection(info, call_node):
 
     return call_node
 
-
 # Config everything.
-def create_higher_order_function(info):
+    def create_higher_order_function(self, info):
     'Creates a higher-order function because python scoping is broken'
-    return lambda call_node: getCollection(info, call_node)
+        return lambda call_node: self.get_collection(info, call_node)

@@ -29,6 +29,12 @@ cms_aod_collections = [
 ]
 
 
-def declare_functions():
+class cms_aod_event_collections(event_collections):
+    def get_running_code(self, container_type: event_collection_container) -> list:
+        return [f'{container_type} result;',
+                'iEvent.getByLabel(collection_name, result);']
+
+
+func_gen = cms_aod_event_collections()
     for info in cms_aod_collections:
-        cpp_ast.method_names[info['function_name']] = create_higher_order_function(info)
+    cpp_ast.method_names[info['function_name']] = func_gen.create_higher_order_function(info)

@@ -56,9 +56,15 @@ atlas_xaod_collections = [
 ]
 
 
-def declare_functions():
+class atlas_xaod_event_collections(event_collections):
+    def get_running_code(self, container_type: event_collection_container) -> list:
+        return [f'{container_type} result = 0;',
+                'ANA_CHECK (evtStore()->retrieve(result, collection_name));']
+
+
+func_gen = atlas_xaod_event_collections()
     for info in atlas_xaod_collections:
-        cpp_ast.method_names[info['function_name']] = create_higher_order_function(info)
+    cpp_ast.method_names[info['function_name']] = func_gen.create_higher_order_function(info)
 
 
 # Configure some info about the types.

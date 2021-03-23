@@ -37,7 +37,6 @@ class atlas_xaod_query_ast_visitor(query_ast_visitor):
     """
 
     def __init__(self):
-        event_collections.declare_functions()
         prefix = 'atlas_xaod'
         is_loop_var_a_ref = False
         super().__init__(prefix, is_loop_var_a_ref)
