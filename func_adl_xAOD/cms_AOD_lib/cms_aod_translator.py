@@ -1,4 +1,4 @@
-import func_adl_xAOD.cms_AOD_lib.cms_aod_event_collections  # NOQA
+import func_adl_xAOD.cms_AOD_lib.cms_aod_event_collections as event_collections  # NOQA
 
 from func_adl_xAOD.common_lib.statement import ttree_fill, book_ttree
 from func_adl_xAOD.common_lib.ast_to_cpp_translator import query_ast_visitor
