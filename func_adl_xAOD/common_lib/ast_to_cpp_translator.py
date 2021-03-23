@@ -11,7 +11,7 @@ from func_adl.util_ast import lambda_unwrap
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
 
-import func_adl_xAOD.common_lib.math_utils  # (needed for math function injection)
+import func_adl_xAOD.common_lib.math_utils  # NOQA
 import func_adl_xAOD.common_lib.cpp_ast as cpp_ast
 import func_adl_xAOD.common_lib.cpp_types as ctyp
 import func_adl_xAOD.common_lib.statement as statement

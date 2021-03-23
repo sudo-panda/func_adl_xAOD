@@ -1,4 +1,3 @@
-# Collected code to get collections from the event object
 import func_adl_xAOD.common_lib.cpp_ast as cpp_ast
 
 from func_adl_xAOD.common_lib.event_collections import event_collection_collection, event_collection_container, create_higher_order_function

@@ -1,4 +1,4 @@
-import func_adl_xAOD.atlas_xAOD_lib.atlas_xaod_event_collections
+import func_adl_xAOD.atlas_xAOD_lib.atlas_xaod_event_collections  # NOQA
 import func_adl_xAOD.atlas_xAOD_lib.Jets  # NOQA
 
 from func_adl_xAOD.common_lib.statement import ttree_fill, book_ttree
