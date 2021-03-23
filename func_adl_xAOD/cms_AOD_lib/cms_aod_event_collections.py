@@ -28,5 +28,7 @@ cms_aod_collections = [
     },
 ]
 
-for info in cms_aod_collections:
-    cpp_ast.method_names[info['function_name']] = create_higher_order_function(info)
+
+def declare_functions():
+    for info in cms_aod_collections:
+        cpp_ast.method_names[info['function_name']] = create_higher_order_function(info)

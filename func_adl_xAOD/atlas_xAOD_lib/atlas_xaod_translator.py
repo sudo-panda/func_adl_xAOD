@@ -1,4 +1,4 @@
-import func_adl_xAOD.atlas_xAOD_lib.atlas_xaod_event_collections  # NOQA
+import func_adl_xAOD.atlas_xAOD_lib.atlas_xaod_event_collections as event_collections  # NOQA
 import func_adl_xAOD.atlas_xAOD_lib.Jets  # NOQA
 
 from func_adl_xAOD.common_lib.statement import ttree_fill, book_ttree
@@ -37,6 +37,7 @@ class atlas_xaod_query_ast_visitor(query_ast_visitor):
     """
 
     def __init__(self):
+        event_collections.declare_functions()
         prefix = 'atlas_xaod'
         is_loop_var_a_ref = False
         super().__init__(prefix, is_loop_var_a_ref)
