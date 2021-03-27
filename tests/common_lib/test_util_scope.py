@@ -1,10 +1,10 @@
 # Test the scope utilities
-import func_adl_xAOD.common_lib.cpp_types as ctyp
-import func_adl_xAOD.common_lib.statement as statement
-import func_adl_xAOD.common_lib.cpp_representation as crep
+import func_adl_xAOD.common.cpp_types as ctyp
+import func_adl_xAOD.common.statement as statement
+import func_adl_xAOD.common.cpp_representation as crep
 
-from func_adl_xAOD.common_lib.util_scope import deepest_scope, gc_scope_top_level
-from func_adl_xAOD.common_lib.generated_code import generated_code
+from func_adl_xAOD.common.util_scope import deepest_scope, gc_scope_top_level
+from func_adl_xAOD.common.generated_code import generated_code
 
 
 def test_deepest_scope_one_greater():

@@ -1,7 +1,7 @@
 # Test the generated code object
-import func_adl_xAOD.common_lib.statement as statement
+import func_adl_xAOD.common.statement as statement
 
-from func_adl_xAOD.common_lib.generated_code import generated_code
+from func_adl_xAOD.common.generated_code import generated_code
 
 
 class dummy_emitter:

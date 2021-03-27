@@ -1,6 +1,6 @@
-import func_adl_xAOD.common_lib.cpp_types as ctyp
+import func_adl_xAOD.common.cpp_types as ctyp
 
-from func_adl_xAOD.common_lib.utils import most_accurate_type
+from func_adl_xAOD.common.utils import most_accurate_type
 
 
 def test_accurate_type_single_int():

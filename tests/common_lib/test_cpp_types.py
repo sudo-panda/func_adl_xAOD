@@ -2,9 +2,9 @@
 # aren't that many tests. Mostly when bugs are found something gets added here.
 import pytest
 
-import func_adl_xAOD.common_lib.cpp_types as ctyp
+import func_adl_xAOD.common.cpp_types as ctyp
 
-from func_adl_xAOD.common_lib.util_scope import top_level_scope
+from func_adl_xAOD.common.util_scope import top_level_scope
 
 
 def test_int_pointer():

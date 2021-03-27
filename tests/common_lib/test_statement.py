@@ -1,5 +1,5 @@
 # Test the statement objects
-from func_adl_xAOD.common_lib.statement import block, BlockException
+from func_adl_xAOD.common.statement import block, BlockException
 # Looking up representations in blocks
 
 

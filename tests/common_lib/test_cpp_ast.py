@@ -1,8 +1,8 @@
 import pytest
 
-from func_adl_xAOD.common_lib.math_utils import DeltaR
+from func_adl_xAOD.common.math_utils import DeltaR
 
-from tests.atlas_xAOD_lib.utils_for_testing import dataset_for_testing
+from tests.atlas.xaod.utils_for_testing import dataset_for_testing
 
 
 def test_deltaR_call():

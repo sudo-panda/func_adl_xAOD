@@ -20,7 +20,7 @@ xaod_template_files = os.listdir('func_adl_xAOD/template/atlas/r21')
 # Finally, the setup.
 setup(name="func_adl_xAOD",
       version=version,
-      packages=['func_adl_xAOD'] + [f'func_adl_xAOD.{f}' for f in ['common_lib', 'atlas_xAOD_lib']],
+      packages=['func_adl_xAOD'] + [f'func_adl_xAOD.{f}' for f in ['common', 'atlas']],
       scripts=[],
       description="Functional Analysis Description Language backend for accessing ATLAS xAOD files.",
       long_description=long_description,
