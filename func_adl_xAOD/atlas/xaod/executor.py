@@ -1,5 +1,5 @@
 from func_adl_xAOD.common.executor import executor
-from func_adl_xAOD.atlas.xaod.translator import atlas_xaod_query_ast_visitor
+from func_adl_xAOD.atlas.xaod.query_ast_visitor import atlas_xaod_query_ast_visitor
 
 
 class atlas_xaod_executor(executor):

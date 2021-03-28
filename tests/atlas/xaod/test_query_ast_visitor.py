@@ -8,7 +8,7 @@ import func_adl_xAOD.common.cpp_types as ctyp
 import func_adl_xAOD.common.result_ttree as rh
 
 from func_adl_xAOD.common.util_scope import gc_scope_top_level
-from func_adl_xAOD.atlas.xaod.translator import atlas_xaod_query_ast_visitor
+from func_adl_xAOD.atlas.xaod.query_ast_visitor import atlas_xaod_query_ast_visitor
 
 from tests.atlas.xaod.utils_for_testing import ast_parse_with_replacement
 

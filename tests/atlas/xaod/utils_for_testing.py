@@ -15,7 +15,7 @@ from func_adl.object_stream import ObjectStream
 from func_adl_xAOD.common.util_scope import top_level_scope
 from func_adl_xAOD.common.cpp_representation import cpp_sequence, cpp_variable
 from func_adl_xAOD.atlas.xaod.executor import atlas_xaod_executor
-from func_adl_xAOD.atlas.xaod.translator import atlas_xaod_query_ast_visitor
+from func_adl_xAOD.atlas.xaod.query_ast_visitor import atlas_xaod_query_ast_visitor
 
 
 class dummy_executor:

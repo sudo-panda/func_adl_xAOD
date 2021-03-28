@@ -1,5 +1,5 @@
 from func_adl_xAOD.common.executor import executor
-from func_adl_xAOD.cms.aod.translator import cms_aod_query_ast_visitor
+from func_adl_xAOD.cms.aod.query_ast_visitor import cms_aod_query_ast_visitor
 
 
 class cms_aod_executor(executor):
