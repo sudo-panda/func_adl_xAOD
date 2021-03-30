@@ -78,8 +78,8 @@ Setting up the development environment:
 
 To run tests:
 
-- `pytest -m "not xaod_runner"` will run the _fast_ tests.
-- `pytest -m "xaod_runner"` will run the slow tests that require docker installed on your command line. `docker` is involved via pythons `os.system` - so it needs to be available to the test runner.
+- `pytest -m "not atlas_xaod_runner and not cms_aod_runner"` will run the _fast_ tests.
+- `pytest -m "atlas_xaod_runner"` and `pytest -m "cms_aod_runner"` will run the slow tests for ATLAS and CMS respectively that require docker installed on your command line. `docker` is involved via pythons `os.system` - so it needs to be available to the test runner.
 - The CI on github is setup to run tests against python `3.7`, `3.8`, and `3.9` (only the non-xaod-runner tests).
 
 Contributing:

@@ -34,7 +34,7 @@ jobs:
         flake8 --exclude=tests/* --ignore=E501
     - name: Test with pytest
       run: |
-        python -m pytest -m "not xaod_runner"
+        python -m pytest -m "not atlas_xaod_runner and not cms_aod_runner"
     - name: Report coverage with Codecov
       if: github.event_name == 'push' && matrix.python-version == 3.7 && matrix.platform == 'ubuntu-latest'
       uses: codecov/codecov-action@v1

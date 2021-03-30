@@ -6,7 +6,7 @@ from pathlib import Path
 from tests.cms.aod.LocalFile import LocalFile
 
 # This mark should be turned off if we want to run long-running tests.
-run_long_running_tests = pytest.mark.xaod_runner
+run_long_running_tests = pytest.mark.cms_aod_runner
 
 # The file we can use in our test. It has only 10 events...
 # local_path = 'tests/atlas/xaod/jets_10_events.root'
