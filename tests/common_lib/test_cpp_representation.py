@@ -9,10 +9,10 @@ from func_adl_xAOD.common.util_scope import (gc_scope_top_level,
 
 def test_expression_pointer_decl():
     e2 = crep.cpp_value("dude", top_level_scope(), ctyp.terminal("int"))
-    assert False == e2.is_pointer()
+    assert not e2.is_pointer()
 
     e3 = crep.cpp_value("dude", top_level_scope(), ctyp.terminal("int", is_pointer=True))
-    assert True == e3.is_pointer()
+    assert e3.is_pointer()
 
 
 def test_cpp_value_as_str():
@@ -41,17 +41,17 @@ def test_variable_pointer():
     v2 = crep.cpp_value('dude', top_level_scope(), None)
 
     assert not v1.is_pointer()
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(RuntimeError):
         v2.is_pointer()
 
 
-def test_variable_pointer():
+def test_variable_pointer_2():
     'Make sure is_pointer can deal with a non-type correctly'
     v1 = crep.cpp_value('dude', top_level_scope(), ctyp.terminal('int'))
     v2 = crep.cpp_value('dude', top_level_scope(), None)
 
     assert v1.cpp_type().type == 'int'
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(RuntimeError):
         v2.cpp_type()
 
 
@@ -78,7 +78,7 @@ def test_sequence_type():
     assert seq.sequence_value().cpp_type().type == 'int'
 
 
-def test_sequence_type():
+def test_sequence_type_2():
     tc = gc_scope_top_level()
     s_value = crep.cpp_value('0.0', tc, ctyp.terminal('int', False))
     i_value = crep.cpp_value('1.0', tc, ctyp.terminal('object', False))

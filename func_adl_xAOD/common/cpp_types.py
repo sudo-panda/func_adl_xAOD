@@ -4,7 +4,7 @@
 class terminal:
     'Represents something we cannot see inside, like float, or int, or bool'
 
-    def __init__(self, t: str, is_pointer=False):
+    def __init__(self, t: str, is_pointer: bool = False):
         '''Create a terminal type - a type that we do not need to see inside
 
         Args:
@@ -54,9 +54,6 @@ class collection (terminal):
 
     def element_type(self):
         return self._element_type
-
-    def is_pointer(self):
-        return self._is_pointer
 
 
 class tuple:

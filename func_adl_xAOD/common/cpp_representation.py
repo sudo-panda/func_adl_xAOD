@@ -134,7 +134,7 @@ class cpp_value(cpp_rep_base):
         if self._scope is None:
             self._scope = scope
         else:
-            raise RuntimeError("Internal Error: You can't reset the scope to something new")
+            raise RuntimeError("Internal Error: Scope is already set - it can't be set to a new value")
 
     def scope(self) -> Union[gc_scope, gc_scope_top_level]:
         'Return the scope at which this variable becomes valid.'
@@ -246,11 +246,12 @@ class cpp_dict(cpp_rep_base):
 
 class cpp_sequence(cpp_rep_base):
     '''
-    Represents a sequence of data. The `sequence_value` points to value of the item in the stream, and
-    `iterator_value` points to the iterator itself we are looping over (appears in the for statement).
+    Represents an iterator over a sequence of data. The `sequence_value` points to value of the item in
+    the stream, and `iterator_value` points to the iterator itself we are looping over (appears in the
+    for statement).
 
     A sequence is a stream of values of a particular type. You can think of it like a generator expression,
-    or like a vector of some type.
+    or like a iterator into a C++ vector of some type.
     '''
 
     def __init__(self, sequence_value: Union[cpp_value, cpp_sequence], iterator_value: cpp_value,

@@ -1,4 +1,4 @@
-import FWCore.ParameterSet.Config as cms
+import FWCore.ParameterSet.Config as cms  # type: ignore
 
 process = cms.Process("Demo")
 

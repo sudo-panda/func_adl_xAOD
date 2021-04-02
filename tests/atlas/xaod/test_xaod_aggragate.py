@@ -1,6 +1,10 @@
 # Test out various things connected to the Aggregate call.
 # That code is more complex than I'd like it!
-from tests.atlas.xaod.utils_for_testing import *
+from tests.atlas.xaod.utils_for_testing import (dataset_for_testing,
+                                                find_line_numbers_with,
+                                                find_line_with,
+                                                find_next_closing_bracket,
+                                                get_lines_of_code, print_lines, find_open_blocks)
 
 
 def test_tree_name():
@@ -41,7 +45,7 @@ def test_count_after_single_sequence():
     lines = get_lines_of_code(r)
     print_lines(lines)
     # Make sure there is just one for loop in here.
-    assert 1 == ["for" in l for l in lines].count(True)
+    assert 1 == ["for" in ln for ln in lines].count(True)
     # Make sure the +1 happens after the for, and before another } bracket.
     num_for = find_line_with("for", lines)
     num_inc = find_line_with("+1", lines[num_for:])
@@ -56,7 +60,7 @@ def test_count_after_single_sequence_with_filter():
     lines = get_lines_of_code(r)
     print_lines(lines)
     # Make sure there is just one for loop in here.
-    assert 1 == ["for" in l for l in lines].count(True)
+    assert 1 == ["for" in ln for ln in lines].count(True)
     # Make sure the +1 happens after the for, and before another } bracket.
     num_for = find_line_with("if", lines)
     num_inc = find_line_with("+1", lines[num_for:])
@@ -71,7 +75,7 @@ def test_count_after_double_sequence():
     lines = get_lines_of_code(r)
     print_lines(lines)
     # Make sure there is just one for loop in here.
-    assert 2 == ["for" in l for l in lines].count(True)
+    assert 2 == ["for" in ln for ln in lines].count(True)
     # Make sure the +1 happens after the for, and before another } bracket.
     num_for = find_line_with("for", lines)
     num_inc = find_line_with("+1", lines[num_for:])
@@ -86,7 +90,7 @@ def test_count_after_single_sequence_of_sequence():
     lines = get_lines_of_code(r)
     print_lines(lines)
     # Make sure there is just one for loop in here.
-    assert 1 == ["for" in l for l in lines].count(True)
+    assert 1 == ["for" in ln for ln in lines].count(True)
     # Make sure the +1 happens after the for, and before another } bracket.
     num_for = find_line_with("for", lines)
     num_inc = find_line_with("+1", lines[num_for:])
@@ -101,7 +105,7 @@ def test_count_after_double_sequence_with_filter():
     lines = get_lines_of_code(r)
     print_lines(lines)
     # Make sure there is just one for loop in here.
-    assert 2 == ["for" in l for l in lines].count(True)
+    assert 2 == ["for" in ln for ln in lines].count(True)
     # Make sure the +1 happens after the for, and before another } bracket.
     num_for = find_line_with("if", lines)
     num_inc = find_line_with("+1", lines[num_for:])
@@ -116,7 +120,7 @@ def test_count_after_single_sequence_of_sequence_unwound():
     lines = get_lines_of_code(r)
     print_lines(lines)
     # Make sure there is just one for loop in here.
-    assert 2 == ["for" in l for l in lines].count(True)
+    assert 2 == ["for" in ln for ln in lines].count(True)
     # Make sure the +1 happens after the for, and before another } bracket.
     num_for = find_line_with("for", lines)
     num_inc = find_line_with("+1", lines[num_for:])
@@ -133,7 +137,7 @@ def test_count_after_single_sequence_of_sequence_with_useless_where():
     # Make sure there is just one for loop in here.
     l_increment = find_line_with('+1', lines)
     block_headers = find_open_blocks(lines[:l_increment])
-    assert 1 == ["for" in l for l in block_headers].count(True)
+    assert 1 == ["for" in ln for ln in block_headers].count(True)
     # Make sure the +1 happens after the for, and before another } bracket.
     num_for = find_line_with("for", lines)
     num_inc = find_line_with("+1", lines[num_for:])
@@ -144,20 +148,20 @@ def test_count_after_single_sequence_of_sequence_with_useless_where():
 def test_first_can_be_iterable_after_where():
     # This was found while trying to generate a tuple for some training, below, simplified.
     # The problem was that First() always returned something you weren't allowed to iterate over. Which is not what we want here.
-    r = dataset_for_testing() \
+    dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").Select(lambda j: e.Tracks("InnerTracks").Where(lambda t: t.pt() > 1000.0)).First().Count()') \
         .value()
 
 
 def test_first_can_be_iterable():
     # Make sure a First() here gets called back correctly and generated.
-    r = dataset_for_testing() \
+    dataset_for_testing() \
         .Select('lambda e: e.Jets("AllMyJets").Select(lambda j: e.Tracks("InnerTracks")).First().Count()') \
         .value()
 
 
 def test_Aggregate_per_jet():
-    r = dataset_for_testing() \
+    dataset_for_testing() \
         .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt()).Count()") \
         .value()
 
@@ -188,8 +192,8 @@ def test_First_selects_collection_count():
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
-    l = find_line_numbers_with("for", lines)
-    assert 2 == len(l)
+    ln = find_line_numbers_with("for", lines)
+    assert 2 == len(ln)
 
 
 def test_sequence_with_where_first():

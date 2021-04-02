@@ -26,8 +26,9 @@ class dummy_executor:
         self.ResultRep = None
 
     def evaluate(self, a: ast.AST):
-        rnr = atlas_xaod_executor()
+        rnr = cms_aod_executor()
         self.QueryVisitor = query_ast_visitor()
+        # TODO: #126 query_ast_visitor needs proper arguments
         a_transformed = rnr.apply_ast_transformations(a)
         self.ResultRep = \
             self.QueryVisitor.get_as_ROOT(a_transformed)
@@ -67,7 +68,6 @@ class dataset_for_testing(EventDataset):
 
         # Use the dummy executor to process this, and return it.
         exe = dummy_executor()
-        rnr = atlas_xaod_executor()
         exe.evaluate(a)
         return exe
 
@@ -95,14 +95,14 @@ class dummy_emitter:
         self.Lines = []
         self._indent_level = 0
 
-    def add_line(self, l):
-        if l == '}':
+    def add_line(self, ln):
+        if ln == '}':
             self._indent_level -= 1
 
         self.Lines += [
-            "{0}{1}".format("  " * self._indent_level, l)]
+            "{0}{1}".format("  " * self._indent_level, ln)]
 
-        if l == '{':
+        if ln == '{':
             self._indent_level += 1
 
     def process(self, func):
@@ -133,8 +133,8 @@ def find_line_numbers_with(text, lines):
 
 
 def print_lines(lines):
-    for l in lines:
-        print(l)
+    for ln in lines:
+        print(ln)
 
 
 def find_next_closing_bracket(lines):
@@ -154,12 +154,12 @@ def find_open_blocks(lines):
     'Search through and record the lines before a {. If a { is closed, then remove that lines'
     stack = []
     last_line_seen = 'xxx-xxx-xxx'
-    for l in lines:
-        if l.strip() == '{':
+    for ln in lines:
+        if ln.strip() == '{':
             stack += [last_line_seen]
-        elif l.strip() == '}':
+        elif ln.strip() == '}':
             stack = stack[:-1]
-        last_line_seen = l
+        last_line_seen = ln
     return stack
 
 

@@ -1,18 +1,15 @@
 # Contains test that will run the full query.
 import os
 import pytest
-import uproot
 import asyncio
 import logging
 
-from pathlib import Path
-from func_adl import EventDataset
 from testfixtures import LogCapture
 
-from func_adl_xAOD.common.math_utils import DeltaR
+from func_adl_xAOD.common.math_utils import DeltaR  # NOQA
 
 from tests.atlas.xaod.control_tests import f_single, run_long_running_tests
-from tests.atlas.xaod.utils_for_testing import as_awkward, as_pandas, as_pandas_async, load_root_as_pandas
+from tests.atlas.xaod.utils_for_testing import as_awkward, as_pandas, as_pandas_async
 
 # These are *long* tests and so should not normally be run. Each test can take of order 30 seconds or so!!
 pytestmark = run_long_running_tests
@@ -53,7 +50,7 @@ def event_loop():
 async def test_two_simultaneous_runs():
     # Test the future return stuff
     f_training_df_1 = as_pandas_async(f_single
-                                      .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Tracks("InDetTrackParticles")).First().Count()'))
+                                      .Select('lambda e: e.Jets("AntiKt4EMTopJets").Select(lambda j: e.Tracks("InDetTrackParticles")).First().Count()'))
     f_training_df_2 = as_pandas_async(f_single
                                       .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Tracks("InDetTrackParticles")).First().Count()'))
     r1, r2 = await asyncio.gather(f_training_df_1, f_training_df_2)
@@ -66,8 +63,8 @@ def test_flatten_array():
     training_df = as_pandas(f_single
                             .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")')
                             .Select('lambda j: j.pt()/1000.0'))
-    assert int(training_df.iloc[0]['col1']) == 257
-    assert int(training_df.iloc[0]['col1']) != int(training_df.iloc[1]['col1'])
+    assert int(training_df.iloc[0]['col1']) == 257  # type: ignore
+    assert int(training_df.iloc[0]['col1']) != int(training_df.iloc[1]['col1'])  # type: ignore
 
 
 def test_simple_dict_output():
@@ -78,8 +75,8 @@ def test_simple_dict_output():
                                 'JetPt': j.pt() / 1000.0
                             }))
     print(training_df)
-    assert int(training_df.iloc[0]['JetPt']) == 257
-    assert int(training_df.iloc[0]['JetPt']) != int(training_df.iloc[1]['JetPt'])
+    assert int(training_df.iloc[0]['JetPt']) == 257  # type: ignore
+    assert int(training_df.iloc[0]['JetPt']) != int(training_df.iloc[1]['JetPt'])  # type: ignore
 
 
 def test_single_column_output():
@@ -88,8 +85,8 @@ def test_single_column_output():
                             .SelectMany(lambda e: e.Jets("AntiKt4EMTopoJets"))
                             .Select(lambda j: j.pt() / 1000.0))
     print(training_df)
-    assert int(training_df.iloc[0]['col1']) == 257
-    assert int(training_df.iloc[0]['col1']) != int(training_df.iloc[1]['col1'])
+    assert int(training_df.iloc[0]['col1']) == 257  # type: ignore
+    assert int(training_df.iloc[0]['col1']) != int(training_df.iloc[1]['col1'])  # type: ignore
 
 
 def test_First_two_outer_loops():
@@ -114,7 +111,7 @@ def test_first_object_in_event():
     # Make sure First puts it if statement in the right place.
     training_df = as_pandas(f_single
                             .Select('lambda e: e.Jets("AntiKt4EMTopoJets").First().pt()/1000.0'))
-    assert int(training_df.iloc[0]['col1']) == 257
+    assert int(training_df.iloc[0]['col1']) == 257  # type: ignore
 
 
 def test_no_reported_statistics():
@@ -130,7 +127,7 @@ def test_first_object_in_event_with_where():
     # Make sure First puts it's if statement in the right place.
     training_df = as_pandas(f_single
                             .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0).Where(lambda jpt: jpt > 10.0).First()'))
-    assert int(training_df.iloc[0]['col1']) == 257
+    assert int(training_df.iloc[0]['col1']) == 257  # type: ignore
     assert len(training_df) == 10
 
 
