@@ -14,7 +14,7 @@ from func_adl.object_stream import ObjectStream
 
 from func_adl_xAOD.common.util_scope import top_level_scope
 from func_adl_xAOD.common.cpp_representation import cpp_sequence, cpp_variable
-from func_adl_xAOD.common.ast_to_cpp_translator import query_ast_visitor
+from func_adl_xAOD.cms.aod.query_ast_visitor import cms_aod_query_ast_visitor
 from func_adl_xAOD.cms.aod.executor import cms_aod_executor
 
 
@@ -27,7 +27,7 @@ class dummy_executor:
 
     def evaluate(self, a: ast.AST):
         rnr = cms_aod_executor()
-        self.QueryVisitor = query_ast_visitor()
+        self.QueryVisitor = cms_aod_query_ast_visitor()
         # TODO: #126 query_ast_visitor needs proper arguments
         a_transformed = rnr.apply_ast_transformations(a)
         self.ResultRep = \
