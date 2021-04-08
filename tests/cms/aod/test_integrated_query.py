@@ -33,9 +33,9 @@ def test_select_pt_of_global_muons():
                             .SelectMany('lambda e: e.Muons("globalMuons")')
                             .Select('lambda m: m.pt()'))
 
-    assert training_df.iloc[0]['col1'] == 2.587212580137943
-    assert training_df.iloc[1]['col1'] == 9.61424481835254
-    assert training_df.iloc[-1]['col1'] == 6.501343718188815
+    assert training_df.iloc[0]['col1'] == 10.523032870843785
+    assert training_df.iloc[1]['col1'] == 3.914596361447311
+    assert training_df.iloc[-1]['col1'] == 29.390803160094887
 
 
 def test_select_twice_pt_of_global_muons():
@@ -43,9 +43,9 @@ def test_select_twice_pt_of_global_muons():
                             .SelectMany('lambda e: e.Muons("globalMuons")')
                             .Select('lambda m: m.pt() * 2'))
 
-    assert training_df.iloc[0]['col1'] == 5.174425160275886
-    assert training_df.iloc[1]['col1'] == 19.22848963670508
-    assert training_df.iloc[-1]['col1'] == 13.00268743637763
+    assert training_df.iloc[0]['col1'] == 21.04606574168757
+    assert training_df.iloc[1]['col1'] == 7.829192722894622
+    assert training_df.iloc[-1]['col1'] == 58.78160632018977
 
 
 def test_select_eta_of_global_muons():
@@ -53,9 +53,9 @@ def test_select_eta_of_global_muons():
                             .SelectMany('lambda e: e.Muons("globalMuons")')
                             .Select('lambda m: m.eta()'))
 
-    assert training_df.iloc[0]['col1'] == 1.8461242323191596
-    assert training_df.iloc[1]['col1'] == 1.3034489505966336
-    assert training_df.iloc[-1]['col1'] == 1.0993582143911786
+    assert training_df.iloc[0]['col1'] == -1.8779354371325043
+    assert training_df.iloc[1]['col1'] == -2.127157548674547
+    assert training_df.iloc[-1]['col1'] == 0.29603168003675756
 
 
 def test_select_pt_eta_of_global_muons():
@@ -63,6 +63,6 @@ def test_select_pt_eta_of_global_muons():
                             .SelectMany('lambda e: e.Muons("globalMuons")')
                             .Select('lambda m: m.pt() + m.eta()'))
 
-    assert training_df.iloc[0]['col1'] == 4.433336812457103
-    assert training_df.iloc[1]['col1'] == 10.917693768949174
-    assert training_df.iloc[-1]['col1'] == 7.6007019325799945
+    assert training_df.iloc[0]['col1'] == 8.645097433711282
+    assert training_df.iloc[1]['col1'] == 1.787438812772764
+    assert training_df.iloc[-1]['col1'] == 29.686834840131645

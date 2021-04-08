@@ -76,19 +76,19 @@ class LocalFile(EventDataset):
             # Until we better figure out how to deal with this, there are some restrictions
             # on file locations.
             datafile_dir: Optional[Path] = None
-            # with open(f'{local_run_dir}/filelist.txt', 'w') as flist_out:
-            #     for u in self._files:
-            #         if not u.exists():
-            #             raise CMSAODDockerException(f'Cannot access (or find) file {u}')
+            with open(f'{local_run_dir}/filelist.txt', 'w') as flist_out:
+                for u in self._files:
+                    if not u.exists():
+                        raise CMSAODDockerException(f'Cannot access (or find) file {u}')
 
-            #         ds_path = u.parent
-            #         datafile = u.name
-            #         flist_out.write(f'/data/{datafile}\n')
-            #         if datafile_dir is None:
-            #             datafile_dir = ds_path
-            #         else:
-            #             if ds_path != datafile_dir:
-            #                 raise Exception(f'Data files must be from the same directory. Have seen {ds_path} and {datafile_dir} so far.')
+                    ds_path = u.parent
+                    datafile = u.name
+                    flist_out.write(f'/data/{datafile}\n')
+                    if datafile_dir is None:
+                        datafile_dir = ds_path
+                    else:
+                        if ds_path != datafile_dir:
+                            raise Exception(f'Data files must be from the same directory. Have seen {ds_path} and {datafile_dir} so far.')
 
             # Build a docker command to run this.
             datafile_mount = "" if datafile_dir is None else f'-v {datafile_dir}:/data'
