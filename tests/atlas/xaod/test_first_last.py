@@ -3,17 +3,16 @@ from math import sin
 
 from func_adl import EventDataset
 
-from tests.atlas.xaod.utils_for_testing import get_lines_of_code, print_lines, find_line_with, find_open_blocks, dataset_for_testing
-
+from tests.atlas.xaod.utils import get_lines_of_code, print_lines, atlas_xaod_dataset, find_line_with, find_open_blocks
 
 def test_first_jet_in_event():
-    dataset_for_testing() \
+    atlas_xaod_dataset() \
         .Select('lambda e: e.Jets("bogus").Select(lambda j: j.pt()).First()') \
         .value()
 
 
 def test_first_after_selectmany():
-    dataset_for_testing() \
+    atlas_xaod_dataset() \
         .Select('lambda e: e.Jets("jets").SelectMany(lambda j: e.Tracks("InnerTracks")).First()') \
         .value()
 
@@ -22,7 +21,7 @@ def test_first_after_where():
     # Part of testing that First puts its outer settings in the right place.
     # This also tests First on a collection of objects that hasn't been pulled a part
     # in a select.
-    dataset_for_testing() \
+    atlas_xaod_dataset() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Where(lambda j: j.pt() > 10).First().pt()') \
         .value()
 
@@ -31,14 +30,14 @@ def test_first_object_in_each_event():
     # Part of testing that First puts its outer settings in the right place.
     # This also tests First on a collection of objects that hasn't been pulled a part
     # in a select.
-    dataset_for_testing() \
+    atlas_xaod_dataset() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").First().pt()/1000.0') \
         .value()
 
 
 def test_First_Of_Select_is_not_array():
     # The following statement should be a straight sequence, not an array.
-    r = dataset_for_testing() \
+    r = atlas_xaod_dataset() \
         .Select(lambda e:
                 {
                     'FirstJetPt': e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt() / 1000.0).Where(lambda jpt: jpt > 10.0).First()
@@ -61,7 +60,7 @@ def test_First_Of_Select_is_not_array():
 
 def test_First_Of_Select_After_Where_is_in_right_place():
     # Make sure that we have the "First" predicate after if Where's if statement.
-    r = dataset_for_testing() \
+    r = atlas_xaod_dataset() \
         .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.pt()/1000.0).Where(lambda jpt: jpt > 10.0).First()') \
         .value()
     lines = get_lines_of_code(r)

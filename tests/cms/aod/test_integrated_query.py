@@ -12,8 +12,8 @@ from testfixtures import LogCapture
 from func_adl import EventDataset
 from func_adl_xAOD.common.math_utils import DeltaR
 
-from tests.cms.aod.control_tests import f_single, run_long_running_tests
-from tests.cms.aod.utils_for_testing import as_awkward, as_pandas, as_pandas_async, load_root_as_pandas
+from tests.cms.aod.config import f_single, run_long_running_tests
+from tests.cms.aod.utils import as_awkward, as_pandas, as_pandas_async, load_root_as_pandas
 
 pytestmark = run_long_running_tests
 

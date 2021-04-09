@@ -15,7 +15,7 @@ from collections import namedtuple
 
 from func_adl_xAOD.atlas.xaod.executor import atlas_xaod_executor
 
-from .control_tests import local_path, run_long_running_tests
+from .config import local_path, run_long_running_tests
 
 pytestmark = run_long_running_tests
 

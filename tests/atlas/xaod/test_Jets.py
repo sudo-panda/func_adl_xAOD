@@ -1,15 +1,16 @@
 import pytest
 
-from tests.atlas.xaod.utils_for_testing import (dataset_for_testing,
-                                                exe_from_qastle,
-                                                find_line_numbers_with,
-                                                find_line_with, find_open_blocks,
-                                                get_lines_of_code, print_lines)
-
+from tests.atlas.xaod.utils import (atlas_xaod_dataset,
+                                    exe_from_qastle,
+                                    get_lines_of_code,
+                                    print_lines,
+                                    find_line_numbers_with,
+                                    find_line_with, 
+                                    find_open_blocks)
 
 def test_get_attribute_float():
     # The following statement should be a straight sequence, not an array.
-    r = dataset_for_testing() \
+    r = atlas_xaod_dataset() \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.getAttributeFloat("emf"))') \
         .value()
     # Check to see if there mention of push_back anywhere.
@@ -21,7 +22,7 @@ def test_get_attribute_float():
 
 def test_get_attribute_float_wrong_args():
     with pytest.raises(Exception) as e:
-        dataset_for_testing() \
+        atlas_xaod_dataset() \
             .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.getAttributeFloat())') \
             .value()
 
@@ -30,7 +31,7 @@ def test_get_attribute_float_wrong_args():
 
 def test_get_attribute_float_wrong_arg_type():
     with pytest.raises(Exception) as e:
-        dataset_for_testing() \
+        atlas_xaod_dataset() \
             .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.getAttributeFloat(1))') \
             .value()
 
@@ -39,7 +40,7 @@ def test_get_attribute_float_wrong_arg_type():
 
 def test_get_attribute_vector_float():
     # The following statement should be a straight sequence, not an array.
-    r = dataset_for_testing() \
+    r = atlas_xaod_dataset() \
         .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
         .SelectMany('lambda j: j.getAttributeVectorFloat("emf")') \
         .value()
@@ -52,7 +53,7 @@ def test_get_attribute_vector_float():
 
 def test_get_attribute_vector_float_wrong_args():
     with pytest.raises(Exception) as e:
-        dataset_for_testing() \
+        atlas_xaod_dataset() \
             .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
             .SelectMany('lambda j: j.getAttributeVectorFloat("emf", 22)') \
             .value()
@@ -62,7 +63,7 @@ def test_get_attribute_vector_float_wrong_args():
 
 def test_get_attribute_vector_float_wrong_arg_type():
     with pytest.raises(Exception) as e:
-        dataset_for_testing() \
+        atlas_xaod_dataset() \
             .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets")') \
             .SelectMany('lambda j: j.getAttributeVectorFloat(1)') \
             .value()
@@ -72,7 +73,7 @@ def test_get_attribute_vector_float_wrong_arg_type():
 
 def test_get_attribute():
     with pytest.raises(Exception) as e:
-        dataset_for_testing() \
+        atlas_xaod_dataset() \
             .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: j.getAttribute("emf"))') \
             .value()
 

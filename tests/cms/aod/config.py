@@ -3,7 +3,7 @@ import pytest
 
 from pathlib import Path
 
-from tests.cms.aod.LocalFile import LocalFile
+from tests.cms.aod.utils import CMSAODLocalFile
 
 # This mark should be turned off if we want to run long-running tests.
 run_long_running_tests = pytest.mark.cms_aod_runner
@@ -13,5 +13,5 @@ run_long_running_tests = pytest.mark.cms_aod_runner
 # f_location = Path('root://eospublic.cern.ch//eos/opendata/cms/Run2012C/DoubleMuParked/AOD/22Jan2013-v1/10000/F2878994-766C-E211-8693-E0CB4EA0A939.root')
 local_path = 'tests/cms/aod/sample_cms_opendata_1507_0025907B4F20.root'
 f_location = Path(os.path.abspath(local_path))
-f_single = LocalFile(f_location)
-f_multiple = LocalFile([f_location, f_location])
+f_single = CMSAODLocalFile(f_location)
+f_multiple = CMSAODLocalFile([f_location, f_location])
