@@ -8,8 +8,8 @@ from testfixtures import LogCapture
 
 from func_adl_xAOD.common.math_utils import DeltaR  # NOQA
 
-from tests.atlas.xaod.control_tests import f_single, run_long_running_tests
-from tests.atlas.xaod.utils_for_testing import as_awkward, as_pandas, as_pandas_async
+from tests.atlas.xaod.config import f_single, run_long_running_tests
+from tests.atlas.xaod.utils import as_awkward, as_pandas, as_pandas_async
 
 # These are *long* tests and so should not normally be run. Each test can take of order 30 seconds or so!!
 pytestmark = run_long_running_tests

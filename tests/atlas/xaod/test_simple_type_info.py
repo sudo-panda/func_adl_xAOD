@@ -11,13 +11,13 @@ import func_adl_xAOD.common.cpp_types as ctyp
 
 from func_adl_xAOD.common.ast_to_cpp_translator import xAODTranslationError
 
-from tests.atlas.xaod.utils_for_testing import dataset_for_testing
+from tests.atlas.xaod.utils import atlas_xaod_dataset
 
 
 def test_cant_call_double():
     msg = ""
     try:
-        dataset_for_testing("file://root.root") \
+        atlas_xaod_dataset("file://root.root") \
             .Select("lambda e: e.Jets('AntiKt4EMTopoJets').Select(lambda j: j.pt().eta()).Sum()") \
             .value()
     except xAODTranslationError as e:
@@ -28,6 +28,6 @@ def test_cant_call_double():
 
 def test_can_call_prodVtx():
     ctyp.add_method_type_info("xAOD::TruthParticle", "prodVtx", ctyp.terminal('xAODTruth::TruthVertex', is_pointer=True))
-    dataset_for_testing("file://root.root") \
+    atlas_xaod_dataset("file://root.root") \
         .Select("lambda e: e.TruthParticles('TruthParticles').Select(lambda t: t.prodVtx().x()).Sum()") \
         .value()
