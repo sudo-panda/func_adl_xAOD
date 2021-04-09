@@ -24,13 +24,18 @@ class cms_aod_event_collection_collection(event_collection_collection):
 cms_aod_collections = [
     {
         'function_name': "Tracks",
-        'include_files': ['DataFormats/TrackReco/interface/TrackFwd.h'],
+        'include_files': ['DataFormats/TrackReco/interface/Track.h', 'DataFormats/TrackReco/interface/TrackFwd.h'],
+        'container_type': cms_aod_event_collection_collection('reco::TrackCollection', 'reco::Track')
+    },
+    {
+        'function_name': "TrackMuons",
+        'include_files': ['DataFormats/MuonReco/interface/Muon.h'],
         'container_type': cms_aod_event_collection_collection('reco::TrackCollection', 'reco::Track')
     },
     {
         'function_name': "Muons",
         'include_files': ['DataFormats/MuonReco/interface/Muon.h'],
-        'container_type': cms_aod_event_collection_collection('reco::TrackCollection', 'reco::Track')
+        'container_type': cms_aod_event_collection_collection('reco::MuonCollection', 'reco::Muon')
     },
 ]
 

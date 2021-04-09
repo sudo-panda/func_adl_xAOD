@@ -30,7 +30,7 @@ def turn_on_logging():
 
 def test_select_pt_of_global_muons():
     training_df = as_pandas(f_single
-                            .SelectMany('lambda e: e.Muons("globalMuons")')
+                            .SelectMany('lambda e: e.TrackMuons("globalMuons")')
                             .Select('lambda m: m.pt()'))
 
     assert training_df.iloc[0]['col1'] == 10.523032870843785
@@ -40,7 +40,7 @@ def test_select_pt_of_global_muons():
 
 def test_select_twice_pt_of_global_muons():
     training_df = as_pandas(f_single
-                            .SelectMany('lambda e: e.Muons("globalMuons")')
+                            .SelectMany('lambda e: e.TrackMuons("globalMuons")')
                             .Select('lambda m: m.pt() * 2'))
 
     assert training_df.iloc[0]['col1'] == 21.04606574168757
@@ -50,7 +50,7 @@ def test_select_twice_pt_of_global_muons():
 
 def test_select_eta_of_global_muons():
     training_df = as_pandas(f_single
-                            .SelectMany('lambda e: e.Muons("globalMuons")')
+                            .SelectMany('lambda e: e.TrackMuons("globalMuons")')
                             .Select('lambda m: m.eta()'))
 
     assert training_df.iloc[0]['col1'] == -1.8779354371325043
@@ -60,7 +60,7 @@ def test_select_eta_of_global_muons():
 
 def test_select_pt_eta_of_global_muons():
     training_df = as_pandas(f_single
-                            .SelectMany('lambda e: e.Muons("globalMuons")')
+                            .SelectMany('lambda e: e.TrackMuons("globalMuons")')
                             .Select('lambda m: m.pt() + m.eta()'))
 
     assert training_df.iloc[0]['col1'] == 8.645097433711282
