@@ -50,7 +50,7 @@ def event_loop():
 async def test_two_simultaneous_runs():
     # Test the future return stuff
     f_training_df_1 = as_pandas_async(f_single
-                                      .Select('lambda e: e.Jets("AntiKt4EMTopJets").Select(lambda j: e.Tracks("InDetTrackParticles")).First().Count()'))
+                                      .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Tracks("InDetTrackParticles")).First().Count()'))
     f_training_df_2 = as_pandas_async(f_single
                                       .Select('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: e.Tracks("InDetTrackParticles")).First().Count()'))
     r1, r2 = await asyncio.gather(f_training_df_1, f_training_df_2)
