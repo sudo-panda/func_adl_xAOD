@@ -146,6 +146,6 @@ The emitting of code is done by a very simple object that contains a single meth
 
 ### Event Collections
 
-### Math Utils
+Event collections are `Jets` and `Tracks`, etc. They are accessed via some custom C++ code. `func_adl` then treats them as a sequence. The exact semantics are experiment dependent, and, sometimes, collection dependent, but they are treated the same way in the `func_adl` language.
 
-### Traversing the Code
+The C++ code for the collections is encoded in the files called `event_collections.py` in the ATLAS and CMS sub-directories. They define the names that appear in `func_adl` and the C++ code-behind. In most cases the semantics are the same for all collections, so the code takes advantage of this.
