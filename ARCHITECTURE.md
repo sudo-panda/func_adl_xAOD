@@ -124,7 +124,17 @@ These are declared in the `cpp_functions.py` file.
 
 ## Traversing the `func_adl` AST
 
-The `func_adl` query comes in as a python AST. A standard python `ast.NodeVisitor` traverses the AST and generates the code (called `query_ast_visitor`).
+The `func_adl` query comes in as a python AST. A standard python `ast.NodeVisitor` traverses the AST and generates the code (called `query_ast_visitor`). An attempt is made to turn each python `ast` node into a C++ representation (a `crep`). The code takes advantage of python's object extensibility, and stores this as the nodes representation (`node.rep`). Thus, as the `ast` tree is traversed, if any node has already been processed, it will have a `rep` property and that can be used instead of having to re-processes the code below. An `ast` sub-tree can be repeated if the `dataframe_expressions` package decides it refers to the same thing. This occurs, for example, during lambda capture.
+
+The main `ast` traversal is driven by the code in the `ast_to_cpp_translator.py` file. Other than basic operations (unary, binary, indexing, comparisons, etc.), special predicates are supported here.
+
+- Function calls are quite general. There are ones made against a C++ object, like a `reco::Jet` in CMS, or an `xAOD::Jet` in ATLAS. There are also translated functions (see function mapping above). Even generic C++ code is supported here.
+- The `Aggregate` operation is supported. This is a function call that operates on each element of a sequence with a function and an accumulator, calling the function repeatedly with the last value of the accumulator and a member of the sequence. `Count` is a very simple form of the aggregate pattern. Also, `Sum`, `Min` and `Max`. These are all supported as syntatic sugar by `func_adl`, and the `ast` is rewritten before traversal to use `Aggregate(0, lambda v, a: v + a)` rather than `Sum()` or similar.
+- Special handling is implemented when an `ast` node representing the root dataset is encountered. In many cases, this doesn't exist in C++. For example, both ATLAS and CMS fetch the jets into a local variable, not as members of some `Event` object. While in `func_adl` the jets is just a property of an event object, in C++ the jets container must be explicitly declared and referenced.
+- The python `if` expression is supported (`a = <result_true> if <cond> else <result_false>`). It can't be translated to a C++ `?` operator because `result_true` and `result_false` can be arbitrarily complex - and be expanded to multiple lines of C++. Thus python `if` expressions are expanded to C++ `if` statements.
+- All expressions terminate by being written to a ROOT file in the C++ translator. The node of the `ast` must be a `AsROOT` term, or one will be inserted. Lists and dictionaries are processed sensibly. For example, if you write out a dictionary, then the dictionary keys are used as `TTree` column names.
+- The `Select` and `SelectMany` and `Where` predicates are implemented by unrolling the sequence and applying the function the user has specified. The function is a `lambda`: the arguments are defined in a stack (see scope above), and then processing proceeds. Once the representation is found, it is replaced as the representation for the function call to that `lambda`.
+- The `First` predicate is implemented by running a loop in `C++` and caching the first element (and exiting the loop). This is done because there could be some sophisticated filtering done before the `First` predicate: you don't always get to take the zero'th element of an array. You might be taking the first non-zero element of an array, for example.
 
 ### Accumulating the Generated Code
 
