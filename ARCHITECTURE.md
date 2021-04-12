@@ -8,28 +8,32 @@ After some general information, more details on how things work follow below.
 
 At the most general level:
 
-1. Client starts with a `func_adl` query in a python `ast.AST`.
-1. Client creates a `atlas_xaod_executor` object
+1. Client starts with a `func_adl` query represented as a python `ast.AST`. The query is rendered as a python ast by the `func_adl` library.
+1. Client creates a `atlas_xaod_executor` object (or `cms_aod_executor`)
 1. Client calls `apply_ast_transformation` method with the `ast`. This does `ast` -> `ast` transformations that simplify and combine `ast` elements.
 1. Client calls `write_cpp_files` method with the resulting `ast` from the previous step. The output directory where the C++ files can be written
    need to be given to the method as well.
 1. The C++ files produced are ready to run on the input files.
 
-Though only part of the tests, you can see how the template files are run against a file in the `test/LocalFile.py` file, specifically the `execute_result_async` method. Given a `func_adl` ast, it calls `atlas_xaod_executor` as above, and then uses a `docker` image to run against some test files.
+Though only part of the tests, you can see how the template files are run against a file in the `test/atlas/xaod/LocalFile.py` file, specifically the `execute_result_async` method. Given a `func_adl` ast, it calls `atlas_xaod_executor` as above, and then uses a `docker` image to run against some test files.
 
 The `atlas_xaod_executor` doesn't do much - almost all the work is done inside the `query_ast_visitor` object. This object traverses the `ast` and turns each `ast` into some sort of C++ result (see the `cpplib` folder). As it goes it accumulates the appropriate C++ type definitions, temp variables, and variable declarations - including output ROOT files, etc. See below for a more detailed description of this object.
 
-## File Layout
+## Package Layout
 
-All the source code for the repository is in the `func_adl_xAOD` directory.
+All the source code for the repository is in the `func_adl_xAOD` directory. This includes code for both CMS Run 1 and ATLAS xAOD Release 21 backends.
 
-- cpplib - Code that is generic to the C++ language - a rudimentary type system, objects that represent variables, etc.
-- R21Code - Template C++ code for running against an ATLAS xAOD data file.
-- xAODlib - Code that does the translation from a `func_adl` query to generate the C++ template code.
+- `atlas/xaod` - Contains atlas R21 xAOD unique features for converting `func_adl` to C++.
+- `cms/aod` - Contains cms run 1 unique features for converting `func_adl` to C++.
+- `common` - Contains common code to doing the conversion. About 80% of the code to do the work is located here. The `atlas` and `cms` directories mostly deal with how to access the experiment's event model.
+- `template` - Contains the code 
 
-### R21 Code Layout
+### Template Code
 
-The files in this directory are templates to run against an ATLAS xAOD in an atlas software release docker container. Note that these containers currently contain only Python 2. The upgrade to Python three will come with R22.
+The files in this directory are templates to run against an ATLAS xAOD or CMS Run 1 data file in an docker container built by the experiment. 
+
+#### Atlas
+In the case of atlas, note that these containers contain only Python 2 currently. The upgrade to Python three will come with R22.
 
 - `runner.sh` is the top level file that controls the run, and is the "api" that is used by the ServiceX container when it spins up a container. This script is responsible for:
   - First run, copy over generated C++ files into an ATLAS analysis release directory structure, compile, and then run against the file(s) given on `runner.sh`'s command line.
@@ -39,6 +43,8 @@ The files in this directory are templates to run against an ATLAS xAOD in an atl
 - `query.cxx` and `query.h` are the (mostly empty) template files where the generated query code is inserted.
 
 Note that compile time also defines the time between the query and first data out. Currently it takes about 15 seconds to do the build, and about 15 seconds to run over a single file: it is worth keeping the compile time to a minimum.
+
+#### CMS
 
 ## C++ Model
 
