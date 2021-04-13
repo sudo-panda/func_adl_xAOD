@@ -79,10 +79,11 @@ def _is_format_request(a: ast.AST) -> bool:
 
 
 class executor(ABC):
-    def __init__(self, file_names: list, runner_name: str, template_dir_name: str):
+    def __init__(self, file_names: list, runner_name: str, template_dir_name: str, method_names: dict):
         self._file_names = file_names
         self._runner_name = runner_name
         self._template_dir_name = template_dir_name
+        self._method_names = method_names
 
     def _copy_template_file(self, j2_env, info, template_file, final_dir: Path):
         'Copy a file to a final directory'
@@ -101,7 +102,7 @@ class executor(ABC):
         a = find_known_functions().visit(a)
 
         # Any C++ custom code needs to be threaded into the ast
-        a = cpp_ast.cpp_ast_finder().visit(a)
+        a = cpp_ast.cpp_ast_finder(self._method_names).visit(a)
 
         # And return the modified ast
         return a

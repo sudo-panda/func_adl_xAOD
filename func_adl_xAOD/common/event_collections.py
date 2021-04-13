@@ -9,6 +9,7 @@ import func_adl_xAOD.common.cpp_representation as crep
 import func_adl_xAOD.common.cpp_types as ctyp
 
 from func_adl_xAOD.common.cpp_vars import unique_name
+from func_adl_xAOD.common.math_utils import get_math_methods
 
 
 # Need a type for our type system to reason about the containers.
@@ -42,6 +43,9 @@ class event_collection_collection(event_collection_container):
 
 
 class event_collections(ABC):
+    def __init__(self, collections):
+        self._collections = collections
+
     @abstractmethod
     def get_running_code(self, container_type: event_collection_container) -> list:
         pass
@@ -79,3 +83,10 @@ class event_collections(ABC):
     def create_higher_order_function(self, info):
         'Creates a higher-order function because python scoping is broken'
         return lambda call_node: self.get_collection(info, call_node)
+
+    def get_method_names(self):
+        method_names = {}
+        for info in self._collections:
+            method_names[info['function_name']] = self.create_higher_order_function(info)
+        method_names.update(get_math_methods())
+        return method_names

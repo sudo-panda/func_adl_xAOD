@@ -64,7 +64,9 @@ def getAttribute(call_node: ast.Call):
     raise Exception("Do not call `getAttribute` - instead call `getAttributeFloat` or `getAttributeVectorFloat`.")
 
 
-# Config everything.
-cpp_ast.method_names['getAttribute'] = getAttribute
-cpp_ast.method_names['getAttributeFloat'] = getAttributeFloatAst
-cpp_ast.method_names['getAttributeVectorFloat'] = getAttributeVectorFloatAst
+def get_jet_methods():
+    return {
+        'getAttribute': getAttribute,
+        'getAttributeFloat': getAttributeFloatAst,
+        'getAttributeVectorFloat': getAttributeVectorFloatAst
+    }
