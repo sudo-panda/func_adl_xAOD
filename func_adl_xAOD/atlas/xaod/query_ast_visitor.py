@@ -1,6 +1,3 @@
-import func_adl_xAOD.atlas.xaod.event_collections as event_collections  # NOQA
-import func_adl_xAOD.atlas.xaod.jets  # NOQA
-
 from func_adl_xAOD.common.statement import ttree_fill, book_ttree
 from func_adl_xAOD.common.ast_to_cpp_translator import query_ast_visitor
 

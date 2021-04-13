@@ -62,11 +62,13 @@ class cpp_ast_finder(ast.NodeTransformer):
     Look through the complete ast and replace method calls that are to a C++ plug in with a c++ ast
     node.
     '''
+    def __init__(self, method_names: dict):
+        self._method_names = method_names
 
     def try_call(self, name, node):
         'Try to use name to do the call. Returns (ok, result) monad'
-        if name in method_names:
-            cpp_call_ast = method_names[name](node)
+        if name in self._method_names:
+            cpp_call_ast = self._method_names[name](node)
             return (cpp_call_ast is not None, cpp_call_ast)
         return (False, None)
 

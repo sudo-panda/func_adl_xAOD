@@ -38,5 +38,7 @@ def DeltaR(eta1, phi1, eta2, phi2):
     raise NotImplementedError('DeltaR should never be called in python!')
 
 
-# Mark the DeltaR function as one that can be called.
-cpp_ast.method_names['DeltaR'] = DeltaRAst
+def get_math_methods():
+    return {
+        'DeltaR': DeltaRAst
+    }

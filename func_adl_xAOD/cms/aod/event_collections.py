@@ -1,5 +1,3 @@
-import func_adl_xAOD.common.cpp_ast as cpp_ast
-
 from func_adl_xAOD.common.event_collections import event_collection_collection, event_collection_container, event_collections
 
 
@@ -40,12 +38,10 @@ cms_aod_collections = [
 ]
 
 
-class event_collections(event_collections):
+class cms_aod_event_collections(event_collections):
+    def __init__(self):
+        super().__init__(cms_aod_collections)
+
     def get_running_code(self, container_type: event_collection_container) -> list:
         return [f'{container_type} result;',
                 'iEvent.getByLabel(collection_name, result);']
-
-
-func_gen = event_collections()
-for info in cms_aod_collections:
-    cpp_ast.method_names[info['function_name']] = func_gen.create_higher_order_function(info)
