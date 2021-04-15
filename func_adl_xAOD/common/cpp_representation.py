@@ -131,6 +131,7 @@ class cpp_value(cpp_rep_base):
 
     def reset_scope(self, scope: gc_scope):
         'If scope has not been set, then we can set it'
+        # TODO: #116 This feels like a kludge - should we pass around something else and get rid of this?
         if self._scope is None:
             self._scope = scope
         else:
