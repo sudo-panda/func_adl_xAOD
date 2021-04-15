@@ -15,7 +15,7 @@ At the most general level:
    need to be given to the method as well.
 1. The C++ files produced are ready to run on the input files.
 
-Though only part of the tests, you can see how the template files are run against a file in the `test/atlas/xaod/LocalFile.py` file, specifically the `execute_result_async` method. Given a `func_adl` ast, it calls `atlas_xaod_executor` as above, and then uses a `docker` image to run against some test files.
+Though only part of the tests, you can see how the template files are run against a file in the `test/utils/base.py` file, specifically the `execute_result_async` method. Given a `func_adl` ast, it calls `atlas_xaod_executor` as above, and then uses a `docker` image to run against some test files.
 
 The `atlas_xaod_executor` doesn't do much - almost all the work is done inside the `query_ast_visitor` object. This object traverses the `ast` and turns each `ast` into some sort of C++ result (see the `cpplib` folder). As it goes it accumulates the appropriate C++ type definitions, temp variables, and variable declarations - including output ROOT files, etc. See below for a more detailed description of this object.
 

@@ -1,7 +1,6 @@
 # Scope related utilities
 # see https://stackoverflow.com/questions/33533148/how-do-i-specify-that-the-return-type-of-a-method-is-the-same-as-the-class-itsel
 # for info on this next line. Already looking forward to python 4...
-# TODO: #118 Move this into the cpplib folder
 import copy
 
 
