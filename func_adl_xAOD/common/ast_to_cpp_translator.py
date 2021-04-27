@@ -305,6 +305,17 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
         'Look up the in our local dict. This takes care of function arguments, etc.'
         return self._arg_stack.lookup_name(id)
 
+    def make_iterator_from_upper_bound(self, upper_bound):
+        element_type = ctyp.terminal("int")
+        iterator_value = crep.cpp_value(unique_name("i"), None, element_type)
+        l_statement = statement.forloop(iterator_value, crep.dereference_var(upper_bound))
+        self._gc.add_statement(l_statement)
+        iterator_value.reset_scope(self._gc.current_scope())
+
+        # For a new sequence like this the sequence and iterator value are the same
+        return crep.cpp_sequence(iterator_value, iterator_value, self._gc.current_scope())
+
+
     def make_sequence_from_collection(self, rep):
         '''
         Take a collection and produce a sequence. Eventually this should likely be some sort of
@@ -314,7 +325,7 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
         element_type = rep.cpp_type().element_type()
         element_type = element_type.get_dereferenced_type() if self._is_loop_var_a_ref else element_type
         iterator_value = crep.cpp_value(unique_name("i_obj"), None, element_type)  # type: ignore
-        l_statement = statement.loop(iterator_value, crep.dereference_var(rep), is_loop_var_a_ref=self._is_loop_var_a_ref)  # type: ignore
+        l_statement = statement.foreach(iterator_value, crep.dereference_var(rep), is_loop_var_a_ref=self._is_loop_var_a_ref)  # type: ignore
         self._gc.add_statement(l_statement)
         iterator_value.reset_scope(self._gc.current_scope())
 
@@ -990,6 +1001,33 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
         node.rep = seq  # type: ignore
         self._result = seq
         return seq
+
+    def call_SelectIndex(self, node: ast.Call, args: List[ast.arg]):
+        'Transform the iterable from one form to another'
+
+        assert len(args) == 3
+        source = args[0]
+        range = cast(ast.Lambda, args[1])
+        selection = cast(ast.Lambda, args[2])
+
+        rep = self.get_rep(source)
+
+        # Make sure we are in a loop
+        range = lambda_unwrap(range)
+        c = ast.Call(func=selection, args=[rep])
+        upper_bound = self.get_rep(c)
+        iterator = self.make_iterator_from_upper_bound(upper_bound)
+
+        selection = lambda_unwrap(selection)
+        c = ast.Call(func=selection, args=[rep.as_ast(), iterator.sequence_value().as_ast()])
+        new_sequence_value = self.get_rep(c)
+
+        # We need to build a new sequence.
+        rep = crep.cpp_sequence(new_sequence_value, seq.iterator_value(), self._gc.current_scope())
+
+        node.rep = rep  # type: ignore
+        self._result = rep
+        return rep
 
     def call_Where(self, node: ast.AST, args: List[ast.AST]):
         'Apply a filtering to the current loop.'

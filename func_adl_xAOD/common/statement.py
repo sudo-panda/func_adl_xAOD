@@ -64,8 +64,31 @@ class block:
         self._rep_dict[name] = value
 
 
-class loop(block):
-    'A for loop'
+class forloop(block):
+    'A for each loop'
+
+    def __init__(self, loop_var_rep: crep.cpp_value,
+                 upper_bound_rep: crep.cpp_value,
+                 is_loop_var_a_pntr=False, is_loop_var_a_ref=False):
+        '''
+        Create a new implicit for loop statement. A new var is created, and the scope is set to
+        be the one down from here.
+        '''
+        block.__init__(self)
+        self._loop_variable = loop_var_rep
+        self._upper_bound = upper_bound_rep
+
+    def emit(self, e):
+        'Emit a for loop enclosed by a block of code'
+        e.add_line("for ({0} {1} = 0; {1} < {2}; {1}++)".format(
+            self._loop_variable.cpp_type.type,
+            self._loop_variable.as_cpp(),
+            self._upper_bound.as_cpp()))
+        block.emit(self, e)
+
+
+class foreach(block):
+    'A for each loop'
 
     def __init__(self, loop_var_rep: crep.cpp_value,
                  collection_rep: crep.cpp_collection,
