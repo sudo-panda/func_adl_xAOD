@@ -137,16 +137,17 @@ void Analyzer::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
    iSetup.get<SetupRecord>().get(pSetup);
 #endif
 
-   // edm::Handle<reco::TrackCollection> gmuons;
-   // iEvent.getByLabel("globalMuons", gmuons);
-
-   // for (unsigned t = 0; t < gmuons->size(); t++)
-   // {
-   //    const reco::Track &iMuon = (*gmuons)[t];
-
-   //    pt_gmu = iMuon.pt();
-   //    t1->Fill();
-   // }
+   // edm::Handle<reco::TrackCollection> trackmuons0; 
+   //   { 
+   //     edm::Handle<reco::TrackCollection> result; 
+   //     iEvent.getByLabel("globalMuons", result); 
+   //     trackmuons0 = result; 
+   //   } 
+   //   for (auto &i_obj1 : *trackmuons0) 
+   //   { 
+   //     _col12 = i_obj1.pt(); 
+   //     myTree->Fill(); 
+   //   } 
 
    {% for l in query_code %}
    {{l}} 
