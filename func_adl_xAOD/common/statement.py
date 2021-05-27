@@ -140,7 +140,7 @@ class ttree_fill(ABC):
 
 
 class set_var:
-    'Set a variable to a value'
+    'Assing a value to a variable'
 
     def __init__(self, target_var, value_var):
         r'''
