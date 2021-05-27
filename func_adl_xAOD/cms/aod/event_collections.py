@@ -1,3 +1,5 @@
+import func_adl_xAOD.common.cpp_types as ctyp
+
 from func_adl_xAOD.common.event_collections import event_collection_collection, event_collection_container, event_collections
 
 
@@ -45,3 +47,7 @@ class cms_aod_event_collections(event_collections):
     def get_running_code(self, container_type: event_collection_container) -> list:
         return [f'{container_type} result;',
                 'iEvent.getByLabel(collection_name, result);']
+
+
+ctyp.add_method_type_info("reco::Track", "hitPattern", ctyp.terminal('reco::HitPattern'))
+ctyp.add_method_type_info("reco::Muon", "hitPattern", ctyp.terminal('reco::HitPattern'))
