@@ -5,11 +5,12 @@ import uproot
 import asyncio
 import logging
 import pandas as pd
+import sys
 
 from pathlib import Path
 from testfixtures import LogCapture
 
-from func_adl import EventDataset
+from func_adl import EventDataset, Range
 from func_adl_xAOD.common.math_utils import DeltaR
 
 from tests.cms.aod.config import f_single, run_long_running_tests
@@ -66,3 +67,15 @@ def test_select_pt_eta_of_global_muons():
     assert training_df.iloc[0]['col1'] == 8.645097433711282
     assert training_df.iloc[1]['col1'] == 1.787438812772764
     assert training_df.iloc[-1]['col1'] == 29.686834840131645
+
+def test_select_hitpattern_of_global_muons():
+    sys.setrecursionlimit(10000)
+    training_df = as_pandas(f_single
+                            .SelectMany(lambda e: e.TrackMuons("globalMuons"))
+                            .Select(lambda m: m.hitPattern())
+                            .Select(lambda hp: Range(0, hp.numberOfHits()) 
+                                .Select(lambda i: hp.getHitPattern(i))))
+
+    assert training_df.iloc[0]['col1'] == 1160.0
+    assert training_df.iloc[1]['col1'] == 1168.0
+    assert training_df.iloc[-1]['col1'] == 248.0 
