@@ -589,7 +589,9 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
         # obj.pt() or similar. The translation is direct.
         c_stub = calling_against.as_cpp() + ("->" if calling_against.is_pointer() else ".")
         result_type = determine_type_mf(calling_against.cpp_type(), function_name)
-        self._result = crep.cpp_value(c_stub + function_name + "()", calling_against.scope(), result_type)
+
+        args = call_node.args
+        self._result = crep.cpp_value(c_stub + function_name + f"({','.join(self.get_rep(arg).as_cpp() for arg in args)})", calling_against.scope(), result_type)
 
     def visit_function_ast(self, call_node):
         'Drop-in replacement for a function'
