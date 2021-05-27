@@ -183,7 +183,7 @@ class container_clear:
 class arbitrary_statement:
     'An arbitrary line of C++ code. Avoid if possible, as it makes analysis impossible'
 
-    def __init__(self, line):
+    def __init__(self, line: str):
         self._line = line
 
     def emit(self, e):
