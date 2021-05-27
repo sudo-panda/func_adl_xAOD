@@ -1022,6 +1022,48 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
 
         self._result = node.rep  # type: ignore
 
+    def call_Range(self, node: ast.AST, args: List[ast.AST]):
+        'Create a collection of numbers from lower_bound'
+
+        if len(args) != 2:
+            raise Exception('blah blah')
+        lower_bound = args[0]
+        upper_bound = args[1]
+
+        self._gc.add_statement(statement.block())
+
+        element_type = ctyp.terminal("int")
+        begin_value = crep.cpp_variable(unique_name("begin"), self._gc.current_scope(), element_type, initial_value=self.get_rep(lower_bound))
+        end_value = crep.cpp_variable(unique_name("end"), self._gc.current_scope(), element_type, initial_value=self.get_rep(upper_bound))
+        self._gc.declare_variable(begin_value)
+        self._gc.declare_variable(end_value)
+
+        vector_value = crep.cpp_collection(unique_name("r_obj"), self._gc.current_scope(), ctyp.collection(element_type))
+        self._gc.declare_variable(crep.cpp_variable(vector_value.as_cpp(), self._gc.current_scope(),
+                                                    ctyp.collection(element_type),
+                                                    crep.cpp_value(f"{end_value.as_cpp()} - {begin_value.as_cpp()}",
+                                                                   self._gc.current_scope(),
+                                                                   ctyp.terminal("int"))))
+
+        vector_value_begin = crep.cpp_value(f"{vector_value.as_cpp()}.begin()",
+                                            self._gc.current_scope(),
+                                            ctyp.terminal(f"std::vector<{element_type}>::iterator"))
+        vector_value_end = crep.cpp_value(f"{vector_value.as_cpp()}.end()",
+                                          self._gc.current_scope(),
+                                          ctyp.terminal(f"std::vector<{element_type}>::iterator"))
+
+        c = ast.Call(func=FunctionAST("std::iota", ["numeric"], "void"),
+                     args=[vector_value_begin.as_ast(),
+                           vector_value_end.as_ast(),
+                           begin_value.as_ast()])
+
+        self._gc.add_statement(statement.arbitrary_statement(self.get_rep(c).as_cpp()))
+
+        seq = self.make_sequence_from_collection(vector_value)
+        node.rep = seq
+        self._result = seq
+        return seq
+
     def call_First(self, node: ast.AST, args: List[ast.AST]) -> Any:
         'We are in a sequence. Take the first element of the sequence and use that for future things.'
 
