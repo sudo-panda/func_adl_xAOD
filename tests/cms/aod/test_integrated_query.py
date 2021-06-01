@@ -1,20 +1,19 @@
 # Contains test that will run the full query.
-import os
-import pytest
-import uproot
 import asyncio
 import logging
-import pandas as pd
+import os
 import sys
-
 from pathlib import Path
-from testfixtures import LogCapture
 
+import pandas as pd
+import pytest
+import uproot
 from func_adl import EventDataset, Range
 from func_adl_xAOD.common.math_utils import DeltaR
-
+from testfixtures import LogCapture
 from tests.cms.aod.config import f_single, run_long_running_tests
-from tests.cms.aod.utils import as_awkward, as_pandas, as_pandas_async, load_root_as_pandas
+from tests.cms.aod.utils import (as_awkward, as_pandas, as_pandas_async,
+                                 load_root_as_pandas)
 
 pytestmark = run_long_running_tests
 

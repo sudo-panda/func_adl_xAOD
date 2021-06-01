@@ -1,10 +1,10 @@
 
 import ast
+
 import pytest
-
 from func_adl.util_ast import function_call
-
-from func_adl_xAOD.atlas.xaod.event_collections import atlas_xaod_collections, atlas_xaod_event_collections
+from func_adl_xAOD.atlas.xaod.event_collections import (
+    atlas_xaod_collections, atlas_xaod_event_collections)
 
 
 def test_good_ev_call():

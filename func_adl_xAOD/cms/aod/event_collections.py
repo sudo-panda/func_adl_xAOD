@@ -1,6 +1,6 @@
 import func_adl_xAOD.common.cpp_types as ctyp
-
-from func_adl_xAOD.common.event_collections import event_collection_collection, event_collection_container, event_collections
+from func_adl_xAOD.common.event_collections import (
+    event_collection_collection, event_collection_container, event_collections)
 
 
 class cms_aod_event_collection_container(event_collection_container):

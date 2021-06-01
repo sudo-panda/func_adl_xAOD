@@ -1,7 +1,6 @@
-from typing import List, Dict
+from typing import Dict, List
 
 import func_adl_xAOD.common.cpp_types as ctyp
-
 
 _type_priority: Dict[str, int] = {
     'int': 0,

@@ -1,7 +1,5 @@
 import pytest
-
 from func_adl_xAOD.common.math_utils import DeltaR
-
 from tests.atlas.xaod.utils import atlas_xaod_dataset
 
 

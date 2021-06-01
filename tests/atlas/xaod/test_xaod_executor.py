@@ -1,13 +1,10 @@
 # Tests that make sure the xaod executor is working correctly
 import pytest
+from tests.atlas.xaod.utils import (atlas_xaod_dataset, exe_from_qastle,
+                                    find_line_numbers_with, find_line_with,
+                                    find_open_blocks, get_lines_of_code,
+                                    print_lines)
 
-from tests.atlas.xaod.utils import (atlas_xaod_dataset,
-                                    exe_from_qastle,
-                                    get_lines_of_code,
-                                    print_lines,
-                                    find_line_numbers_with,
-                                    find_line_with,
-                                    find_open_blocks)
 
 class Atlas_xAOD_File_Type:
     def __init__(self):

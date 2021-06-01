@@ -1,13 +1,11 @@
 # Contains test that will run the full query.
-import os
-import pytest
 import asyncio
 import logging
+import os
 
-from testfixtures import LogCapture
-
+import pytest
 from func_adl_xAOD.common.math_utils import DeltaR  # NOQA
-
+from testfixtures import LogCapture
 from tests.atlas.xaod.config import f_single, run_long_running_tests
 from tests.atlas.xaod.utils import as_awkward, as_pandas, as_pandas_async
 

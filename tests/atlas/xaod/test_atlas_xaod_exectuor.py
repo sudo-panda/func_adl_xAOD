@@ -1,6 +1,6 @@
 import ast
-import pytest
 
+import pytest
 from func_adl.event_dataset import EventDataset
 from func_adl_xAOD.atlas.xaod.executor import atlas_xaod_executor
 

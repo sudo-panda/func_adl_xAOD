@@ -1,24 +1,21 @@
 # Drive the translate of the AST from start into a set of files, which one can then do whatever
 # is needed to.
-import os
 import ast
+import os
 import sys
-import jinja2
-
 from abc import ABC, abstractmethod
-from pathlib import Path
 from collections import namedtuple
-
-from func_adl.ast.func_adl_ast_utils import change_extension_functions_to_calls
-from func_adl.ast.aggregate_shortcuts import aggregate_node_transformer
-from func_adl.ast.function_simplifier import simplify_chained_calls
+from pathlib import Path
 
 import func_adl_xAOD.common.cpp_ast as cpp_ast
 import func_adl_xAOD.common.cpp_representation as crep
-
-from func_adl_xAOD.common.util_scope import top_level_scope
-from func_adl_xAOD.common.cpp_functions import find_known_functions
+import jinja2
+from func_adl.ast.aggregate_shortcuts import aggregate_node_transformer
+from func_adl.ast.func_adl_ast_utils import change_extension_functions_to_calls
+from func_adl.ast.function_simplifier import simplify_chained_calls
 from func_adl_xAOD.common.ast_to_cpp_translator import query_ast_visitor
+from func_adl_xAOD.common.cpp_functions import find_known_functions
+from func_adl_xAOD.common.util_scope import top_level_scope
 
 ExecutionInfo = namedtuple('ExecutionInfo', 'result_rep output_path main_script all_filenames')
 

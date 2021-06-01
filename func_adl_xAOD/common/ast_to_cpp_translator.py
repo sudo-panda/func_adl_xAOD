@@ -3,29 +3,25 @@
 
 import ast
 import logging
-
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Type, Union, cast
 
-from func_adl.util_ast import lambda_unwrap
+import func_adl_xAOD.common.cpp_ast as cpp_ast
+import func_adl_xAOD.common.cpp_representation as crep
+import func_adl_xAOD.common.cpp_types as ctyp
+import func_adl_xAOD.common.math_utils  # NOQA
+import func_adl_xAOD.common.result_ttree as rh
+import func_adl_xAOD.common.statement as statement
 from func_adl.ast.call_stack import argument_stack, stack_frame
 from func_adl.ast.func_adl_ast_utils import FuncADLNodeVisitor, function_call
-
-import func_adl_xAOD.common.math_utils  # NOQA
-import func_adl_xAOD.common.cpp_ast as cpp_ast
-import func_adl_xAOD.common.cpp_types as ctyp
-import func_adl_xAOD.common.statement as statement
-import func_adl_xAOD.common.result_ttree as rh
-import func_adl_xAOD.common.cpp_representation as crep
-
-
-from func_adl_xAOD.common.utils import most_accurate_type
-from func_adl_xAOD.common.cpp_vars import unique_name
+from func_adl.util_ast import lambda_unwrap
 from func_adl_xAOD.common.cpp_functions import FunctionAST
+from func_adl_xAOD.common.cpp_vars import unique_name
 from func_adl_xAOD.common.generated_code import generated_code
 from func_adl_xAOD.common.util_scope import (deepest_scope, gc_scope,
                                              gc_scope_top_level,
                                              top_level_scope)
+from func_adl_xAOD.common.utils import most_accurate_type
 
 # Convert between Python comparisons and C++.
 compare_operations = {

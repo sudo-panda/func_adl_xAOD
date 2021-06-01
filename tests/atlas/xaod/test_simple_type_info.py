@@ -4,13 +4,10 @@
 # despite reading a bunch of docs.
 import sys
 
+import func_adl_xAOD.common.cpp_types as ctyp
 # Code to do the testing starts here.
 from func_adl import EventDataset
-
-import func_adl_xAOD.common.cpp_types as ctyp
-
 from func_adl_xAOD.common.ast_to_cpp_translator import xAODTranslationError
-
 from tests.atlas.xaod.utils import atlas_xaod_dataset
 
 

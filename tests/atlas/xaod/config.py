@@ -1,7 +1,8 @@
 import os
+from pathlib import Path
+
 import pytest
 
-from pathlib import Path
 from .utils import AtlasXAODLocalFile
 
 # This mark should be turned off if we want to run long-running tests.

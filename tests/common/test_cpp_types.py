@@ -1,9 +1,7 @@
 # Test the cpp representations. These objects are quite simple, so there
 # aren't that many tests. Mostly when bugs are found something gets added here.
-import pytest
-
 import func_adl_xAOD.common.cpp_types as ctyp
-
+import pytest
 from func_adl_xAOD.common.util_scope import top_level_scope
 
 
