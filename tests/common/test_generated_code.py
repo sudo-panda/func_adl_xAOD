@@ -1,6 +1,5 @@
 # Test the generated code object
 import func_adl_xAOD.common.statement as statement
-
 from func_adl_xAOD.common.generated_code import generated_code
 
 

@@ -1,23 +1,20 @@
 import ast
-import uproot
-import pandas as pd
-import awkward as ak
-
-from tests.utils.base import LocalFile, dummy_executor, dataset
-from tests.utils.general import print_lines, get_lines_of_code
-from tests.utils.locators import find_line_numbers_with, find_line_with, find_next_closing_bracket, find_open_blocks
-
-from typing import Any, Callable, List, Optional, Union, Dict
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Union
 
+import awkward as ak
+import pandas as pd
+import uproot
 from func_adl import EventDataset
 from func_adl.object_stream import ObjectStream
-
-from func_adl_xAOD.common.util_scope import top_level_scope
-from func_adl_xAOD.common.cpp_representation import cpp_sequence, cpp_variable
-
 from func_adl_xAOD.cms.aod.executor import cms_aod_executor
 from func_adl_xAOD.cms.aod.query_ast_visitor import cms_aod_query_ast_visitor
+from func_adl_xAOD.common.cpp_representation import cpp_sequence, cpp_variable
+from func_adl_xAOD.common.util_scope import top_level_scope
+from tests.utils.base import LocalFile, dataset, dummy_executor
+from tests.utils.general import get_lines_of_code, print_lines
+from tests.utils.locators import (find_line_numbers_with, find_line_with,
+                                  find_next_closing_bracket, find_open_blocks)
 
 
 class cms_aod_dummy_executor(dummy_executor):

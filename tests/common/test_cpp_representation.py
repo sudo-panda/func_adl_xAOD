@@ -1,10 +1,7 @@
-import pytest
-
-import func_adl_xAOD.common.cpp_types as ctyp
 import func_adl_xAOD.common.cpp_representation as crep
-
-from func_adl_xAOD.common.util_scope import (gc_scope_top_level,
-                                             top_level_scope)
+import func_adl_xAOD.common.cpp_types as ctyp
+import pytest
+from func_adl_xAOD.common.util_scope import gc_scope_top_level, top_level_scope
 
 
 def test_expression_pointer_decl():

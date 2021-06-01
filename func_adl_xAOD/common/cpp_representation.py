@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 # The representation, in C++ code, of all the data being passed around the system by the C++
 # code. Mostly, these are used as "representations" of a particular AST node. Here is an outline
 # of how this works:
@@ -49,11 +50,9 @@ from __future__ import annotations
 # Others follow a similar line of reasoning.
 import ast
 import copy
-
-from typing import Union, Optional, cast
+from typing import Optional, Union, cast
 
 import func_adl_xAOD.common.cpp_types as ctyp
-
 from func_adl_xAOD.common.util_scope import gc_scope, gc_scope_top_level
 
 

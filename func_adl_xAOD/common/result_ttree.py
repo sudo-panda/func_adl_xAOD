@@ -1,5 +1,4 @@
 import func_adl_xAOD.common.cpp_types as ctyp
-
 from func_adl_xAOD.common.cpp_representation import cpp_value
 from func_adl_xAOD.common.cpp_vars import unique_name
 

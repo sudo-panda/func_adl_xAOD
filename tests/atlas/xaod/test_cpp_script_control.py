@@ -1,18 +1,17 @@
 # Tests that will make sure the runner.sh script can do everything it is supposed to do,
 # as we are now asking a fair amount from it.
-import os
 import ast
+import os
 import sys
-import pytest
 import tempfile
-
+from collections import namedtuple
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any, List, Optional, Union, cast
 from urllib import parse
-from pathlib import Path
-from func_adl import EventDataset
-from tempfile import TemporaryDirectory
-from collections import namedtuple
 
+import pytest
+from func_adl import EventDataset
 from func_adl_xAOD.atlas.xaod.executor import atlas_xaod_executor
 
 from .config import local_path, run_long_running_tests

@@ -2,9 +2,8 @@
 import ast
 
 import func_adl_xAOD.common.cpp_ast as cpp_ast
-import func_adl_xAOD.common.cpp_types as ctyp
 import func_adl_xAOD.common.cpp_representation as crep
-
+import func_adl_xAOD.common.cpp_types as ctyp
 from func_adl_xAOD.common.cpp_vars import unique_name
 
 

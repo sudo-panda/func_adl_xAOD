@@ -1,6 +1,5 @@
 # Some math utilities
 import func_adl_xAOD.common.cpp_ast as cpp_ast
-
 from func_adl_xAOD.common.cpp_representation import cpp_variable
 from func_adl_xAOD.common.cpp_vars import unique_name
 

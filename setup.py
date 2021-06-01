@@ -1,7 +1,8 @@
 # setuptools loads some plugins necessary for use here.
-from distutils.core import setup
-from version_info import version_func_adl
 import os
+from distutils.core import setup
+
+from version_info import version_func_adl
 
 # Use the readme as the long description.
 with open("README.md", "r") as fh:

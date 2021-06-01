@@ -1,5 +1,5 @@
-from func_adl_xAOD.common.statement import ttree_fill, book_ttree
 from func_adl_xAOD.common.ast_to_cpp_translator import query_ast_visitor
+from func_adl_xAOD.common.statement import book_ttree, ttree_fill
 
 
 class book_cms_aod_ttree(book_ttree):

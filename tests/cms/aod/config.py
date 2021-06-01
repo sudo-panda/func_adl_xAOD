@@ -1,8 +1,7 @@
 import os
-import pytest
-
 from pathlib import Path
 
+import pytest
 from tests.cms.aod.utils import CMSAODLocalFile
 
 # This mark should be turned off if we want to run long-running tests.

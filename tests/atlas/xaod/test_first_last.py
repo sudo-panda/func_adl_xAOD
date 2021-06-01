@@ -2,8 +2,10 @@
 from math import sin
 
 from func_adl import EventDataset
+from tests.atlas.xaod.utils import (atlas_xaod_dataset, find_line_with,
+                                    find_open_blocks, get_lines_of_code,
+                                    print_lines)
 
-from tests.atlas.xaod.utils import get_lines_of_code, print_lines, atlas_xaod_dataset, find_line_with, find_open_blocks
 
 def test_first_jet_in_event():
     atlas_xaod_dataset() \

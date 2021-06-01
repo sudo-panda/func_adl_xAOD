@@ -1,6 +1,7 @@
-from func_adl_xAOD.common.executor import executor
+from func_adl_xAOD.cms.aod.event_collections import \
+    cms_aod_event_collections as ec
 from func_adl_xAOD.cms.aod.query_ast_visitor import cms_aod_query_ast_visitor
-from func_adl_xAOD.cms.aod.event_collections import cms_aod_event_collections as ec
+from func_adl_xAOD.common.executor import executor
 
 
 class cms_aod_executor(executor):

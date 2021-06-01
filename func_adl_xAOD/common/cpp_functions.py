@@ -1,7 +1,6 @@
 # Infrastructure to replace simple functions (like "abs") in python with their
 # equivalent in C++.
 import ast
-
 from collections import namedtuple
 
 

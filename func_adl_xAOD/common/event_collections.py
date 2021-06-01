@@ -1,13 +1,11 @@
 # Collected code to get collections from the event object
 import ast
 import copy
-
 from abc import ABC, abstractmethod
 
 import func_adl_xAOD.common.cpp_ast as cpp_ast
 import func_adl_xAOD.common.cpp_representation as crep
 import func_adl_xAOD.common.cpp_types as ctyp
-
 from func_adl_xAOD.common.cpp_vars import unique_name
 from func_adl_xAOD.common.math_utils import get_math_methods
 
