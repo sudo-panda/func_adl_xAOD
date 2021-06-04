@@ -1029,8 +1029,8 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
         self._gc.add_statement(statement.block())
 
         element_type = ctyp.terminal("int")
-        begin_value = crep.cpp_variable(unique_name("begin"), self._gc.current_scope(), element_type, initial_value=self.get_rep(lower_bound))
-        end_value = crep.cpp_variable(unique_name("end"), self._gc.current_scope(), element_type, initial_value=self.get_rep(upper_bound))
+        begin_value = crep.cpp_variable(unique_name("begin"), self._gc.current_scope(), element_type, initial_value=self.get_rep(lower_bound))  # type: ignore
+        end_value = crep.cpp_variable(unique_name("end"), self._gc.current_scope(), element_type, initial_value=self.get_rep(upper_bound))  # type: ignore
         self._gc.declare_variable(begin_value)
         self._gc.declare_variable(end_value)
 
@@ -1056,7 +1056,7 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
         self._gc.add_statement(statement.arbitrary_statement(self.get_rep(c).as_cpp()))
 
         seq = self.make_sequence_from_collection(vector_value)
-        node.rep = seq
+        node.rep = seq  # type: ignore
         self._result = seq
         return seq
 

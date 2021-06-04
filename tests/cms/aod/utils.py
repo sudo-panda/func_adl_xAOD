@@ -1,26 +1,22 @@
 import ast
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import awkward as ak
 import pandas as pd
 import uproot
-from func_adl import EventDataset
 from func_adl.object_stream import ObjectStream
 from func_adl_xAOD.cms.aod.executor import cms_aod_executor
 from func_adl_xAOD.cms.aod.query_ast_visitor import cms_aod_query_ast_visitor
 from func_adl_xAOD.common.cpp_representation import cpp_sequence, cpp_variable
 from func_adl_xAOD.common.util_scope import top_level_scope
 from tests.utils.base import LocalFile, dataset, dummy_executor
-from tests.utils.general import get_lines_of_code, print_lines
-from tests.utils.locators import (find_line_numbers_with, find_line_with,
-                                  find_next_closing_bracket, find_open_blocks)
 
 
 class cms_aod_dummy_executor(dummy_executor):
     def __init__(self):
         super().__init__()
-    
+
     def get_executor_obj(self) -> cms_aod_executor:
         return cms_aod_executor()
 
@@ -44,7 +40,7 @@ class CMSAODDockerException(Exception):
 class CMSAODLocalFile(LocalFile):
     def __init__(self, local_files: Union[Path, List[Path]]):
         super().__init__("cmsopendata/cmssw_5_3_32", "Analyzer.cc", local_files)
-    
+
     def raise_docker_exception(self, message: str):
         raise CMSAODDockerException(message)
 
@@ -65,9 +61,10 @@ async def exe_from_qastle(q: str):
     file.rep = cpp_sequence(iterator, iterator, top_level_scope())  # type: ignore
 
     # Use the dummy executor to process this, and return it.
-    exe = dummy_executor()
+    exe = dummy_executor()  # type: ignore
     exe.evaluate(a)
     return exe
+
 
 def load_root_as_pandas(file: Path) -> pd.DataFrame:
     '''Given the result from a query as a ROOT file path, return
