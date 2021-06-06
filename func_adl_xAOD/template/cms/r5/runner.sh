@@ -64,7 +64,7 @@ if [ $compile = 1 ]; then
     ## build the analyzer
     scram b
 else
-    cd Analyzer
+    cd analysis/Analyzer
 fi
 
 # Run the analysis
