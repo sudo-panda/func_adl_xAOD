@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import FWCore.ParameterSet.Config as cms  # type: ignore
+import os
 
 process = cms.Process("Demo")
 
@@ -21,8 +22,10 @@ process.source = cms.Source("PoolSource",
 process.demo = cms.EDAnalyzer('Analyzer'
                               )
 
+output_file = os.environ['CMS_OUTPUT_FILE']
+
 process.TFileService = cms.Service("TFileService",
-                                   fileName=cms.string('/results/ANALYSIS.root')
+                                   fileName=cms.string(output_file)
                                    )
 
 process.p = cms.Path(process.demo)

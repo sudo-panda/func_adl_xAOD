@@ -69,16 +69,25 @@ fi
 
 # Run the analysis
 if [ $run = 1 ]; then
-   if [ "$input_method" == "filelist" ]; then
-      if [ -e $DIR/filelist.txt ]; then
-         cp $DIR/filelist.txt .
-      else
-         cp $local/filelist.txt .
-      fi
-   elif [ "$input_method" == "cmd" ]; then
-      echo $input_file > filelist.txt
-   fi
+    # Figure out the input file
+    if [ "$input_method" == "filelist" ]; then
+        if [ -e $DIR/filelist.txt ]; then
+            cp $DIR/filelist.txt .
+        else
+            cp $local/filelist.txt .
+        fi
+    elif [ "$input_method" == "cmd" ]; then
+        echo $input_file > filelist.txt
+    fi
 
-    ## run the analysis
+    # Figure out the output file
+    if [ $output_method == "cp" ]; then
+        destination=$output_dir
+    else
+        destination=$1
+    fi
+    export CMS_OUTPUT_FILE=$destination
+
+    # run the analysis
     cmsRun analyzer_cfg.py
 fi
