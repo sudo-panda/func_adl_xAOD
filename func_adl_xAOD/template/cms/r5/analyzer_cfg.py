@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+
 import FWCore.ParameterSet.Config as cms  # type: ignore
+import os
 
 process = cms.Process("Demo")
 
@@ -7,7 +9,7 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(-1))
 
-filelistPath = '/scripts/filelist.txt'
+filelistPath = os.path.dirname(__file__) + '/filelist.txt'
 fileNames = tuple(['file:{0}'.format(line) for line in open(filelistPath, 'r').readlines()])
 
 process.source = cms.Source("PoolSource",
