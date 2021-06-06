@@ -13,9 +13,11 @@ mkedanlzr Analyzer
 cd Analyzer
 
 ## Copy the Analyzer files to the Analyzer
-cp /scripts/Analyzer.cc ./src/
-cp /scripts/analyzer_cfg.py .
-cp /scripts/BuildFile.xml .
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+cp $DIR/Analyzer.cc ./src/
+cp $DIR/analyzer_cfg.py .
+cp $DIR/BuildFile.xml .
 
 ## build the HiggsDemoAnalyzer
 scram b
