@@ -83,11 +83,20 @@ if [ $run = 1 ]; then
     # Figure out the output file
     if [ $output_method == "cp" ]; then
         destination=$output_dir
+        cmd="cp"
     else
         destination=$1
+      cmd="cp"
+      if [[ $destination == "root:"* ]]; then
+         cmd="xrdcp"
+      fi
     fi
-    export CMS_OUTPUT_FILE=$destination
+    export CMS_OUTPUT_FILE=analysis_output.root
 
     # run the analysis
     cmsRun analyzer_cfg.py
+
+    # And copy out the thing
+    # TODO: why doesn't cms deal with the very long filename we give it?
+    $cmd /home/atlas/CMSSW_5_3_32/src/analysis/Analyzer/analysis_output.root $destination
 fi
