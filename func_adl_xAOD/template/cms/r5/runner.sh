@@ -39,7 +39,9 @@ if [ $# != 0 ]; then
 fi
 
 # Setup the CMS software (normally done automatically, but not for ServiceX)
-. /opt/cms/entrypoint.sh; 
+if [ -z "$CVSROOT" ]; then
+    . /opt/cms/entrypoint.sh; 
+fi
 
 ## Get the location of this script, and, hence where we are going to be doing things.
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -91,12 +93,12 @@ if [ $run = 1 ]; then
          cmd="xrdcp"
       fi
     fi
-    export CMS_OUTPUT_FILE=analysis_output.root
+    export CMS_OUTPUT_FILE=ANALYSIS.root
 
     # run the analysis
     cmsRun analyzer_cfg.py
 
     # And copy out the thing
     # TODO: why doesn't cms deal with the very long filename we give it?
-    $cmd /home/atlas/CMSSW_5_3_32/src/analysis/Analyzer/analysis_output.root $destination
+    $cmd ./$CMS_OUTPUT_FILE $destination
 fi
