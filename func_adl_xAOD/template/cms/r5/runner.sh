@@ -1,8 +1,10 @@
 #!/bin/bash
 
 set -e
-
 set -x
+
+# Setup the CMS software (normally done automatically, but not for ServiceX)
+. /opt/cms/entrypoint.sh; 
 
 ## Create a subdir for the analysis
 mkdir analysis
