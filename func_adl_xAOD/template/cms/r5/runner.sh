@@ -101,7 +101,7 @@ if [ $run = 1 ]; then
     # Convert the ROOT file into the proper format.
     # CMS writes the tuples one directory down rather than in the top level.
     # Perhaps there is a more efficient way to solve this?
-    if [ $cmd == "cp"]; then
+    if [ $cmd == "cp" ]; then
         cvt='root -b -l -q /generated/copy_root_tree.C\(\"./$CMS_OUTPUT_FILE\",\"$destination\"\)'
         eval $cvt
     else
