@@ -98,7 +98,15 @@ if [ $run = 1 ]; then
     # run the analysis
     cmsRun analyzer_cfg.py
 
-    # And copy out the thing
-    # TODO: why doesn't cms deal with the very long filename we give it?
-    $cmd ./$CMS_OUTPUT_FILE $destination
+    # Convert the ROOT file into the proper format.
+    # CMS writes the tuples one directory down rather than in the top level.
+    # Perhaps there is a more efficient way to solve this?
+    if [ $cmd == "cp"]; then
+        cvt='root -b -l -q /generated/copy_root_tree.C\(\"./$CMS_OUTPUT_FILE\",\"$destination\"\)'
+        eval $cvt
+    else
+        cvt='root -b -l -q /generated/copy_root_tree.C\(\"./$CMS_OUTPUT_FILE\",\"temp-output.root\"\)'
+        eval $cvt
+        $cmd ./temp-output.root $destination
+    fi
 fi

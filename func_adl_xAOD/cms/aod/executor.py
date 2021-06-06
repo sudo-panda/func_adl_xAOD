@@ -6,7 +6,7 @@ from func_adl_xAOD.common.executor import executor
 
 class cms_aod_executor(executor):
     def __init__(self):
-        file_names = ['analyzer_cfg.py', 'Analyzer.cc', 'BuildFile.xml', 'runner.sh']
+        file_names = ['analyzer_cfg.py', 'Analyzer.cc', 'BuildFile.xml', "copy_root_tree.C", 'runner.sh']
         runner_name = 'runner.sh'
         template_dir_name = 'func_adl_xAOD/template/cms/r5'
         super().__init__(file_names, runner_name, template_dir_name, ec().get_method_names())
