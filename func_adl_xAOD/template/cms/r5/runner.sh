@@ -93,7 +93,7 @@ if [ $run = 1 ]; then
          cmd="xrdcp"
       fi
     fi
-    export CMS_OUTPUT_FILE=ANALYSIS.root
+    export CMS_OUTPUT_FILE=/results/ANALYSIS.root
 
     # run the analysis
     cmsRun analyzer_cfg.py
