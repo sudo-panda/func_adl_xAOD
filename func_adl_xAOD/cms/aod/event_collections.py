@@ -73,4 +73,3 @@ ctyp.add_method_type_info("reco::Muon", "hitPattern", ctyp.terminal('reco::HitPa
 ctyp.add_method_type_info("reco::Muon", "globalTrack", ctyp.terminal('reco::Track', is_pointer=True))
 ctyp.add_method_type_info("reco::Muon", "isPFMuon", ctyp.terminal('bool'))
 ctyp.add_method_type_info("reco::Muon", "isPFIsolationValid", ctyp.terminal('bool'))
-ctyp.add_method_type_info("reco::Track", "isNonnull", ctyp.terminal('bool'))
