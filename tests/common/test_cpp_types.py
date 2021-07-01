@@ -1,17 +1,15 @@
 # Test the cpp representations. These objects are quite simple, so there
 # aren't that many tests. Mostly when bugs are found something gets added here.
 import func_adl_xAOD.common.cpp_types as ctyp
-import pytest
-from func_adl_xAOD.common.util_scope import top_level_scope
 
 
 def test_int_pointer():
     t_int = ctyp.terminal('int')
-    assert False == t_int.is_pointer()
+    assert t_int.is_pointer() is False
 
 
 def test_no_method_type_found():
-    assert None == ctyp.method_type_info("bogus", "pt")
+    assert ctyp.method_type_info("bogus", "pt") is None
 
 
 def test_method_type_found():

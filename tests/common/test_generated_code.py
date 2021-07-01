@@ -7,8 +7,8 @@ class dummy_emitter:
     def __init__(self):
         self.Lines = []
 
-    def add_line(self, l):
-        self.Lines += [l]
+    def add_line(self, ln):
+        self.Lines += [ln]
 
     def process(self, func):
         func(self)
@@ -58,7 +58,7 @@ def test_get_rep_null():
 def test_get_rep_when_set():
     g = generated_code()
     g.set_rep("dude", 5)
-    assert 5 is g.get_rep("dude")
+    assert 5 == g.get_rep("dude")
 
 
 def test_get_rep_when_set_level_up():
@@ -66,14 +66,14 @@ def test_get_rep_when_set_level_up():
     g.set_rep("dude", 5)
     s1 = statement.iftest("true")
     g.add_statement(s1)
-    assert 5 is g.get_rep("dude")
+    assert 5 == g.get_rep("dude")
 
 
 def test_get_rep_works_and_doesnt():
     g = generated_code()
-    s1 = statement.iftest("true")
+    statement.iftest("true")
     g.set_rep("dude", 5)
-    assert 5 is g.get_rep("dude")
+    assert 5 == g.get_rep("dude")
     g.pop_scope()
     assert None is g.get_rep("dude")
 
@@ -84,6 +84,6 @@ def test_get_rep_hidden():
     s1 = statement.iftest("true")
     g.add_statement(s1)
     g.set_rep("dude", 10)
-    assert 10 is g.get_rep("dude")
+    assert 10 == g.get_rep("dude")
     g.pop_scope()
-    assert 5 is g.get_rep("dude")
+    assert 5 == g.get_rep("dude")

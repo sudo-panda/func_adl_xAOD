@@ -1,10 +1,7 @@
 # Code to do the testing starts here.
-from math import sin
-
-from func_adl import EventDataset
-from tests.atlas.xaod.utils import (atlas_xaod_dataset, find_line_with,
-                                    find_open_blocks, get_lines_of_code,
-                                    print_lines)
+from tests.utils.locators import find_line_with, find_open_blocks
+from tests.utils.general import get_lines_of_code, print_lines
+from tests.atlas.xaod.utils import atlas_xaod_dataset
 
 
 def test_first_jet_in_event():
@@ -48,7 +45,7 @@ def test_First_Of_Select_is_not_array():
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
-    assert all("push_back" not in l for l in lines)
+    assert all("push_back" not in ln for ln in lines)
     l_fill = find_line_with("Fill()", lines)
     active_blocks = find_open_blocks(lines[:l_fill])
     assert 3 == [(("for" in a) or ("if" in a)) for a in active_blocks].count(True)
@@ -67,6 +64,6 @@ def test_First_Of_Select_After_Where_is_in_right_place():
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
-    l = find_line_with(">10.0", lines)
+    ln = find_line_with(">10.0", lines)
     # Look for the "false" that First uses to remember it has gone by one.
-    assert find_line_with("false", lines[l:], throw_if_not_found=False) > 0
+    assert find_line_with("false", lines[ln:], throw_if_not_found=False) > 0

@@ -17,7 +17,7 @@ def test_lookup_rep_in_block():
     b = block()
     n = "dude"
     b.set_rep(n, 5)
-    assert 5 is b.get_rep(n)
+    assert 5 == b.get_rep(n)
 
 
 def test_set_rep_twice_fail():

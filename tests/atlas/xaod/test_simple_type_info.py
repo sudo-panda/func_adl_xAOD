@@ -1,14 +1,8 @@
-# Test the simple type information system.
-
-# Following two lines necessary b.c. I can't figure out how to get pytest to pick up the python path correctly
-# despite reading a bunch of docs.
-import sys
-
 import func_adl_xAOD.common.cpp_types as ctyp
-# Code to do the testing starts here.
-from func_adl import EventDataset
 from func_adl_xAOD.common.ast_to_cpp_translator import xAODTranslationError
 from tests.atlas.xaod.utils import atlas_xaod_dataset
+
+# Test the simple type information system.
 
 
 def test_cant_call_double():

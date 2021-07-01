@@ -1,8 +1,7 @@
+from tests.utils.locators import find_line_with
+from tests.utils.general import get_lines_of_code, print_lines
 import pytest
-from tests.atlas.xaod.utils import (atlas_xaod_dataset, exe_from_qastle,
-                                    find_line_numbers_with, find_line_with,
-                                    find_open_blocks, get_lines_of_code,
-                                    print_lines)
+from tests.atlas.xaod.utils import atlas_xaod_dataset
 
 
 def test_get_attribute_float():

@@ -51,8 +51,9 @@ setup(name="func_adl_xAOD",
               'testfixtures',
               'wheel',
               'asyncmock',
-              "pandas~=1.0",
-              "uproot~=3.7",
+              "pandas",
+              "uproot",
+              "awkward"
           ],
       },
       classifiers=[

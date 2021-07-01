@@ -1,11 +1,10 @@
 import ast
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import awkward as ak
 import pandas as pd
 import uproot
-from func_adl import EventDataset
 from func_adl.object_stream import ObjectStream
 from func_adl_xAOD.atlas.xaod.executor import atlas_xaod_executor
 from func_adl_xAOD.atlas.xaod.query_ast_visitor import \
@@ -13,15 +12,12 @@ from func_adl_xAOD.atlas.xaod.query_ast_visitor import \
 from func_adl_xAOD.common.cpp_representation import cpp_sequence, cpp_variable
 from func_adl_xAOD.common.util_scope import top_level_scope
 from tests.utils.base import LocalFile, dataset, dummy_executor
-from tests.utils.general import get_lines_of_code, print_lines
-from tests.utils.locators import (find_line_numbers_with, find_line_with,
-                                  find_next_closing_bracket, find_open_blocks)
 
 
 class atlas_xaod_dummy_executor(dummy_executor):
     def __init__(self):
         super().__init__()
-    
+
     def get_executor_obj(self) -> atlas_xaod_executor:
         return atlas_xaod_executor()
 
@@ -45,7 +41,7 @@ class AtlasXAODDockerException(Exception):
 class AtlasXAODLocalFile(LocalFile):
     def __init__(self, local_files: Union[Path, List[Path]]):
         super().__init__("atlas/analysisbase:latest", "query.cxx", local_files)
-    
+
     def raise_docker_exception(self, message: str):
         raise AtlasXAODDockerException(message)
 
@@ -70,6 +66,7 @@ async def exe_from_qastle(q: str):
     exe.evaluate(a)
     return exe
 
+
 def load_root_as_pandas(file: Path) -> pd.DataFrame:
     '''Given the result from a query as a ROOT file path, return
     the contents as a pandas dataframe.
@@ -84,10 +81,10 @@ def load_root_as_pandas(file: Path) -> pd.DataFrame:
     assert file.exists()
 
     with uproot.open(file) as input:
-        return input['atlas_xaod_tree'].pandas.df()  # type: ignore
+        return input['atlas_xaod_tree'].arrays(library='pd')  # type: ignore
 
 
-def load_root_as_awkward(file: Path) -> ak.JaggedArray:
+def load_root_as_awkward(file: Path) -> ak.Array:
     '''Given the result from a query as a ROOT file path, return
     the contents as a pandas dataframe.
 
@@ -116,7 +113,7 @@ def as_pandas(o: ObjectStream) -> pd.DataFrame:
     return load_root_as_pandas(o.value())
 
 
-def as_awkward(o: ObjectStream) -> ak.JaggedArray:
+def as_awkward(o: ObjectStream) -> ak.Array:
     '''Return a query as a pandas dataframe.
 
     Args:

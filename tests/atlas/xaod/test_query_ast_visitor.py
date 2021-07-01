@@ -1,6 +1,5 @@
 # Some very direct white box testing
 import ast
-from typing import cast
 
 import func_adl_xAOD.common.cpp_representation as crep
 import func_adl_xAOD.common.cpp_types as ctyp
