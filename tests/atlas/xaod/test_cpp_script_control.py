@@ -2,13 +2,11 @@
 # as we are now asking a fair amount from it.
 import ast
 import os
-import sys
 import tempfile
 from collections import namedtuple
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, List, Optional, Union, cast
-from urllib import parse
+from typing import Any, List, Optional, Union
 
 import pytest
 from func_adl import EventDataset
@@ -206,7 +204,7 @@ def test_good_cpp_total_run_output_dir_no_mount(cache_directory):
     'Good C++, and no arguments that does full run'
 
     info = generate_test_jet_fetch(cache_directory)
-    with run_docker(info, cache_directory, [local_path], output_dir='/home/atlas/results', mount_output=False) as result_dir:
+    with run_docker(info, cache_directory, [local_path], output_dir='/home/atlas/results', mount_output=False):
         # We aren't mounting so we can't look. So we just want to make sure no errors occur.
         pass
 
@@ -224,7 +222,7 @@ def test_bad_cpp_total_run(cache_directory):
 
     try:
         info = generate_test_jet_fetch_bad(cache_directory)
-        with run_docker(info, cache_directory, [local_path], data_file_on_cmd_line=True) as result_dir:
+        with run_docker(info, cache_directory, [local_path], data_file_on_cmd_line=True):
             assert False
     except docker_run_error:
         pass
@@ -243,7 +241,7 @@ def test_bad_cpp_just_compile(cache_directory):
 
     try:
         info = generate_test_jet_fetch_bad(cache_directory)
-        with run_docker(info, cache_directory, [local_path], compile_only=True) as result_dir:
+        with run_docker(info, cache_directory, [local_path], compile_only=True):
             assert False
     except docker_run_error:
         pass
@@ -275,7 +273,7 @@ def test_run_with_bad_position_arg(cache_directory):
     'Pass in a bogus argument at the end with no flag'
     try:
         info = generate_test_jet_fetch(cache_directory)
-        with run_docker(info, cache_directory, [local_path], add_position_argument_at_start="/results") as result_dir:
+        with run_docker(info, cache_directory, [local_path], add_position_argument_at_start="/results"):
             assert False
     except docker_run_error:
         pass
@@ -285,7 +283,7 @@ def test_run_with_bad_flag(cache_directory):
     'Pass in a bogus flag'
     try:
         info = generate_test_jet_fetch(cache_directory)
-        with run_docker(info, cache_directory, [local_path], extra_flag="-k") as result_dir:
+        with run_docker(info, cache_directory, [local_path], extra_flag="-k"):
             assert False
     except docker_run_error:
         pass

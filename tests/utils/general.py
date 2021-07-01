@@ -27,6 +27,7 @@ def get_lines_of_code(executor) -> List[str]:
     qv.emit_query(d)
     return d.Lines
 
+
 def print_lines(lines):
     for ln in lines:
         print(ln)

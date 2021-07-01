@@ -1,9 +1,9 @@
-# Tests that make sure the xaod executor is working correctly
+from tests.utils.locators import find_line_numbers_with, find_line_with, find_open_blocks
+from tests.utils.general import get_lines_of_code, print_lines
 import pytest
-from tests.atlas.xaod.utils import (atlas_xaod_dataset, exe_from_qastle,
-                                    find_line_numbers_with, find_line_with,
-                                    find_open_blocks, get_lines_of_code,
-                                    print_lines)
+from tests.atlas.xaod.utils import atlas_xaod_dataset, exe_from_qastle
+
+# Tests that make sure the xaod executor is working correctly
 
 
 class Atlas_xAOD_File_Type:
@@ -34,7 +34,7 @@ def test_dict_output():
 def test_dict_output_fail_expansion():
     my_old_dict = {1: 'hi'}
     with pytest.raises(ValueError):
-        r = atlas_xaod_dataset() \
+        atlas_xaod_dataset() \
             .Select(lambda e: e.EventInfo("EventInfo").runNumber()) \
             .Select(lambda e: {'run_number': e, **my_old_dict}) \
             .value()
@@ -48,7 +48,7 @@ def test_per_jet_item():
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
-    assert 0 == ["push_back" in l for l in lines].count(True)
+    assert 0 == ["push_back" in ln for ln in lines].count(True)
     l_push_back = find_line_with("Fill()", lines)
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 1 == ["for" in a for a in active_blocks].count(True)
@@ -82,7 +82,7 @@ def test_builtin_sin_function_math_import():
     # The following statement should be a straight sequence, not an array.
     from math import sin
     r = atlas_xaod_dataset() \
-        .SelectMany('lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: sin(j.pt()))') \
+        .SelectMany(lambda e: e.Jets("AntiKt4EMTopoJets").Select(lambda j: sin(j.pt()))) \
         .value()
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
@@ -98,7 +98,7 @@ def test_ifexpr():
     # Make sure that a test around 10.0 occurs.
     lines = get_lines_of_code(r)
     print_lines(lines)
-    lines = [l for l in lines if '10.0' in l]
+    lines = [ln for ln in lines if '10.0' in ln]
     assert len(lines) == 1
     assert 'if ' in lines[0]
 
@@ -129,7 +129,7 @@ def test_and_clause_in_where():
     # Make sure that the tree Fill is at the same level as the _JetPts2 getting set.
     lines = get_lines_of_code(r)
     print_lines(lines)
-    l_if = [l for l in lines if "if (" in l]
+    l_if = [ln for ln in lines if "if (" in ln]
     assert len(l_if) == 2
     assert l_if[0] == l_if[1]
 
@@ -144,7 +144,7 @@ def test_or_clause_in_where():
     # Make sure that the tree Fill is at the same level as the _JetPts2 getting set.
     lines = get_lines_of_code(r)
     print_lines(lines)
-    l_if = [l for l in lines if "if (" in l]
+    l_if = [ln for ln in lines if "if (" in ln]
     assert len(l_if) == 2
     assert l_if[0] != l_if[1]
     assert l_if[0].replace("!", "") == l_if[1]
@@ -208,7 +208,7 @@ def test_Select_is_an_array_with_where():
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
-    assert 1 == ["push_back" in l for l in lines].count(True)
+    assert 1 == ["push_back" in ln for ln in lines].count(True)
     l_push_back = find_line_with("Fill()", lines)
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 0 == ["for" in a for a in active_blocks].count(True)
@@ -222,7 +222,7 @@ def test_Select_is_an_array():
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
-    assert 1 == ["push_back" in l for l in lines].count(True)
+    assert 1 == ["push_back" in ln for ln in lines].count(True)
     l_push_back = find_line_with("Fill()", lines)
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 0 == ["for" in a for a in active_blocks].count(True)
@@ -236,7 +236,7 @@ def test_Select_1D_array_with_Where():
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
-    assert 1 == ["push_back" in l for l in lines].count(True)
+    assert 1 == ["push_back" in ln for ln in lines].count(True)
     l_push_back = find_line_with("Fill()", lines)
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 0 == ["for" in a for a in active_blocks].count(True)
@@ -254,7 +254,7 @@ def test_Select_is_not_an_array():
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
-    assert 0 == ["push_back" in l for l in lines].count(True)
+    assert 0 == ["push_back" in ln for ln in lines].count(True)
     l_push_back = find_line_with("Fill()", lines)
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 1 == ["for" in a for a in active_blocks].count(True)
@@ -268,7 +268,7 @@ def test_Select_Multiple_arrays():
     # Check to see if there mention of push_back anywhere.
     lines = get_lines_of_code(r)
     print_lines(lines)
-    assert 2 == ["push_back" in l for l in lines].count(True)
+    assert 2 == ["push_back" in ln for ln in lines].count(True)
     l_push_back = find_line_with("Fill()", lines)
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 0 == ["for" in a for a in active_blocks].count(True)
@@ -284,8 +284,8 @@ def test_Select_Multiple_arrays_2_step():
     lines = get_lines_of_code(r)
     print_lines(lines)
     l_push_back = find_line_numbers_with("push_back", lines)
-    assert all([len([l for l in find_open_blocks(lines[:pb]) if "for" in l]) == 1 for pb in l_push_back])
-    assert 2 == ["push_back" in l for l in lines].count(True)
+    assert all([len([ln for ln in find_open_blocks(lines[:pb]) if "for" in ln]) == 1 for pb in l_push_back])
+    assert 2 == ["push_back" in ln for ln in lines].count(True)
     l_push_back = find_line_with("Fill()", lines)
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 0 == ["for" in a for a in active_blocks].count(True)
@@ -363,7 +363,7 @@ def test_SelectMany_of_tuple_is_not_array():
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
-    assert 0 == ["push_back" in l for l in lines].count(True)
+    assert 0 == ["push_back" in ln for ln in lines].count(True)
     l_push_back = find_line_with("Fill()", lines)
     active_blocks = find_open_blocks(lines[:l_push_back])
     assert 1 == ["for" in a for a in active_blocks].count(True)
@@ -398,7 +398,7 @@ def test_generate_unary_not():
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
-    _ = find_line_with(f"!(", lines)
+    _ = find_line_with("!(", lines)
 
 
 def test_per_jet_with_matching():
@@ -455,8 +455,8 @@ def test_per_jet_with_Count_matching():
         .value()
     lines = get_lines_of_code(r)
     print_lines(lines)
-    l = find_line_numbers_with("if (0)", lines)
-    assert len(l) == 0
+    ln = find_line_numbers_with("if (0)", lines)
+    assert len(ln) == 0
 
 
 def test_per_jet_with_delta():

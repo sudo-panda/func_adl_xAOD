@@ -59,7 +59,7 @@ class LocalFile(EventDataset, ABC):
             self._files = [local_files]
         else:
             self._files = local_files
-    
+
     @abstractmethod
     def raise_docker_exception(self, message: str):
         pass
@@ -192,4 +192,3 @@ class dataset(EventDataset, ABC):
         exe = self.get_dummy_executor_obj()
         exe.evaluate(a)
         return exe
-

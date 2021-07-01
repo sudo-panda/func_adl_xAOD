@@ -171,5 +171,5 @@ def test_2D_nested_where():
 
     print(training_df)
     a = training_df[b'col1']
-    assert a.shape[0] == 10
-    assert a[0].shape[0] == 8
+    assert len(a) == 10
+    assert len(a[0]) == 8

@@ -1,9 +1,9 @@
+from tests.utils.locators import find_line_numbers_with, find_line_with, find_next_closing_bracket, find_open_blocks
+from tests.utils.general import get_lines_of_code, print_lines
+from tests.atlas.xaod.utils import atlas_xaod_dataset
+
 # Test out various things connected to the Aggregate call.
 # That code is more complex than I'd like it!
-from tests.atlas.xaod.utils import (atlas_xaod_dataset, find_line_numbers_with,
-                                    find_line_with, find_next_closing_bracket,
-                                    find_open_blocks, get_lines_of_code,
-                                    print_lines)
 
 
 def test_tree_name():

@@ -25,7 +25,7 @@ def test_deepest_scope_one_greater():
 def test_deepest_scope_equal():
     g = generated_code()
     s1 = statement.iftest("true")
-    s2 = statement.set_var("v1", "true")
+    statement.set_var("v1", "true")
     g.add_statement(s1)
     scope_1 = g.current_scope()
 
