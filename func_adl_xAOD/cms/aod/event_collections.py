@@ -24,17 +24,36 @@ class cms_aod_event_collection_collection(event_collection_collection):
 cms_aod_collections = [
     {
         'function_name': "Tracks",
-        'include_files': ['DataFormats/TrackReco/interface/Track.h', 'DataFormats/TrackReco/interface/TrackFwd.h'],
+        'include_files': [
+            'DataFormats/TrackReco/interface/Track.h',
+            'DataFormats/TrackReco/interface/TrackFwd.h',
+            'DataFormats/TrackReco/interface/HitPattern.h'
+        ],
         'container_type': cms_aod_event_collection_collection('reco::TrackCollection', 'reco::Track')
     },
     {
         'function_name': "TrackMuons",
-        'include_files': ['DataFormats/MuonReco/interface/Muon.h'],
+        'include_files': [
+            'DataFormats/MuonReco/interface/Muon.h',
+            'DataFormats/MuonReco/interface/MuonFwd.h',
+            'DataFormats/MuonReco/interface/MuonSelectors.h',
+            'DataFormats/MuonReco/interface/MuonIsolation.h',
+            'DataFormats/MuonReco/interface/MuonPFIsolation.h',
+            'DataFormats/TrackReco/interface/Track.h',
+            'DataFormats/TrackReco/interface/TrackFwd.h',
+            'DataFormats/TrackReco/interface/HitPattern.h'
+        ],
         'container_type': cms_aod_event_collection_collection('reco::TrackCollection', 'reco::Track')
     },
     {
         'function_name': "Muons",
-        'include_files': ['DataFormats/MuonReco/interface/Muon.h'],
+        'include_files': [
+            'DataFormats/MuonReco/interface/Muon.h',
+            'DataFormats/MuonReco/interface/MuonFwd.h',
+            'DataFormats/MuonReco/interface/MuonSelectors.h',
+            'DataFormats/MuonReco/interface/MuonIsolation.h',
+            'DataFormats/MuonReco/interface/MuonPFIsolation.h'
+        ],
         'container_type': cms_aod_event_collection_collection('reco::MuonCollection', 'reco::Muon')
     },
 ]
@@ -51,3 +70,6 @@ class cms_aod_event_collections(event_collections):
 
 ctyp.add_method_type_info("reco::Track", "hitPattern", ctyp.terminal('reco::HitPattern'))
 ctyp.add_method_type_info("reco::Muon", "hitPattern", ctyp.terminal('reco::HitPattern'))
+ctyp.add_method_type_info("reco::Muon", "globalTrack", ctyp.terminal('reco::Track', is_pointer=True))
+ctyp.add_method_type_info("reco::Muon", "isPFMuon", ctyp.terminal('bool'))
+ctyp.add_method_type_info("reco::Muon", "isPFIsolationValid", ctyp.terminal('bool'))
