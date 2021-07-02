@@ -1,4 +1,3 @@
-# Contains test that will run the full query.
 import asyncio
 import logging
 import os
@@ -6,6 +5,7 @@ import sys
 
 import pytest
 from func_adl import Range
+from func_adl_xAOD.cms.aod import isNonnull
 from tests.cms.aod.config import f_single, run_long_running_tests
 from tests.cms.aod.utils import as_pandas
 
@@ -73,3 +73,17 @@ def test_select_hitpattern_of_global_muons():
     assert training_df.iloc[0]['col1'] == 1160.0
     assert training_df.iloc[1]['col1'] == 1168.0
     assert training_df.iloc[-1]['col1'] == 248.0
+
+
+def test_isnonull_call():
+    ''' Make sure the non null call works properly. This is tricky because of the
+    way objects are used here - both as a pointer and an object, so the code
+    has to work just right.
+    '''
+    training_df = as_pandas(
+        f_single
+        .Select(lambda e: e.Muons("muons"))
+        .Select(lambda muons: muons.Where(lambda m: isNonnull(m.globalTrack())))
+        .Select(lambda muons: muons.Count())
+    )
+    assert training_df.iloc[0]['col1'] == 3
