@@ -116,6 +116,7 @@ def determine_type_mf(parent_type, function_name):
     logging.getLogger(__name__).warning(f"Warning: assumping that the method '{str(s_parent_type)}.{function_name}(...)' has return type 'double'. Use cpp_types.add_method_type_info to suppress (or correct) this warning.")
     return ctyp.terminal('double')
 
+
 def determine_type_mv(parent_type, variable_name):
     '''
     Determine the return type of the member function. Do our best to make
