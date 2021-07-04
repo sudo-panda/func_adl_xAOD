@@ -62,7 +62,7 @@ cms_aod_collections = [
             "DataFormats/VertexReco/interface/Vertex.h",
             "DataFormats/VertexReco/interface/VertexFwd.h"
         ],
-        'container_type': cms_aod_event_collection_collection('reco::VertexCollection', 'reco::Vertex')
+        'container_type': cms_aod_event_collection_collection('reco::VertexCollection', 'reco::Vertex', is_element_pointer=False)
     }
 ]
 
