@@ -28,10 +28,10 @@ class event_collection_collection(event_collection_container):
     def __init__(self, type_name, element_name, is_type_pointer, is_element_pointer):
         event_collection_container.__init__(self, type_name, is_type_pointer)
         self._element_name = element_name
-        self._is_pointer = is_element_pointer
+        self._is_element_pointer = is_element_pointer
 
     def element_type(self):
-        return ctyp.terminal(self._element_name, is_pointer=self._is_pointer)
+        return ctyp.terminal(self._element_name, is_pointer=self._is_element_pointer)
 
     def dereference(self):
         'Return a new version of us that is not a pointer'
