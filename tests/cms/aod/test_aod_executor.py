@@ -43,11 +43,11 @@ def test_2nd_order_lookup():
          .Select(lambda e: {"m": e.Muons("muons"), "p": e.Vertex("offlinePrimaryVertices")[0].position()})
          .Select(lambda i:
                  i.m
-                 .Where(lambda m: m.isPFMuon()
-                        and m.isPFIsolationValid()
-                        and isNonnull(m.globalTrack())
-                        and abs((m.globalTrack()).dxy(i.p)) < 0.5
-                        and abs((m.globalTrack()).dz(i.p)) < 1.
+                 .Where(lambda m: m.isPFMuon() and
+                        m.isPFIsolationValid() and
+                        isNonnull(m.globalTrack())
+                        abs((m.globalTrack()).dxy(i.p)) < 0.5 and
+                        abs((m.globalTrack()).dz(i.p)) < 1. and
                         )
                  .Select(lambda m: m.p()),
                  )
