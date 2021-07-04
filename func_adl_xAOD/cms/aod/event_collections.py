@@ -56,6 +56,14 @@ cms_aod_collections = [
         ],
         'container_type': cms_aod_event_collection_collection('reco::MuonCollection', 'reco::Muon')
     },
+    {
+        'function_name': "Vertex",
+        'include_files': [
+            "DataFormats/VertexReco/interface/Vertex.h",
+            "DataFormats/VertexReco/interface/VertexFwd.h"
+        ],
+        'container_type': cms_aod_event_collection_collection('reco::VertexCollection', 'reco::Vertex')
+    }
 ]
 
 
