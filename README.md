@@ -23,7 +23,7 @@ Many, but not all, parts of the `python` language are supported. As a general ru
 
 What follows are the parts of the language that are covered:
 
-- Function calls, method calls, and lambda calls (and lambda functions), with some limitations.
+- Function calls, method calls, property references, and lambda calls (and lambda functions), with some limitations.
 - Integer indexing into arrays
 - Limited tuple support as a means of collecting information together, or as an output to a ROOT file.
 - Limited list support (in same way as above). In particular, the `append` method is not supported as that modifies the list, rather than creating a new one.
