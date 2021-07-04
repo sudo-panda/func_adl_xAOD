@@ -190,7 +190,12 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
         node - if the node has a rep, just return
 
         '''
-        if not hasattr(node, 'rep'):
+        rep = getattr(node, 'rep', None)
+        if rep is not None:
+            if not self._gc.current_scope().starts_with(rep.scope()):
+                rep = None
+
+        if rep is None:
             FuncADLNodeVisitor.visit(self, node)
 
         # Lots of nodes never get a representation - like `ast.Name`, so we

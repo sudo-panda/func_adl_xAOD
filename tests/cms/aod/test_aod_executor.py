@@ -34,7 +34,7 @@ def test_complex_dict():
     print_lines(lines)
 
     find_line_with("globalTrack()->dx", lines)
-    find_line_with(".at(0)->position()", lines)
+    find_line_with("at(0).position()", lines)
 
 
 def test_2nd_order_lookup():
@@ -59,8 +59,11 @@ def test_2nd_order_lookup():
 
     # Make sure the vertex line isn't used after it goes out of scope
     vertex_decl_line = find_line_with('edm::Handle<reco::VertexCollection>', lines)
+
+    vertex_variable_name = lines[vertex_decl_line].split(' ')[-1].strip(';')
+
     closing_scope = find_next_closing_bracket(lines[vertex_decl_line:])
-    vertex_used_too_late = find_line_with('vertex', lines[vertex_decl_line + closing_scope:], throw_if_not_found=False)
+    vertex_used_too_late = find_line_with(vertex_variable_name, lines[vertex_decl_line + closing_scope:], throw_if_not_found=False)
     if vertex_used_too_late != -1:
         print('Here is where it is used and down')
         print_lines(lines[closing_scope + vertex_decl_line + vertex_used_too_late:])
