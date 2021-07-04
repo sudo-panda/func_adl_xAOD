@@ -5,4 +5,5 @@ version_func_adl_xaod = linked_version
 
 
 # Some common dependend items - helps keep the various setup files by putting it in here.
-version_func_adl = ">=2.2, <3.0a"
+# version_func_adl = ">=2.2, <3.0a"
+version_func_adl = "==2.3b4"
