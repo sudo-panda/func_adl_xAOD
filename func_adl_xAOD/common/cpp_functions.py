@@ -2,6 +2,7 @@
 # equivalent in C++.
 import ast
 from collections import namedtuple
+from func_adl_xAOD.common.cpp_types import terminal
 
 
 class FunctionAST(ast.AST):
@@ -58,7 +59,7 @@ def add_function_mapping(python_name, cpp_name, include_files, return_type):
     return_type: C++ return type
     '''
     global functions_to_replace
-    functions_to_replace[python_name] = cpp_function(cpp_name, include_files if type(include_files) is list else [include_files, ], return_type)
+    functions_to_replace[python_name] = cpp_function(cpp_name, include_files if type(include_files) is list else [include_files, ], terminal(return_type))
 
 
 # The list of functions to do the replacement
