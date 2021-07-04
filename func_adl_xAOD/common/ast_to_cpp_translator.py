@@ -683,7 +683,7 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
             raise Exception("Do not know how to take the index of type '{0}'".format(v.cpp_type()))
 
         index = self.get_rep(node.slice)
-        node.rep = crep.cpp_value("{0}.at({1})".format(v.as_cpp(), index.as_cpp()), self._gc.current_scope(), cpp_type=v.get_element_type())  # type: ignore
+        node.rep = crep.cpp_value(f"{v.as_cpp()}{'->' if v.is_pointer() else '.'}at({index.as_cpp()})", self._gc.current_scope(), cpp_type=v.get_element_type())  # type: ignore
         self._result = node.rep
 
     def visit_Index(self, node):
