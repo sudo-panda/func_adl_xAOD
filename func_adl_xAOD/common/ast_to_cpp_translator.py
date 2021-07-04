@@ -117,6 +117,34 @@ def determine_type_mf(parent_type, function_name):
     return ctyp.terminal('double')
 
 
+def determine_type_mv(parent_type, variable_name):
+    '''
+    Determine the return type of the member function. Do our best to make
+    an intelligent case when we can.
+
+    parent_type:        the type of the parent
+    variable_name:      the name of the variable we are accessing
+    '''
+    # If we don't know the type...
+    if parent_type is None:
+        raise RuntimeError("Internal Error: Trying to get member variable from a type we do not know!")
+    # If we are doing one of the normal "terminals", then we can just bomb. This should not happen!
+
+    rtn_type = ctyp.variable_type_info(str(parent_type), variable_name)
+    if rtn_type is not None:
+        return rtn_type
+
+    # We didn't know it. Lets make a guess, and error out if we are clearly making a mistake.
+    base_types = ['double', 'float', 'int']
+    s_parent_type = str(parent_type)
+    if s_parent_type in base_types:
+        raise xAODTranslationError(f'Unable to access {variable_name} from type {str(parent_type)}.')
+
+    # Ok - we give up. Return a double.
+    logging.getLogger(__name__).warning(f"Warning: assumping that the expression '{str(s_parent_type)}.{variable_name}' has type 'double'. Use cpp_types.add_variable_type_info to suppress (or correct) this warning.")
+    return ctyp.terminal('double')
+
+
 def _extract_column_names(names_ast: ast.AST) -> List[str]:
     'Extract a list of strings from an ast using literal evaluation. A single name is returned as a list.'
     names = ast.literal_eval(names_ast)
@@ -571,7 +599,7 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
         'Method call on an object'
 
         # Visit everything down a level.
-        self.generic_visit(call_node)
+        # self.generic_visit(call_node)
 
         # figure out what we are calling against, and the
         # method name we are going to be calling against.
@@ -631,6 +659,16 @@ class query_ast_visitor(FuncADLNodeVisitor, ABC):
             if r is not None:
                 self._result = r
         call_node.rep = self._result  # type: ignore
+
+    def visit_Attribute(self, node: ast.Attribute) -> Any:
+
+        obj = self.get_rep(node.value)
+        variable = node.attr
+        if not isinstance(obj, crep.cpp_value):
+            raise Exception("Do not know how to get member '{0}' of '{1}'".format(variable, type(obj).__name__))
+        result_type = determine_type_mf(obj.cpp_type(), variable)
+        node.rep = crep.cpp_value(f"{obj.as_cpp()}{'->' if obj.is_pointer() else '.'}{variable}", self._gc.current_scope(), result_type)
+        self._result = node.rep
 
     def visit_Name(self, name_node: ast.Name):
         'Visiting a name - which should represent something'

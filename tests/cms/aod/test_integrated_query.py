@@ -87,3 +87,14 @@ def test_isnonull_call():
         .Select(lambda muons: muons.Count())
     )
     assert training_df.iloc[0]['col1'] == 3
+
+
+def test_sumChargedHadronPt():
+    training_df = as_pandas(
+        f_single
+        .SelectMany(lambda e: e.Muons("muons"))
+        .Select(lambda m: (m.pfIsolationR04()).sumChargedHadronPt)
+    )
+    assert training_df.iloc[0]['col1'] == 1.6184179782867432
+    assert training_df.iloc[1]['col1'] == 0.8745666742324829
+    assert training_df.iloc[-1]['col1'] == 0.0
